@@ -1,13 +1,13 @@
-package es.upm.tennis_tournament_manager;
+package es.upm.tennis.tournament.manager;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class TennisTournamentManagerApplication {
+public class Application {
 
 	public static void main(String[] args) {
-		SpringApplication.run(TennisTournamentManagerApplication.class, args);
+		SpringApplication.run(Application.class, args);
 	}
 
 }
