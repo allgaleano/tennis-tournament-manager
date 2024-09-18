@@ -1,10 +1,10 @@
-package es.upm.tennis_tournament_manager;
+package es.upm.tennis.tournament.manager;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class TennisTournamentManagerApplicationTests {
+class ApplicationTests {
 
 	@Test
 	void contextLoads() {
