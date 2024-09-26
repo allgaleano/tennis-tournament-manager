@@ -1,0 +1,1 @@
+Esta carpeta contendrá todos los archivos de documentación en su formato de origen para facilitar su edición. Por cada documento habrá una carpeta asociada con todos los documentos de origen necesarios para su compilación en su interior.
