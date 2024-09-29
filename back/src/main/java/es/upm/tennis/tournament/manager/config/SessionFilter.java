@@ -1,7 +1,7 @@
 package es.upm.tennis.tournament.manager.config;
 
-import es.upm.tennis.tournament.manager.model.User;
 import es.upm.tennis.tournament.manager.model.UserSession;
+import es.upm.tennis.tournament.manager.model.User;
 import es.upm.tennis.tournament.manager.service.UserSessionService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -16,7 +16,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.util.stream.Collectors;
+import java.util.List;
 
 @Component
 public class SessionFilter extends OncePerRequestFilter {
@@ -24,8 +24,18 @@ public class SessionFilter extends OncePerRequestFilter {
     @Autowired
     private UserSessionService sessionService;
 
+    private static final List<String> PUBLIC_ENDPOINTS = List.of("/auth/register", "/auth/login");
+
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+
+        String requestURI = request.getRequestURI();
+
+        if (PUBLIC_ENDPOINTS.contains(requestURI)) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
         String sessionId = request.getHeader("Session-Id");
 
         if (sessionId != null && sessionService.validateSession(sessionId)) {
@@ -40,10 +50,10 @@ public class SessionFilter extends OncePerRequestFilter {
             authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 
             SecurityContextHolder.getContext().setAuthentication(authentication);
-            filterChain.doFilter(request, response);
         } else {
             response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Session expired or invalid");
+            return;
         }
-
+        filterChain.doFilter(request, response);
     }
 }

@@ -21,9 +21,15 @@ public class UserSessionService {
 
     private static final int SESSION_DURATION_MINUTES = 30;
 
-    public String createSession(User user) {
+    public String createSession(User user) { // TODO: Fix existing session problem
         if (user.getSession() != null) {
+            // Nullify the session field on the user entity
+            user.setSession(null);
+            userRepository.save(user);  // Persist this change to break the association
+
+            // Delete the session from the repository
             sessionRepository.delete(user.getSession());
+            sessionRepository.flush();  // Ensure deletion happens immediately
         }
 
         UserSession session = new UserSession();

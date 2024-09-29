@@ -10,6 +10,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @Service
@@ -27,6 +28,7 @@ public class UserService {
     public void registerUser(String username, String email, String password, Set<ERole> roles) {
         User user = new User();
         user.setUsername(username);
+        user.setEmail(email);
         user.setPassword(passwordEncoder.encode(password));
 
         Set<Role> userRoles = new HashSet<>();
@@ -41,5 +43,10 @@ public class UserService {
 
     public User findByUsername(String username) {
         return userRepository.findByUsername(username);
+    }
+
+
+    public List<User> getAllUsers() {
+        return userRepository.findAll();
     }
 }
