@@ -1,5 +1,6 @@
 package es.upm.tennis.tournament.manager.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Entity;
 import jakarta.persistence.*;
 import jakarta.persistence.Id;
@@ -19,6 +20,7 @@ public class UserSession {
 
     @OneToOne
     @JoinColumn(name = "user_id", nullable = false)
+    @JsonIgnore
     private User user;
 
     private String sessionId;
