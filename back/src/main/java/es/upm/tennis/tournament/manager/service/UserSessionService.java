@@ -4,6 +4,9 @@ import es.upm.tennis.tournament.manager.model.User;
 import es.upm.tennis.tournament.manager.model.UserSession;
 import es.upm.tennis.tournament.manager.repo.UserRepository;
 import es.upm.tennis.tournament.manager.repo.UserSessionRepository;
+import jakarta.transaction.Transactional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -13,6 +16,8 @@ import java.util.UUID;
 @Service
 public class UserSessionService {
 
+    private static final Logger logger = LoggerFactory.getLogger(UserSessionService.class);
+
     @Autowired
     private UserSessionRepository sessionRepository;
 
@@ -21,24 +26,22 @@ public class UserSessionService {
 
     private static final int SESSION_DURATION_MINUTES = 30;
 
-    public String createSession(User user) { // TODO: Fix existing session problem
-        if (user.getSession() != null) {
-            // Nullify the session field on the user entity
-            user.setSession(null);
-            userRepository.save(user);  // Persist this change to break the association
+    public String createSession(User user) { //
 
-            // Delete the session from the repository
-            sessionRepository.delete(user.getSession());
-            sessionRepository.flush();  // Ensure deletion happens immediately
+        UserSession session = user.getSession();
+
+        if (session != null) {
+            session.setExpirationDate(LocalDateTime.now().plusMinutes(SESSION_DURATION_MINUTES));
+            sessionRepository.save(session);
+        } else {
+            session = new UserSession();
+            session.setUser(user);
+            session.setSessionId(UUID.randomUUID().toString());
+            session.setExpirationDate(LocalDateTime.now().plusMinutes(SESSION_DURATION_MINUTES));
+
+            user.setSession(session);
+            sessionRepository.save(session);
         }
-
-        UserSession session = new UserSession();
-        session.setUser(user);
-        session.setSessionId(UUID.randomUUID().toString());
-        session.setExpirationDate(LocalDateTime.now().plusMinutes(SESSION_DURATION_MINUTES));
-
-        user.setSession(session);
-        sessionRepository.save(session);
 
         return session.getSessionId();
     }
@@ -54,11 +57,22 @@ public class UserSessionService {
         return false;
     }
 
-    public void invalidateSession(String sessionId) {
+    public boolean invalidateSession(String sessionId) {
+        logger.info("Attempting to invalidate session: {}", sessionId);
         UserSession session = sessionRepository.findBySessionId(sessionId);
         if (session != null) {
-            sessionRepository.delete(session);
+            logger.info("Session found: {}", sessionId);
+            User user = session.getUser();
+            if (user != null) {
+                logger.info("User found: {}", user.getUsername());
+                user.setSession(null);
+                userRepository.save(user);
+            }
+            logger.info("Session deleted: {}", sessionId);
+            return true;
         }
+        logger.warn("Session not found: {}", sessionId);
+        return false;
     }
 
     public UserSession findBySessionId(String sessionId) {
