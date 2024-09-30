@@ -1,0 +1,86 @@
+\documentclass[titlepage,a4paper]{article}
+
+\usepackage{a4wide}
+\usepackage[colorlinks=true,linkcolor=black,urlcolor=blue,bookmarksopen=true]{hyperref}
+\usepackage{bookmark}
+\usepackage{fancyhdr}
+\usepackage[spanish]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{pifont}
+\usepackage{mdframed}
+
+
+\pagestyle{fancy} % Encabezado y pie de página
+\fancyhf{}
+\fancyhead[L]{G\_02\_IS\_II }
+\fancyhead[R]{Ingenería del Software II - UPM}
+\renewcommand{\headrulewidth}{0.4pt}
+\fancyfoot[C]{\thepage}
+\renewcommand{\footrulewidth}{0.4pt}
+
+\begin{document}
+\begin{titlepage} % Carátula
+	\hfill\includegraphics[width=9cm]{logoupm.png}
+    \centering
+    \vfill
+    \Huge \textbf{Ciclo 1 — Gestor de Torneos de Tenis} \\
+    \vskip2cm
+            \textbf{Petición de Cambio}
+    \vskip2cm
+    \Large Ingenería del Software II\\
+    Séptimo cuatrimestre 2024 
+    \vfill
+  \begin{tabular}{ | c | c | c | } % Datos del versionado
+    \hline
+    Identificación & Modificación & Petición Cambio \\ \hline 
+    EPC\_V1\_G02 & Versión Inicial & PC 0 \\ \hline   
+\end{tabular}
+
+    \vfill
+    \vfill
+\end{titlepage}
+
+
+\newpage
+\large
+\section{Datos de la Petición de Cambio} 
+ \begin{tabular}{ | c | c |}
+  \hline
+    Número de Solicitud & X \\ \hline
+    Solicitante del Cambio & Nombre, Apellidos \\ \hline
+    Rol del Solicitante & Rol X \\ \hline
+  \end{tabular}
+\vspace{1cm}
+\large
+\section{Categoría del cambio}
+%Para marcar una opción se ha de modificar en el ding a ding{51}
+     \ding{113} Mejora
+     \ding{113} Correción
+     \ding{113} Funcionalidad
+     \ding{113} Otro (especificar en descripción)
+
+\vspace{1cm}
+\large
+\section{Motivo del cambio}
+%Para marcar una opción se ha de modificar en el ding a ding{51}
+    \ding{113} Correción de error
+    \ding{113} Requisito de usuario
+    \ding{113} Mejora 
+    \ding{113} Otro (especificar en descripción)
+
+\vspace{1cm}
+\large
+\section{Descripción de la propuesta cambio}
+\normalsize
+\begin{mdframed}[linewidth=1pt] % Crear un cuadro de texto
+    Explicación concisa del cambio propuesto.
+    \vspace{5cm}
+\end{mdframed}
+
+\vspace{2cm} % Espacio vertical para desplazar hacia abajo
+\noindent
+Firma: \rule{5cm}{0.4pt} a día \underline{\hspace{1cm}} de \underline{\hspace{4cm}} de 2024. % Espacios subrayados para la fecha
+\end{document}
