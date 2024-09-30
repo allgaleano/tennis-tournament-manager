@@ -2,7 +2,8 @@ package es.upm.tennis.tournament.manager.controller;
 
 import es.upm.tennis.tournament.manager.DTO.LoginRequest;
 import es.upm.tennis.tournament.manager.DTO.UserDTO;
-import es.upm.tennis.tournament.manager.exceptions.UserAlreadyExistsException;
+import es.upm.tennis.tournament.manager.exceptions.EmailAlreadyExistsException;
+import es.upm.tennis.tournament.manager.exceptions.UsernameAlreadyExistsException;
 import es.upm.tennis.tournament.manager.model.ERole;
 import es.upm.tennis.tournament.manager.model.User;
 import es.upm.tennis.tournament.manager.service.UserService;
@@ -43,8 +44,8 @@ public class AuthController {
             Set<ERole> roles = Set.of(ERole.USER);  // Default role is ROLE_USER
             userService.registerUser(userDTO.getUsername(),userDTO.getEmail(), userDTO.getPassword(), roles);
             return ResponseEntity.status(HttpStatus.CREATED).body("User registered successfully");
-        } catch (UserAlreadyExistsException e) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).body("User already exists");
+        } catch (UsernameAlreadyExistsException | EmailAlreadyExistsException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Registration failed");
         }

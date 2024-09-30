@@ -19,6 +19,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Component
 public class SessionFilter extends OncePerRequestFilter {
@@ -46,8 +47,13 @@ public class SessionFilter extends OncePerRequestFilter {
             UserSession session = sessionService.findBySessionId(sessionId);
             User user = session.getUser();
 
+            logger.info("User roles: {}", user.getRoles()
+                    .stream()
+                    .map(role -> role.getType().toString())
+                    .collect(Collectors.joining(", ")));
+
             var authorities = user.getRoles().stream()
-                    .map(role -> new SimpleGrantedAuthority(role.getType().name()))
+                    .map(role -> new SimpleGrantedAuthority("ROLE_" + role.getType().name()))
                     .toList();
 
             var authentication = new UsernamePasswordAuthenticationToken(user, null, authorities);

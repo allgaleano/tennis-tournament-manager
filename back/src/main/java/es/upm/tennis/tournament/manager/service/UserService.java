@@ -1,5 +1,7 @@
 package es.upm.tennis.tournament.manager.service;
 
+import es.upm.tennis.tournament.manager.exceptions.EmailAlreadyExistsException;
+import es.upm.tennis.tournament.manager.exceptions.UsernameAlreadyExistsException;
 import es.upm.tennis.tournament.manager.model.ERole;
 import es.upm.tennis.tournament.manager.model.Role;
 import es.upm.tennis.tournament.manager.model.User;
@@ -26,6 +28,12 @@ public class UserService {
     private PasswordEncoder passwordEncoder;
 
     public void registerUser(String username, String email, String password, Set<ERole> roles) {
+        User userExists = userRepository.findByUsername(username);
+        if (userExists != null) throw new UsernameAlreadyExistsException("Username already taken");
+
+        userExists = userRepository.findByEmail(email);
+        if (userExists != null) throw new EmailAlreadyExistsException("An account associated to that email already exists");
+
         User user = new User();
         user.setUsername(username);
         user.setEmail(email);
