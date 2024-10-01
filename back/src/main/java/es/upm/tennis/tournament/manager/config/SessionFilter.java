@@ -28,7 +28,7 @@ public class SessionFilter extends OncePerRequestFilter {
     @Autowired
     private UserSessionService sessionService;
 
-    private static final List<String> PUBLIC_ENDPOINTS = List.of("/auth/register", "/auth/login");
+    private static final List<String> PUBLIC_ENDPOINTS = List.of("/auth/register", "/auth/login", "/auth/confirm-email");
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {

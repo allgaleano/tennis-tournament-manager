@@ -14,7 +14,7 @@ services:
       SPRING_JPA_DATABASE_PLATFORM: org.hibernate.dialect.PostgreSQLDialect
 
   db:
-    image: postgres:14
+    image: postgres:16-alpine
     container_name: postgres-db
     environment:
       POSTGRES_DB: tennis_session_db

@@ -24,5 +24,7 @@ public class UserSession {
     private User user;
 
     private String sessionId;
+
+    @Temporal(TemporalType.TIMESTAMP)
     private LocalDateTime expirationDate;
 }
