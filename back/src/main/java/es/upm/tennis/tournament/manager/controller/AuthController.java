@@ -86,7 +86,7 @@ public class AuthController {
             ));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of(
-                    "error", "An unexpected error ocurred",
+                    "error", "An unexpected error occurred",
                     "details", e.getMessage()
             ));
         }
