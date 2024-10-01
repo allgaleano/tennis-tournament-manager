@@ -24,6 +24,7 @@ public class User {
 
     private String password;
 
+    private boolean isEnabled;
 
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "user_roles",
@@ -34,4 +35,5 @@ public class User {
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @JsonIgnore
     private UserSession session;
+
 }
