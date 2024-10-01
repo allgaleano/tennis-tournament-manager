@@ -2,6 +2,7 @@ package es.upm.tennis.tournament.manager.controller;
 
 import es.upm.tennis.tournament.manager.DTO.LoginRequest;
 import es.upm.tennis.tournament.manager.DTO.UserDTO;
+import es.upm.tennis.tournament.manager.exceptions.AccountNotEnabledException;
 import es.upm.tennis.tournament.manager.exceptions.EmailAlreadyExistsException;
 import es.upm.tennis.tournament.manager.exceptions.InvalidCodeException;
 import es.upm.tennis.tournament.manager.exceptions.UsernameAlreadyExistsException;
@@ -50,6 +51,10 @@ public class AuthController {
         } catch (UsernameNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of(
                     "error", "User not found"
+            ));
+        } catch (AccountNotEnabledException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of(
+                    "error", e.getMessage()
             ));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of(
