@@ -1,6 +1,7 @@
 package es.upm.tennis.tournament.manager.service;
 
 import es.upm.tennis.tournament.manager.DTO.UserDTO;
+import es.upm.tennis.tournament.manager.exceptions.AccountNotEnabledException;
 import es.upm.tennis.tournament.manager.exceptions.EmailAlreadyExistsException;
 import es.upm.tennis.tournament.manager.exceptions.InvalidCodeException;
 import es.upm.tennis.tournament.manager.exceptions.UsernameAlreadyExistsException;
@@ -100,6 +101,10 @@ public class UserService {
 
         UserDetails userDetails = (UserDetails) authentication.getPrincipal();
         User user = findByUsername(userDetails.getUsername());
+
+        if (!user.isEnabled()) {
+            throw new AccountNotEnabledException("Confirm your email to activate your account");
+        }
 
         String sessionId = sessionService.createSession(user);
 
