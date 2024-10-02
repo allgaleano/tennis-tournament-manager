@@ -1,11 +1,7 @@
 package es.upm.tennis.tournament.manager.controller;
 
-import es.upm.tennis.tournament.manager.DTO.LoginRequest;
-import es.upm.tennis.tournament.manager.DTO.UserDTO;
-import es.upm.tennis.tournament.manager.exceptions.AccountNotEnabledException;
-import es.upm.tennis.tournament.manager.exceptions.EmailAlreadyExistsException;
-import es.upm.tennis.tournament.manager.exceptions.InvalidCodeException;
-import es.upm.tennis.tournament.manager.exceptions.UsernameAlreadyExistsException;
+import es.upm.tennis.tournament.manager.DTO.*;
+import es.upm.tennis.tournament.manager.exceptions.*;
 import es.upm.tennis.tournament.manager.service.UserService;
 import es.upm.tennis.tournament.manager.service.UserSessionService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,7 +28,7 @@ public class AuthController {
         try {
             userService.registerUser(userDTO);
             return ResponseEntity.status(HttpStatus.CREATED).body("Confirmation email sent");
-        } catch (UsernameAlreadyExistsException | EmailAlreadyExistsException e) {
+        } catch (UserAlreadyExistsException | EmailAlreadyExistsException e) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Registration failed");
@@ -73,15 +69,39 @@ public class AuthController {
         }
     }
 
-    @GetMapping("/confirm-email")
-    public ResponseEntity<String> confirmEmail(@RequestParam("email") String email, @RequestParam("code") String code) {
+    @PostMapping("/confirm-email")
+    public ResponseEntity<String> confirmEmail(@RequestBody ConfirmEmailRequest confirmEmailRequest) {
         try {
-            userService.confirmUser(email, code);
+            userService.confirmUser(confirmEmailRequest.getEmail(), confirmEmailRequest.getCode());
             return ResponseEntity.ok("Account verified successfully");
         } catch (UsernameNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         } catch (InvalidCodeException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
+        }
+    }
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<String> forgotPassword(@RequestBody ForgotPasswordRequest forgotPasswordRequest) {
+        try {
+            userService.forgotPassword(forgotPasswordRequest.getEmail());
+            return ResponseEntity.ok("Password modification email sent");
+        } catch (UserNotFoundException e) {
+            return  ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
+
+    @PostMapping("/change-password")
+    public ResponseEntity<String> changePassword(@RequestBody ChangePasswordRequest changePasswordRequest) {
+        try {
+            userService.changePassword(changePasswordRequest);
+            return ResponseEntity.ok("Password changed successfully");
+        } catch (InvalidCodeException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
     }
 }
