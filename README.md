@@ -6,12 +6,12 @@ This repository contains two main folders:
 
 ## Prerequisites
 
-### Global Dependencies
-
-- **Java 21**: Required for the Spring Boot backend.
-- **Maven**: Build and dependency management for the Spring Boot application.
-- **Node.js 22.8.0**: Required for the Next.js frontend.
-- **npm**: Node package manager (typically included with Node.js).
+### Dependecies for development collaboration
+- **Java 21**
+- **IntelliJ IDEA**
+- **Maven**
+- **Node.js 22.8.0**
+- **npm**
   
 Make sure these dependencies are installed globally on your system.
 
@@ -21,29 +21,22 @@ Make sure these dependencies are installed globally on your system.
 
 ### Prerequisites
 
-- **Java 21**: [Download Java 21](https://www.oracle.com/java/technologies/javase-jdk21-downloads.html)
-- **Maven**: [Install Maven](https://maven.apache.org/install.html)
+- **Docker**
 
-### Setup
+### How to run the app
 
-1. Navigate to the `back` folder:
-    ```bash
-    cd back
-    ```
+```
+cd back
 
-2. Build the Spring Boot application using Maven:
-    ```bash
-    mvn clean install
-    ```
+docker compose up db --build -d
 
-3. Run the application:
-    ```bash
-    mvn spring-boot:run
-    ```
+mvn clean install
 
-The application should now be running on `http://localhost:8080`.
+docker compose down
 
----
+docker compose up --build
+```
+
 
 ## Frontend (`front`) - Next.js Application
 
