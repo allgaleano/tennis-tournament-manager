@@ -12,6 +12,8 @@ services:
       SPRING_DATASOURCE_PASSWORD: postgres
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
       SPRING_JPA_DATABASE_PLATFORM: org.hibernate.dialect.PostgreSQLDialect
+      SMTP_MAIL: ${SMTP_MAIL}
+      SMTP_APP_PASSWORD: ${SMTP_APP_PASSWORD}
 
   db:
     image: postgres:16-alpine
