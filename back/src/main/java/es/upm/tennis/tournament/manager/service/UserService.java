@@ -102,7 +102,7 @@ public class UserService {
         String emailBody = "Hello, " + user.getUsername() + ",\n\n" +
                 "Please use the following code to verify your email address and complete your registration:\n" +
                 code + "\n\n" +
-                "This code is valid for" + validMinutes + " minutes.";
+                "This code is valid for " + validMinutes + " minutes.";
         emailService.sendEmail(user.getEmail(), "Confirm your email", emailBody);
     }
 
@@ -177,7 +177,7 @@ public class UserService {
         String body = "Hello, " + user.getUsername() + ",\n\n" +
         "Please use the following code to change your password:\n" +
                 code.getCode() + "\n\n" +
-                "This code is valid for" + validMinutes + " minutes.";
+                "This code is valid for " + validMinutes + " minutes.";
         try {
             emailService.sendEmail(user.getEmail(), "Change your password", body);
         } catch (Exception e) {
