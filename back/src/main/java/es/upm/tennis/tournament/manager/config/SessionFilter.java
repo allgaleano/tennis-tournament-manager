@@ -21,14 +21,14 @@ import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static es.upm.tennis.tournament.manager.utils.Endpoints.PUBLIC_ENDPOINTS;
+
 @Component
 public class SessionFilter extends OncePerRequestFilter {
 
     private static final Logger logger = LoggerFactory.getLogger(SessionFilter.class);
     @Autowired
     private UserSessionService sessionService;
-
-    private static final List<String> PUBLIC_ENDPOINTS = List.of("/auth/register", "/auth/login", "/auth/confirm-email");
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
