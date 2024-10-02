@@ -1,10 +1,7 @@
 package es.upm.tennis.tournament.manager.service;
 
 import es.upm.tennis.tournament.manager.DTO.UserDTO;
-import es.upm.tennis.tournament.manager.exceptions.AccountNotEnabledException;
-import es.upm.tennis.tournament.manager.exceptions.EmailAlreadyExistsException;
-import es.upm.tennis.tournament.manager.exceptions.InvalidCodeException;
-import es.upm.tennis.tournament.manager.exceptions.UsernameAlreadyExistsException;
+import es.upm.tennis.tournament.manager.exceptions.*;
 import es.upm.tennis.tournament.manager.model.ConfirmationCode;
 import es.upm.tennis.tournament.manager.model.ERole;
 import es.upm.tennis.tournament.manager.model.Role;
@@ -73,7 +70,11 @@ public class UserService {
         ConfirmationCode confirmationCode = new ConfirmationCode(user);
         confirmationCodeRepository.save(confirmationCode);
 
-        sendConfirmationEmail(user, confirmationCode.getCode());
+        try {
+            sendConfirmationEmail(user, confirmationCode.getCode());
+        } catch (Exception e) {
+            throw new EmailNotSentException("Error sending the confirmation email");
+        }
     }
 
     private void sendConfirmationEmail(User user, String code) {
