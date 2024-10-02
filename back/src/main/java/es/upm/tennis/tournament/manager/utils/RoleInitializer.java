@@ -1,5 +1,7 @@
-package es.upm.tennis.tournament.manager.model;
+package es.upm.tennis.tournament.manager.utils;
 
+import es.upm.tennis.tournament.manager.model.ERole;
+import es.upm.tennis.tournament.manager.model.Role;
 import es.upm.tennis.tournament.manager.repo.RoleRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
@@ -10,7 +12,6 @@ public class RoleInitializer implements CommandLineRunner {
 
     @Autowired
     private RoleRepository roleRepository;
-
 
     @Override
     public void run(String... args) throws Exception {
@@ -25,7 +26,5 @@ public class RoleInitializer implements CommandLineRunner {
             adminRole.setType(ERole.ADMIN);
             roleRepository.save(adminRole);
         }
-
-        System.out.println("Roles initialized");
     }
 }
