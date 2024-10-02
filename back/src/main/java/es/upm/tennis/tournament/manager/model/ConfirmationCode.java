@@ -8,7 +8,6 @@ import lombok.Setter;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Random;
-import java.util.UUID;
 
 @Entity
 @Getter
