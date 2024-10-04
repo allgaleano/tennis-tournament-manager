@@ -23,7 +23,7 @@ public class UserController {
     @Autowired
     private UserService userService;
 
-    @GetMapping("/info")
+    @GetMapping("/session")
     public ResponseEntity<Map<String, Object>> getUserInfo(Authentication authentication) {
         User user = (User) authentication.getPrincipal();
         return ResponseEntity.status(HttpStatus.OK).body(Map.of(
