@@ -1,6 +1,6 @@
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/tennis_db
+    url: jdbc:postgresql://localhost:5432/tennis_session_db
     username: postgres
     password: postgres
     driver-class-name: org.postgresql.Driver
@@ -8,6 +8,19 @@ spring:
   jpa:
     hibernate:
       ddl-auto: update
+    open-in-view: false
+#    show-sql: true
+#    properties:
+#      hibernate:
+#        format_sql: true
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${SMTP_MAIL}
+    password: ${SMTP_APP_PASSWORD}
     properties:
-      hibernate:
-        dialect: org.hibernate.dialect.PostgreSQLDialect
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true

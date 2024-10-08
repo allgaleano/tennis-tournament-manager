@@ -7,22 +7,36 @@ services:
     depends_on:
       - db
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/tennis_db
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/tennis_session_db
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: postgres
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
-      SPRING_JPA_DATABASE_PLATFORM: org.hibernate.dialect.PostgreSQLDialect
+      SMTP_MAIL: ${SMTP_MAIL}
+      SMTP_APP_PASSWORD: ${SMTP_APP_PASSWORD}
 
   db:
-    image: postgres:14
+    image: postgres:16-alpine
     container_name: postgres-db
     environment:
-      POSTGRES_DB: tennis_db
+      POSTGRES_DB: tennis_session_db
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: pgadmin4
+    depends_on:
+      - db
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: postgres
+    ports:
+      - "5050:80"
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
 volumes:
   postgres_data:
+  pgadmin_data:
