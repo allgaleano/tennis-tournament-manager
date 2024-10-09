@@ -7,8 +7,8 @@ import lombok.Setter;
 
 @Getter
 @Setter
-@NoArgsConstructor
 @AllArgsConstructor
-public class ForgotPasswordRequest {
-    private String email;
+@NoArgsConstructor
+public class ConfirmPasswordRequest {
+    private String password;
 }
