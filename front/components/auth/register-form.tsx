@@ -4,7 +4,6 @@ import CardWrapper from "@/components/auth/card-wrapper";
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -55,7 +54,6 @@ const RegisterForm = () => {
         return;
       }
 
-      const data = await response.json();
       toast({
         title: "Confirma tu email",
         description: "Comprueba tu bandeja de entrada y verifica tu cuenta"
@@ -64,7 +62,7 @@ const RegisterForm = () => {
       toast({
         variant: "destructive",
         title: "¡Algo ha salido mal!",
-        description: "El servidor ha dado un error interno"
+        description: "Error interno del servidor"
       })
       console.error(error);
     }
