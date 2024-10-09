@@ -3,13 +3,12 @@ package es.upm.tennis.tournament.manager.DTO;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.springframework.stereotype.Service;
+import lombok.Setter;
 
 @Getter
-@Service
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 public class ChangePasswordRequest {
-    private String code;
-    private String password;
+    private String email;
 }

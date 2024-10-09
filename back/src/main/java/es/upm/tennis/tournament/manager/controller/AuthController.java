@@ -24,14 +24,20 @@ public class AuthController {
     private UserSessionService sessionService;
 
     @PostMapping("/register")
-    public ResponseEntity<String> register(@RequestBody UserDTO userDTO) {
+    public ResponseEntity<Map<String, String>> register(@RequestBody UserDTO userDTO) {
         try {
             userService.registerUser(userDTO);
-            return ResponseEntity.status(HttpStatus.CREATED).body("Confirmation email sent");
+            return ResponseEntity.status(HttpStatus.CREATED).body(Map.of(
+                    "message", "Confirmation Email sent!"
+            ));
         } catch (UserAlreadyExistsException | EmailAlreadyExistsException e) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of(
+                    "error", e.getMessage()
+            ));
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Registration failed");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of(
+                    "error", "Registration Failed"
+            ));
         }
     }
 
@@ -70,21 +76,21 @@ public class AuthController {
     }
 
     @PostMapping("/confirm-email")
-    public ResponseEntity<String> confirmEmail(@RequestBody ConfirmEmailRequest confirmEmailRequest) {
+    public ResponseEntity<String> confirmEmail(@RequestParam("token") String token) {
         try {
-            userService.confirmUser(confirmEmailRequest.getEmail(), confirmEmailRequest.getCode());
+            userService.confirmUser(token);
             return ResponseEntity.ok("Account verified successfully");
-        } catch (UsernameNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         } catch (InvalidCodeException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
     }
 
-    @PostMapping("/forgot-password")
-    public ResponseEntity<String> forgotPassword(@RequestBody ForgotPasswordRequest forgotPasswordRequest) {
+    @PostMapping("/change-password")
+    public ResponseEntity<String> forgotPassword(@RequestBody ChangePasswordRequest changePasswordRequest) {
         try {
-            userService.forgotPassword(forgotPasswordRequest.getEmail());
+            userService.changePassword(changePasswordRequest.getEmail());
             return ResponseEntity.ok("Password modification email sent");
         } catch (UserNotFoundException e) {
             return  ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
@@ -93,10 +99,10 @@ public class AuthController {
         }
     }
 
-    @PostMapping("/change-password")
-    public ResponseEntity<String> changePassword(@RequestBody ChangePasswordRequest changePasswordRequest) {
+    @PostMapping("/confirm-password")
+    public ResponseEntity<String> changePassword(@RequestBody ConfirmPasswordRequest confirmPasswordRequest, @RequestParam("token") String token) {
         try {
-            userService.changePassword(changePasswordRequest);
+            userService.confirmPassword(confirmPasswordRequest.getPassword(), token);
             return ResponseEntity.ok("Password changed successfully");
         } catch (InvalidCodeException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());

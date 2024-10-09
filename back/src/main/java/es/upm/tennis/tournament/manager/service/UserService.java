@@ -1,6 +1,5 @@
 package es.upm.tennis.tournament.manager.service;
 
-import es.upm.tennis.tournament.manager.DTO.ChangePasswordRequest;
 import es.upm.tennis.tournament.manager.DTO.UserDTO;
 import es.upm.tennis.tournament.manager.exceptions.*;
 import es.upm.tennis.tournament.manager.model.ConfirmationCode;
@@ -20,7 +19,6 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -29,6 +27,8 @@ import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import static es.upm.tennis.tournament.manager.utils.Endpoints.FRONTEND_URI;
 
 @Service
 public class UserService {
@@ -56,6 +56,7 @@ public class UserService {
     private EmailService emailService;
 
     public void registerUser(UserDTO userDTO) {
+        logger.info("Registering user");
         User userExists = userRepository.findByEmail(userDTO.getEmail());
 
         if (userExists != null) {
@@ -99,11 +100,11 @@ public class UserService {
     }
 
     private void sendConfirmationEmail(User user, String code, int validMinutes) {
-        String emailBody = "Hello, " + user.getUsername() + ",\n\n" +
-                "Please use the following code to verify your email address and complete your registration:\n" +
-                code + "\n\n" +
-                "This code is valid for " + validMinutes + " minutes.";
-        emailService.sendEmail(user.getEmail(), "Confirm your email", emailBody);
+        String emailBody = "Hola, " + user.getUsername() + ",\n\n" +
+                "Haz click en este enlace para verficar tu cuenta:\n" +
+                FRONTEND_URI + "/confirm-email?token=" + code + "\n\n" +
+                "Este enlace es válido durante " + validMinutes + " minutos.";
+        emailService.sendEmail(user.getEmail(), "Verifica tu cuenta", emailBody);
     }
 
     public User findByUsername(String username) {
@@ -137,20 +138,22 @@ public class UserService {
         );
     }
 
-    public void confirmUser(String email, String code) {
-        User user = userRepository.findByEmail(email);
-        if (user == null) {
-            throw new UsernameNotFoundException("User not found");
-        } else if (user.isEnabled()) {
-            throw new InvalidCodeException("User already verified");
-        }
+    public void confirmUser(String code) {
 
         ConfirmationCode confirmationCode = confirmationCodeRepository.findByCode(code);
         if (confirmationCode == null) {
             throw  new InvalidCodeException("Invalid code");
-        } else if (LocalDateTime.now().isAfter(confirmationCode.getExpirationDate())) {
+        }
+
+        if (LocalDateTime.now().isAfter(confirmationCode.getExpirationDate())) {
             confirmationCodeRepository.delete(confirmationCode);
             throw new InvalidCodeException("Expired code");
+        }
+
+        User user = confirmationCode.getUser();
+
+        if (user.isEnabled()) {
+            throw new InvalidCodeException("User already verified");
         }
 
         user.setEnabled(true);
@@ -158,7 +161,7 @@ public class UserService {
         confirmationCodeRepository.delete(confirmationCode);
     }
 
-    public void forgotPassword(String email) {
+    public void changePassword(String email) {
         logger.info("email: {}", email);
         User user = userRepository.findByEmail(email);
 
@@ -174,23 +177,21 @@ public class UserService {
         ConfirmationCode code = new ConfirmationCode(user, validMinutes);
         confirmationCodeRepository.save(code);
 
-        String body = "Hello, " + user.getUsername() + ",\n\n" +
-        "Please use the following code to change your password:\n" +
-                code.getCode() + "\n\n" +
-                "This code is valid for " + validMinutes + " minutes.";
+        String body = "Hola, " + user.getUsername() + ",\n\n" +
+        "Haz click en este enlace para cambiar tu contraseña:\n" +
+                FRONTEND_URI + "/change-password?token=" + code.getCode() + "\n\n" +
+                "Este enlace es válido durante " + validMinutes + " minutos.";
         try {
-            emailService.sendEmail(user.getEmail(), "Change your password", body);
+            emailService.sendEmail(user.getEmail(), "Cambia tu contraseña", body);
         } catch (Exception e) {
             throw new EmailNotSentException("Error sending the password modification email");
         }
     }
 
-    public void changePassword(ChangePasswordRequest changePasswordRequest) {
+    public void confirmPassword(String password, String token) {
 
-        String code = changePasswordRequest.getCode();
-        String password = changePasswordRequest.getPassword();
-
-        ConfirmationCode passCode = confirmationCodeRepository.findByCode(code);
+        ConfirmationCode passCode = confirmationCodeRepository.findByCode(token);
+        logger.info("passCode {}",passCode);
         if (passCode == null) {
             throw  new InvalidCodeException("Invalid code");
         } else if (LocalDateTime.now().isAfter(passCode.getExpirationDate())) {
