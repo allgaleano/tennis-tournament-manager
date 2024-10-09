@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { authRoutes, DEFAULT_LOGIN_REDIRECT, publicRoutes } from "./routes";
+import { getUserData } from "./lib/getUserData";
 
 export async function middleware(request: NextRequest) {
     const { nextUrl } = request;
-    const userData = null;
+    const userData = await getUserData();
     
     const isPublicRoute = publicRoutes.includes(nextUrl.pathname);
     const isAuthRoute = authRoutes.includes(nextUrl.pathname);

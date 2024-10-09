@@ -7,7 +7,9 @@ public class Endpoints {
             "/auth/register",
             "/auth/login",
             "/auth/confirm-email",
-            "/auth/forgot-password",
+            "/auth/confirm-password",
             "/auth/change-password"
     );
+
+    public static final String FRONTEND_URI = "http://localhost:3000";
 }
