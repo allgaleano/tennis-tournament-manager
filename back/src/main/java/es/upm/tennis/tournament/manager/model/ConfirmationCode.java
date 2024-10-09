@@ -7,6 +7,7 @@ import lombok.Setter;
 
 import java.time.LocalDateTime;
 import java.util.Random;
+import java.util.UUID;
 
 @Entity
 @Getter
@@ -29,13 +30,13 @@ public class ConfirmationCode {
 
     public ConfirmationCode(User user, int validMinutes) {
         this.user = user;
-        this.code = generateConfirmationCode();
+        this.code = UUID.randomUUID().toString();
         this.expirationDate = LocalDateTime.now().plusMinutes(validMinutes);
     }
 
-    private String generateConfirmationCode() {
-        Random random = new Random();
-        int code = 100000 + random.nextInt(900000);
-        return String.valueOf(code);
-    }
+//    private String generateConfirmationCode() {
+//        Random random = new Random();
+//        int code = 100000 + random.nextInt(900000);
+//        return String.valueOf(code);
+//    }
 }
