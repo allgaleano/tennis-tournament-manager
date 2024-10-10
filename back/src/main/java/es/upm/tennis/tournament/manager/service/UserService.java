@@ -9,6 +9,7 @@ import es.upm.tennis.tournament.manager.model.User;
 import es.upm.tennis.tournament.manager.repo.ConfirmationCodeRepository;
 import es.upm.tennis.tournament.manager.repo.RoleRepository;
 import es.upm.tennis.tournament.manager.repo.UserRepository;
+import jakarta.mail.MessagingException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -99,11 +100,20 @@ public class UserService {
         }
     }
 
-    private void sendConfirmationEmail(User user, String code, int validMinutes) {
-        String emailBody = "Hola, " + user.getUsername() + ",\n\n" +
-                "Haz click en este enlace para verficar tu cuenta:\n" +
-                FRONTEND_URI + "/confirm-email?token=" + code + "\n\n" +
-                "Este enlace es válido durante " + validMinutes + " minutos.";
+    private void sendConfirmationEmail(User user, String code, int validMinutes) throws MessagingException {
+        String emailBody = """
+        <!DOCTYPE html>
+        <html>
+        <head><meta charset='UTF-8'></head>
+        <body style='font-family: Arial'>
+            <p style='font-size:16px; color:#333;'>Hola <strong style='color:#0056b3;'>%s</strong>,</p>
+            <p style='font-size:14px; color:#333;'>Haz click en el siguiente enlace para verificar tu cuenta:</p>
+            <p><a href='%s/confirm-email?token=%s' style='font-size:14px; color:white; background-color:#363636; padding:10px 15px; text-decoration:none; border-radius:25px;'>Verificar cuenta</a></p>
+            <p style='font-size:12px; color:#666;'>Este enlace es válido durante %d minutos.</p>
+            <p style='font-size:14px; color:#333;'>Saludos,<br><em>El equipo de soporte</em></p>
+        </body>
+        </html>
+        """.formatted(user.getUsername(), FRONTEND_URI, code, validMinutes);
         emailService.sendEmail(user.getEmail(), "Verifica tu cuenta", emailBody);
     }
 
