@@ -55,6 +55,7 @@ const RegisterForm = () => {
       }
 
       toast({
+        variant: "success",
         title: "Confirma tu email",
         description: "Comprueba tu bandeja de entrada y verifica tu cuenta"
       })
@@ -115,27 +116,24 @@ const RegisterForm = () => {
                 </FormItem>
               )}
             />
-            <div className="space-y-2">
-              <FormField 
-                control={form.control}
-                name="password"
-                render={({ field}) => (
-                  <FormItem>
-                    <FormLabel className="ml-2">Contraseña</FormLabel>
-                    <FormControl>
-                      <Input 
-                        {...field} 
-                        type="password" 
-                        placeholder="******"
-                        disabled={isLoading}
-                      />
-                    </FormControl>
-                    <FormMessage className="ml-2"/>
-                  </FormItem>
-                )}
-              />
-              <Button variant="link" size="sm">He olvidado mi contraseña</Button>
-            </div>
+            <FormField 
+              control={form.control}
+              name="password"
+              render={({ field}) => (
+                <FormItem>
+                  <FormLabel className="ml-2">Contraseña</FormLabel>
+                  <FormControl>
+                    <Input 
+                      {...field} 
+                      type="password" 
+                      placeholder="******"
+                      disabled={isLoading}
+                    />
+                  </FormControl>
+                  <FormMessage className="ml-2"/>
+                </FormItem>
+              )}
+            />
           </div>
           <Button className="w-full" type="submit">Crear cuenta</Button>
         </form>
