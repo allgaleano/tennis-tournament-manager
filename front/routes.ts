@@ -1,5 +1,8 @@
 
-export const publicRoutes: string[] = [];
+export const publicRoutes: string[] = [
+  "/change-password",
+  "/confirm-password"
+];
 
 export const authRoutes: string[] = [
     "/login",

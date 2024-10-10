@@ -2,10 +2,7 @@ package es.upm.tennis.tournament.manager.service;
 
 import es.upm.tennis.tournament.manager.DTO.UserDTO;
 import es.upm.tennis.tournament.manager.exceptions.*;
-import es.upm.tennis.tournament.manager.model.ConfirmationCode;
-import es.upm.tennis.tournament.manager.model.ERole;
-import es.upm.tennis.tournament.manager.model.Role;
-import es.upm.tennis.tournament.manager.model.User;
+import es.upm.tennis.tournament.manager.model.*;
 import es.upm.tennis.tournament.manager.repo.ConfirmationCodeRepository;
 import es.upm.tennis.tournament.manager.repo.RoleRepository;
 import es.upm.tennis.tournament.manager.repo.UserRepository;
@@ -139,12 +136,11 @@ public class UserService {
             throw new AccountNotEnabledException("Confirm your email to activate your account");
         }
 
-        String sessionId = sessionService.createSession(user);
+        UserSession session = sessionService.createSession(user);
 
         return Map.of(
-                "sessionId", sessionId,
-                "username", user.getUsername(),
-                "roles", user.getRoles().stream().map(Role::getType).collect(Collectors.toList())
+                "sessionId", session.getSessionId(),
+                "sessionExp", session.getExpirationDate()
         );
     }
 
@@ -187,15 +183,28 @@ public class UserService {
         ConfirmationCode code = new ConfirmationCode(user, validMinutes);
         confirmationCodeRepository.save(code);
 
-        String body = "Hola, " + user.getUsername() + ",\n\n" +
-        "Haz click en este enlace para cambiar tu contraseña:\n" +
-                FRONTEND_URI + "/change-password?token=" + code.getCode() + "\n\n" +
-                "Este enlace es válido durante " + validMinutes + " minutos.";
         try {
-            emailService.sendEmail(user.getEmail(), "Cambia tu contraseña", body);
+            sendConfirmationPasswordEmail(user, code.getCode(), validMinutes);
         } catch (Exception e) {
             throw new EmailNotSentException("Error sending the password modification email");
         }
+    }
+
+    private void sendConfirmationPasswordEmail(User user, String code, int validMinutes) throws MessagingException {
+        String emailBody = """
+        <!DOCTYPE html>
+        <html>
+        <head><meta charset='UTF-8'></head>
+        <body style='font-family: Arial'>
+            <p style='font-size:16px; color:#333;'>Hola <strong style='color:#0056b3;'>%s</strong>,</p>
+            <p style='font-size:14px; color:#333;'>Haz click en el siguiente enlace para cambiar tu contraseña:</p>
+            <p><a href='%s/confirm-password?token=%s' style='font-size:14px; color:white; background-color:#363636; padding:10px 15px; text-decoration:none; border-radius:25px;'>Cambiar contraseña</a></p>
+            <p style='font-size:12px; color:#666;'>Este enlace es válido durante %d minutos.</p>
+            <p style='font-size:14px; color:#333;'>Saludos,<br><em>El equipo de soporte</em></p>
+        </body>
+        </html>
+        """.formatted(user.getUsername(), FRONTEND_URI, code, validMinutes);
+        emailService.sendEmail(user.getEmail(), "Cambia tu contraseña", emailBody);
     }
 
     public void confirmPassword(String password, String token) {
@@ -209,6 +218,10 @@ public class UserService {
             throw new InvalidCodeException("Expired code");
         }
         User user = passCode.getUser();
+        UserSession activeSession = user.getSession();
+        if (activeSession != null) {
+            sessionService.invalidateSession(activeSession.getSessionId());
+        }
 
         user.setPassword(passwordEncoder.encode(password));
         userRepository.save(user);

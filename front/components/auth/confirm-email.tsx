@@ -76,7 +76,7 @@ const ConfirmEmail = () => {
             <BarLoader
               loading={loading}
             /> : (success ?
-              <div className="text-green-600">
+              <div className="text-success">
                 <CheckCircledIcon height={30} width={30} />
               </div> :
               <div className="text-destructive">
