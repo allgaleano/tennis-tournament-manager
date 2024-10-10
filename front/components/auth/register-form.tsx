@@ -63,7 +63,7 @@ const RegisterForm = () => {
       toast({
         variant: "destructive",
         title: "¡Algo ha salido mal!",
-        description: "Error interno del servidor"
+        description: "Inténtalo de nuevo más tarde"
       })
       console.error(error);
     }
@@ -78,7 +78,7 @@ const RegisterForm = () => {
       backButtonLabel="¿Ya tienes una cuenta? Inicia sesión aquí"
     >
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
           <div className="space-y-4">
             <FormField 
               control={form.control}
@@ -135,7 +135,7 @@ const RegisterForm = () => {
               )}
             />
           </div>
-          <Button className="w-full" type="submit">Crear cuenta</Button>
+          <Button className="w-full font-semibold" type="submit">Crear cuenta</Button>
         </form>
       </Form>
     </CardWrapper>

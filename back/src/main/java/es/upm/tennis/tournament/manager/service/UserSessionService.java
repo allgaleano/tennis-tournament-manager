@@ -26,7 +26,7 @@ public class UserSessionService {
 
     private static final int SESSION_DURATION_MINUTES = 30;
 
-    public String createSession(User user) { //
+    public UserSession createSession(User user) { //
 
         UserSession session = user.getSession();
 
@@ -43,7 +43,7 @@ public class UserSessionService {
             sessionRepository.save(session);
         }
 
-        return session.getSessionId();
+        return session;
     }
 
     public boolean validateSession(String sessionId) {

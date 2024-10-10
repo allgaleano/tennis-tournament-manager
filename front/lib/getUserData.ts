@@ -8,7 +8,7 @@ export const getUserData = async () => {
         return null;
     }
     try {
-        const res = await fetch(`${process.env.API_URI}/session`, {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URI}/session`, {
             method: 'GET',
             headers: {
                 'Content-Type' : 'application/json',

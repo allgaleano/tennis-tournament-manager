@@ -55,7 +55,7 @@ public class AuthController {
                     "error", "User not found"
             ));
         } catch (AccountNotEnabledException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of(
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of(
                     "error", e.getMessage()
             ));
         } catch (Exception e) {
