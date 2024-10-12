@@ -20,3 +20,15 @@ export const LoginSchema = z.object({
         message: "Introduce una contraseña"
     })
 })
+
+export const ChangePasswordSchema = z.object({
+  email: z.string().email({
+    message: "Introduce un email válido"
+  })
+})
+
+export const ConfirmPasswordSchema = z.object({
+  password: z.string().min(1, {
+    message: "Introduce una contraseña"
+  })
+})
