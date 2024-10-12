@@ -19,7 +19,7 @@ public class UserSessionService {
     private static final Logger logger = LoggerFactory.getLogger(UserSessionService.class);
 
     @Autowired
-    private UserSessionRepository sessionRepository;
+    private UserSessionRepository userSessionRepository;
 
     @Autowired
     private UserRepository userRepository;
@@ -28,55 +28,55 @@ public class UserSessionService {
 
     public UserSession createSession(User user) { //
 
-        UserSession session = user.getSession();
+        UserSession session = userSessionRepository.findByUser(user);
 
         if (session != null) {
             session.setExpirationDate(LocalDateTime.now().plusMinutes(SESSION_DURATION_MINUTES));
-            sessionRepository.save(session);
+            userSessionRepository.save(session);
         } else {
             session = new UserSession();
             session.setUser(user);
             session.setSessionId(UUID.randomUUID().toString());
             session.setExpirationDate(LocalDateTime.now().plusMinutes(SESSION_DURATION_MINUTES));
 
-            user.setSession(session);
-            sessionRepository.save(session);
+            userSessionRepository.save(session);
         }
 
         return session;
     }
 
     public boolean validateSession(String sessionId) {
-        UserSession session = sessionRepository.findBySessionId(sessionId);
+        UserSession session = userSessionRepository.findBySessionId(sessionId);
         if (session != null && session.getExpirationDate().isAfter(LocalDateTime.now())) {
             // Refresh session expiration date
             session.setExpirationDate(LocalDateTime.now().plusMinutes(SESSION_DURATION_MINUTES));
-            sessionRepository.save(session);
+            userSessionRepository.save(session);
             return true;
         }
         return false;
     }
 
-    public boolean invalidateSession(String sessionId) {
-        logger.info("Attempting to invalidate session: {}", sessionId);
-        UserSession session = sessionRepository.findBySessionId(sessionId);
-        if (session != null) {
-            logger.info("Session found: {}", sessionId);
-            User user = session.getUser();
-            if (user != null) {
-                logger.info("User found: {}", user.getUsername());
-                user.setSession(null);
-                userRepository.save(user);
-            }
-            logger.info("Session deleted: {}", sessionId);
-            return true;
-        }
-        logger.warn("Session not found: {}", sessionId);
-        return false;
-    }
+//    public boolean invalidateSession(String sessionId) {
+//        logger.info("Attempting to invalidate session: {}", sessionId);
+//        UserSession session = userSessionRepository.findBySessionId(sessionId);
+//        if (session != null) {
+//            logger.info("Session found: {}", sessionId);
+//            User user = session.getUser();
+//            if (user != null) {
+//                logger.info("User found: {}", user.getUsername());
+//                user.setSession(null);
+//                userRepository.save(user);
+//                logger.info("Session reference removed from user");
+//            }
+//            logger.info("Session deleted: {}", session.getSessionId());
+//            return true;
+//        }
+//        logger.warn("Session not found: {}", sessionId);
+//        return false;
+//    }
 
     public UserSession findBySessionId(String sessionId) {
-        return sessionRepository.findBySessionId(sessionId);
+        return userSessionRepository.findBySessionId(sessionId);
     }
 
 

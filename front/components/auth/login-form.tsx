@@ -54,7 +54,7 @@ const LoginForm = () => {
         
         toast({
           variant: "success",
-          title: "Login successful"
+          title: "Sesión inicida con éxito"
         })
 
         setIsLoading(false);

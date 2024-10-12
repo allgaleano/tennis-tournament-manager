@@ -66,14 +66,14 @@ public class AuthController {
         }
     }
 
-    @PostMapping("/logout")
-    public ResponseEntity<String> logout(@RequestHeader("Session-Id") String sessionId) {
-        if (sessionService.invalidateSession(sessionId)) {
-            return ResponseEntity.ok("User logged out successfully");
-        } else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Session not found");
-        }
-    }
+//    @PostMapping("/logout")
+//    public ResponseEntity<String> logout(@RequestHeader("Session-Id") String sessionId) {
+//        if (sessionService.invalidateSession(sessionId)) {
+//            return ResponseEntity.ok("User logged out successfully");
+//        } else {
+//            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Session not found");
+//        }
+//    }
 
     @PostMapping("/confirm-email")
     public ResponseEntity<String> confirmEmail(@RequestParam("token") String token) {

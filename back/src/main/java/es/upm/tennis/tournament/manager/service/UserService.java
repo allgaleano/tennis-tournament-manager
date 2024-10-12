@@ -6,6 +6,7 @@ import es.upm.tennis.tournament.manager.model.*;
 import es.upm.tennis.tournament.manager.repo.ConfirmationCodeRepository;
 import es.upm.tennis.tournament.manager.repo.RoleRepository;
 import es.upm.tennis.tournament.manager.repo.UserRepository;
+import es.upm.tennis.tournament.manager.repo.UserSessionRepository;
 import jakarta.mail.MessagingException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,6 +41,9 @@ public class UserService {
 
     @Autowired
     private ConfirmationCodeRepository confirmationCodeRepository;
+
+    @Autowired
+    private UserSessionRepository userSessionRepository;
 
     @Autowired
     private PasswordEncoder passwordEncoder;
@@ -208,9 +212,7 @@ public class UserService {
     }
 
     public void confirmPassword(String password, String token) {
-
         ConfirmationCode passCode = confirmationCodeRepository.findByCode(token);
-        logger.info("passCode {}",passCode);
         if (passCode == null) {
             throw  new InvalidCodeException("Invalid code");
         } else if (LocalDateTime.now().isAfter(passCode.getExpirationDate())) {
@@ -218,12 +220,12 @@ public class UserService {
             throw new InvalidCodeException("Expired code");
         }
         User user = passCode.getUser();
-        UserSession activeSession = user.getSession();
-        if (activeSession != null) {
-            sessionService.invalidateSession(activeSession.getSessionId());
-        }
-
         user.setPassword(passwordEncoder.encode(password));
+
+        UserSession activeSession = userSessionRepository.findByUser(user);
+        if (activeSession != null) {
+            userSessionRepository.delete(activeSession);
+        }
         userRepository.save(user);
         confirmationCodeRepository.delete(passCode);
     }
