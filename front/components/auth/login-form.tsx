@@ -51,11 +51,6 @@ const LoginForm = () => {
         const sessionExp = new Date(data.sessionExp);
 
         document.cookie = `Session-Id=${sessionId}; expires=${sessionExp.toUTCString()}; path=/; SameSite=None; Secure`;
-        
-        toast({
-          variant: "success",
-          title: "Sesión inicida con éxito"
-        })
 
         setIsLoading(false);
         router.push(DEFAULT_LOGIN_REDIRECT);

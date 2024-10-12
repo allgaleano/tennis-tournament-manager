@@ -30,17 +30,14 @@ public class UserSessionService {
 
         UserSession session = userSessionRepository.findByUser(user);
 
-        if (session != null) {
-            session.setExpirationDate(LocalDateTime.now().plusMinutes(SESSION_DURATION_MINUTES));
-            userSessionRepository.save(session);
-        } else {
+        if (session == null) {
             session = new UserSession();
             session.setUser(user);
             session.setSessionId(UUID.randomUUID().toString());
-            session.setExpirationDate(LocalDateTime.now().plusMinutes(SESSION_DURATION_MINUTES));
 
-            userSessionRepository.save(session);
         }
+        session.setExpirationDate(LocalDateTime.now().plusMinutes(SESSION_DURATION_MINUTES));
+        userSessionRepository.save(session);
 
         return session;
     }
@@ -56,24 +53,14 @@ public class UserSessionService {
         return false;
     }
 
-//    public boolean invalidateSession(String sessionId) {
-//        logger.info("Attempting to invalidate session: {}", sessionId);
-//        UserSession session = userSessionRepository.findBySessionId(sessionId);
-//        if (session != null) {
-//            logger.info("Session found: {}", sessionId);
-//            User user = session.getUser();
-//            if (user != null) {
-//                logger.info("User found: {}", user.getUsername());
-//                user.setSession(null);
-//                userRepository.save(user);
-//                logger.info("Session reference removed from user");
-//            }
-//            logger.info("Session deleted: {}", session.getSessionId());
-//            return true;
-//        }
-//        logger.warn("Session not found: {}", sessionId);
-//        return false;
-//    }
+    public boolean invalidateSession(String sessionId) {
+        UserSession session = findBySessionId(sessionId);
+        if (session != null) {
+            userSessionRepository.delete(session);
+            return true;
+        }
+        return false;
+    }
 
     public UserSession findBySessionId(String sessionId) {
         return userSessionRepository.findBySessionId(sessionId);
