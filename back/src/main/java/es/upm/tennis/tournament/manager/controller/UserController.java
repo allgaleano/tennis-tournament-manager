@@ -28,7 +28,8 @@ public class UserController {
         User user = (User) authentication.getPrincipal();
         return ResponseEntity.status(HttpStatus.OK).body(Map.of(
                 "username", user.getUsername(),
-                "email", user.getEmail()
+                "email", user.getEmail(),
+                "roles", user.getRoles().stream().map(role -> role.getType().name()).toList()
         ));
     }
 

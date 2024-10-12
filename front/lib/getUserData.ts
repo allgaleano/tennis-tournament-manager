@@ -19,7 +19,11 @@ export const getUserData = async () => {
         if (!res.ok) {
             throw new Error(`Failed to fetch: ${res.status} ${res.statusText}`);
         }
-        user = await res.json(); 
+        user = await res.json();
+        
+        if (user && Array.isArray(user.roles)) {
+          user.roles = user.roles.join(', ');
+        }
     } catch (error) {
         console.error("Fetch failed: ", error);
     }
