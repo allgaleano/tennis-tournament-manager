@@ -33,10 +33,4 @@ public class ConfirmationCode {
         this.code = UUID.randomUUID().toString();
         this.expirationDate = LocalDateTime.now().plusMinutes(validMinutes);
     }
-
-//    private String generateConfirmationCode() {
-//        Random random = new Random();
-//        int code = 100000 + random.nextInt(900000);
-//        return String.valueOf(code);
-//    }
 }

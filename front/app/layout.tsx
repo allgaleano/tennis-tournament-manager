@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "@/resources/globals.css";
+import { Toaster } from "@/components/ui/toaster";
 
 export const metadata: Metadata = {
   title: "Tennis Tournament Manager",
@@ -15,6 +16,7 @@ export default function RootLayout({
     <html lang="es">
       <body>
         {children}
+        <Toaster />
       </body>
     </html>
   );

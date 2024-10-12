@@ -4,7 +4,6 @@ import CardWrapper from "@/components/auth/card-wrapper";
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -55,8 +54,8 @@ const RegisterForm = () => {
         return;
       }
 
-      const data = await response.json();
       toast({
+        variant: "success",
         title: "Confirma tu email",
         description: "Comprueba tu bandeja de entrada y verifica tu cuenta"
       })
@@ -64,7 +63,7 @@ const RegisterForm = () => {
       toast({
         variant: "destructive",
         title: "¡Algo ha salido mal!",
-        description: "El servidor ha dado un error interno"
+        description: "Inténtalo de nuevo más tarde"
       })
       console.error(error);
     }
@@ -79,7 +78,7 @@ const RegisterForm = () => {
       backButtonLabel="¿Ya tienes una cuenta? Inicia sesión aquí"
     >
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
           <div className="space-y-4">
             <FormField 
               control={form.control}
@@ -117,29 +116,26 @@ const RegisterForm = () => {
                 </FormItem>
               )}
             />
-            <div className="space-y-2">
-              <FormField 
-                control={form.control}
-                name="password"
-                render={({ field}) => (
-                  <FormItem>
-                    <FormLabel className="ml-2">Contraseña</FormLabel>
-                    <FormControl>
-                      <Input 
-                        {...field} 
-                        type="password" 
-                        placeholder="******"
-                        disabled={isLoading}
-                      />
-                    </FormControl>
-                    <FormMessage className="ml-2"/>
-                  </FormItem>
-                )}
-              />
-              <Button variant="link" size="sm">He olvidado mi contraseña</Button>
-            </div>
+            <FormField 
+              control={form.control}
+              name="password"
+              render={({ field}) => (
+                <FormItem>
+                  <FormLabel className="ml-2">Contraseña</FormLabel>
+                  <FormControl>
+                    <Input 
+                      {...field} 
+                      type="password" 
+                      placeholder="******"
+                      disabled={isLoading}
+                    />
+                  </FormControl>
+                  <FormMessage className="ml-2"/>
+                </FormItem>
+              )}
+            />
           </div>
-          <Button className="w-full" type="submit">Crear cuenta</Button>
+          <Button className="w-full font-semibold" type="submit">Crear cuenta</Button>
         </form>
       </Form>
     </CardWrapper>

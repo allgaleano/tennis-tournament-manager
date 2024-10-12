@@ -8,7 +8,7 @@ export const getUserData = async () => {
         return null;
     }
     try {
-        const res = await fetch(`${process.env.API_URI}/session`, {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URI}/session`, {
             method: 'GET',
             headers: {
                 'Content-Type' : 'application/json',
@@ -19,7 +19,11 @@ export const getUserData = async () => {
         if (!res.ok) {
             throw new Error(`Failed to fetch: ${res.status} ${res.statusText}`);
         }
-        user = await res.json(); 
+        user = await res.json();
+        
+        if (user && Array.isArray(user.roles)) {
+          user.roles = user.roles.join(', ');
+        }
     } catch (error) {
         console.error("Fetch failed: ", error);
     }
