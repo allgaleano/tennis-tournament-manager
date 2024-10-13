@@ -14,6 +14,9 @@ export const getUserData = async () => {
                 'Content-Type' : 'application/json',
                 'Session-Id' : sessionId.value
             },
+            next: {
+              revalidate: 0
+            }
         }); 
 
         if (!res.ok) {
