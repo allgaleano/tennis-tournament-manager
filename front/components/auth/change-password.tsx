@@ -1,6 +1,6 @@
 "use client";
 
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Form, FormControl, FormField, FormItem, FormMessage } from "@/components/ui/form";
 import CardWrapper from "./card-wrapper";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
