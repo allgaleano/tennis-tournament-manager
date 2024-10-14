@@ -7,7 +7,7 @@ import jakarta.persistence.Id;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Entity
 @Getter
@@ -25,5 +25,5 @@ public class UserSession {
     private String sessionId;
 
     @Temporal(TemporalType.TIMESTAMP)
-    private LocalDateTime expirationDate;
+    private Instant expirationDate;
 }
