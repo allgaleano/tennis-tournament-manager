@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -20,9 +21,6 @@ public class UserSessionService {
 
     @Autowired
     private UserSessionRepository userSessionRepository;
-
-    @Autowired
-    private UserRepository userRepository;
 
     private static final int SESSION_DURATION_MINUTES = 30;
 
@@ -36,7 +34,7 @@ public class UserSessionService {
             session.setSessionId(UUID.randomUUID().toString());
 
         }
-        session.setExpirationDate(LocalDateTime.now().plusMinutes(SESSION_DURATION_MINUTES));
+        session.setExpirationDate(Instant.now().plusSeconds(SESSION_DURATION_MINUTES * 60));
         userSessionRepository.save(session);
 
         return session;
@@ -44,9 +42,9 @@ public class UserSessionService {
 
     public boolean validateSession(String sessionId) {
         UserSession session = userSessionRepository.findBySessionId(sessionId);
-        if (session != null && session.getExpirationDate().isAfter(LocalDateTime.now())) {
+        if (session != null && session.getExpirationDate().isAfter(Instant.now())) {
             // Refresh session expiration date
-            session.setExpirationDate(LocalDateTime.now().plusMinutes(SESSION_DURATION_MINUTES));
+            session.setExpirationDate(Instant.now().plusSeconds(SESSION_DURATION_MINUTES * 60));
             userSessionRepository.save(session);
             return true;
         }

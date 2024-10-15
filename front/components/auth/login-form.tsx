@@ -50,7 +50,7 @@ const LoginForm = () => {
         const sessionId = data.sessionId;
         const sessionExp = new Date(data.sessionExp);
 
-        document.cookie = `Session-Id=${sessionId}; expires=${sessionExp.toUTCString()}; path=/; SameSite=None; Secure`;
+        document.cookie = `Session-Id=${sessionId}; expires=${sessionExp.toUTCString()}; path=/; SameSite=Lax; Secure`;
 
         setIsLoading(false);
         router.push(DEFAULT_LOGIN_REDIRECT);

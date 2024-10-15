@@ -22,10 +22,10 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import static es.upm.tennis.tournament.manager.utils.Endpoints.FRONTEND_URI;
 
@@ -155,7 +155,7 @@ public class UserService {
             throw  new InvalidCodeException("Invalid code");
         }
 
-        if (LocalDateTime.now().isAfter(confirmationCode.getExpirationDate())) {
+        if (Instant.now().isAfter(confirmationCode.getExpirationDate())) {
             confirmationCodeRepository.delete(confirmationCode);
             throw new InvalidCodeException("Expired code");
         }
@@ -215,7 +215,7 @@ public class UserService {
         ConfirmationCode passCode = confirmationCodeRepository.findByCode(token);
         if (passCode == null) {
             throw  new InvalidCodeException("Invalid code");
-        } else if (LocalDateTime.now().isAfter(passCode.getExpirationDate())) {
+        } else if (Instant.now().isAfter(passCode.getExpirationDate())) {
             confirmationCodeRepository.delete(passCode);
             throw new InvalidCodeException("Expired code");
         }
