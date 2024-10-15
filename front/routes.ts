@@ -10,4 +10,4 @@ export const authRoutes: string[] = [
     "/confirm-email"
 ];
 
-export const DEFAULT_LOGIN_REDIRECT: string = "/";
+export const DEFAULT_LOGIN_REDIRECT: string = "/dashboard";
