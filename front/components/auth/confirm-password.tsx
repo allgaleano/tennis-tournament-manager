@@ -1,7 +1,7 @@
 "use client";
 
 import CardWrapper from "./card-wrapper";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Form, FormControl, FormField, FormItem, FormMessage } from "@/components/ui/form";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -12,7 +12,6 @@ import { Button } from "../ui/button";
 import BarLoader from "react-spinners/BarLoader";
 import { CheckCircledIcon, CrossCircledIcon } from "@radix-ui/react-icons";
 import { useSearchParams } from "next/navigation";
-import { useToast } from "@/hooks/use-toast";
 
 const ConfirmPassword = () => {
   const searchParams = useSearchParams();

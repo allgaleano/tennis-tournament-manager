@@ -5,8 +5,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.time.LocalDateTime;
-import java.util.Random;
+import java.time.Instant;
 import java.util.UUID;
 
 @Entity
@@ -22,7 +21,7 @@ public class ConfirmationCode {
     private String code;
 
     @Temporal(TemporalType.TIMESTAMP)
-    private LocalDateTime expirationDate;
+    private Instant expirationDate;
 
     @OneToOne(targetEntity = User.class, fetch = FetchType.EAGER)
     @JoinColumn(nullable = false, name = "user_id")
@@ -31,6 +30,6 @@ public class ConfirmationCode {
     public ConfirmationCode(User user, int validMinutes) {
         this.user = user;
         this.code = UUID.randomUUID().toString();
-        this.expirationDate = LocalDateTime.now().plusMinutes(validMinutes);
+        this.expirationDate = Instant.now().plusSeconds(validMinutes * 60L);
     }
 }
