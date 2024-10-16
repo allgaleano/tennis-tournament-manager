@@ -13,43 +13,10 @@ import { FiMenu } from "react-icons/fi";
 import { UserData } from '@/types';
 import { MdInsights } from "react-icons/md";
 import Image from 'next/image';
+import AccountButton from '@/components/account-button';
 
 const SideBar = ({ userData }: { userData: UserData }) => {
-  const { toast } = useToast();
-  const sessionId = getClientSideCookie("Session-Id");
-  const router = useRouter();
   const pathname = usePathname();
-
-  const logout = async () => {
-    try {
-      if (!sessionId) {
-        throw new Error("No sessionId cookie found");
-      }
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URI}/auth/logout`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Session-Id": sessionId
-        },
-      });
-      if (response.ok) {
-        document.cookie = "Session-Id=;expires=Thu, 01 Jan 1970 00:00:01 GMT;";
-        router.push("/login");
-        router.refresh();
-      } else {
-        toast({
-          variant: "destructive",
-          title: "¡Algo ha salido mal!"
-        })
-      }
-    } catch (error) {
-      console.error(error);
-      toast({
-        variant: "destructive",
-        title: "¡Algo ha salido mal!"
-      })
-    }
-  }
 
   return (
     <div>
@@ -78,12 +45,7 @@ const SideBar = ({ userData }: { userData: UserData }) => {
           </Button>
         }
         <div className="flex-grow"></div>
-        <Button
-          variant="outline"
-          className="font-semibold gap-2"
-          onClick={logout}>
-          <TbLogout2 /> Cerrar Sesión
-        </Button>
+        <AccountButton userData={userData} />
       </div>
       <div className="p-4 absolute">
         <Sheet>
@@ -123,12 +85,7 @@ const SideBar = ({ userData }: { userData: UserData }) => {
               </Button>
             }
             <div className="flex-grow"></div>
-            <Button
-              variant="outline"
-              className="font-semibold gap-2 py-6"
-              onClick={logout}>
-              <TbLogout2 /> Cerrar Sesión
-            </Button>
+            <AccountButton userData={userData} />
           </SheetContent>
         </Sheet>
       </div>
