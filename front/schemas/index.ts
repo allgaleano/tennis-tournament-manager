@@ -49,13 +49,13 @@ export const ConfirmPasswordSchema = z.object({
   })
 })
 
-export const ChangeUsername = z.object({
+export const ChangeUsernameSchema = z.object({
   username: z.string().min(1, {
     message: "Introduce un nombre de usuario válido"
   })
 })
 
-export const ChangePhoneNumber = z.object({
+export const ChangePhoneNumberSchema = z.object({
   phonePrefix: z
     .string()
     .min(1, { message: "Introduce un prefijo" }) // Allow minimum 1 digit for international prefixes

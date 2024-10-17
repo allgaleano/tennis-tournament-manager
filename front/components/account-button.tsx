@@ -58,12 +58,17 @@ const AccountButton = ({ userData, isMobile, isSelected } : AccountButtonInterfa
       <DropdownMenuTrigger asChild>
         <Button 
           variant={isSelected ? "default" : "outline"} 
-          className={cn("flex justify-between gap-4", isMobile ? "py-6" : "")}
+          className={cn("flex justify-between gap-4", isMobile ? "py-8" : "py-6")}
         >
           <div>
             <FaUser/> 
           </div>
-          <p className="font-semibold"> {userData.username} </p>
+          <div className="flex flex-col justify-center items-end">
+            <p className="font-semibold"> {userData.username} </p>
+            <p className="truncate max-w-[150px] whitespace-nowrap overflow-hidden text-ellipsis">
+              {userData.name} {userData.surname}
+            </p>
+          </div>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className={cn(isMobile ? "w-80" : "w-52")}>

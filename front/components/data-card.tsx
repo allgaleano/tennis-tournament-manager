@@ -1,16 +1,20 @@
 "use client";
 
-import { Button } from "./ui/button";
+import ChangePhoneDialog from "@/components/change-phone-dialog";
+import ChangeUsernameDialog from "@/components/change-username-dialog";
+import { UserData } from "@/types";
 
 interface DataCardProps {
   title: string;
   label: string;
   isModifiable?: boolean
+  userData?: UserData
 }
 const DataCard = ({
   title,
   label,
-  isModifiable
+  isModifiable,
+  userData
 }: DataCardProps) => {
   return (
     <div className="border w-full rounded-lg py-2 px-4 shadow-sm flex justify-between items-center">
@@ -19,7 +23,11 @@ const DataCard = ({
         <p>{label}</p>
       </div>
       {isModifiable &&
-        <Button variant="outline">Modificar</Button>
+        title === "Nombre de usuario:" ? (
+          <ChangeUsernameDialog userData={userData}/>
+        ) : title === "Teléfono:" && (
+          <ChangePhoneDialog userData={userData}/>
+        )
       }
     </div>
   )
