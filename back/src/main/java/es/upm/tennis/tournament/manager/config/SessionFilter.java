@@ -18,6 +18,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -47,16 +48,11 @@ public class SessionFilter extends OncePerRequestFilter {
             UserSession session = sessionService.findBySessionId(sessionId);
             User user = session.getUser();
 
-            logger.info("User roles: {}", user.getRoles()
-                    .stream()
-                    .map(role -> role.getType().toString())
-                    .collect(Collectors.joining(", ")));
+            logger.info("User role: {}", user.getRole().getType().name());
 
-            var authorities = user.getRoles().stream()
-                    .map(role -> new SimpleGrantedAuthority("ROLE_" + role.getType().name()))
-                    .toList();
+            var authorities = new SimpleGrantedAuthority("ROLE_" + user.getRole().getType().name());
 
-            var authentication = new UsernamePasswordAuthenticationToken(user, null, authorities);
+            var authentication = new UsernamePasswordAuthenticationToken(user, null, Collections.singleton(authorities));
             authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 
             SecurityContextHolder.getContext().setAuthentication(authentication);

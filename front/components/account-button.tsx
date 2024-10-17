@@ -1,6 +1,6 @@
 "use client";
 
-import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { Button } from '@/components/ui/button'
 import { TbLogout2 } from 'react-icons/tb'
 import { useToast } from '@/hooks/use-toast';
@@ -9,8 +9,15 @@ import { useRouter } from 'next/navigation';
 import { FaUser } from "react-icons/fa";
 import { UserData } from '@/types';
 import { IoMdSettings } from "react-icons/io";
+import { cn } from '@/lib/utils';
 
-const AccountButton = ({ userData } : { userData : UserData}) => {
+interface AccountButtonInterface {
+  userData: UserData,
+  isMobile?: boolean,
+  isSelected?: boolean,
+}
+
+const AccountButton = ({ userData, isMobile, isSelected } : AccountButtonInterface ) => {
   const { toast } = useToast();
   const sessionId = getClientSideCookie("Session-Id");
   const router = useRouter();
@@ -49,20 +56,21 @@ const AccountButton = ({ userData } : { userData : UserData}) => {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" className="flex justify-start gap-4 py-6">
+        <Button 
+          variant={isSelected ? "default" : "outline"} 
+          className={cn("flex justify-between gap-4", isMobile ? "py-6" : "")}
+        >
           <div>
             <FaUser/> 
           </div>
-          <div className="flex flex-col items-start">
-            <p className="font-semibold"> {userData.username} </p>
-            <p
-              className="max-w-[150px] whitespace-nowrap overflow-hidden text-ellipsis text-xs"
-            >Nombre y apellidos</p>
-          </div>
+          <p className="font-semibold"> {userData.username} </p>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-56">
-        <DropdownMenuItem className="font-semibold gap-2">
+      <DropdownMenuContent className={cn(isMobile ? "w-80" : "w-52")}>
+        <DropdownMenuItem 
+          className="font-semibold gap-2"
+          onClick={() => router.push("/settings")}
+        >
           <IoMdSettings /> Ajustes de perfil
         </DropdownMenuItem>
         <DropdownMenuSeparator></DropdownMenuSeparator>
@@ -77,4 +85,4 @@ const AccountButton = ({ userData } : { userData : UserData}) => {
   )
 }
 
-export default AccountButton
+export default AccountButton;

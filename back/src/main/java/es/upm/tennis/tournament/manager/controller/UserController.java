@@ -29,7 +29,7 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.OK).body(Map.of(
                 "username", user.getUsername(),
                 "email", user.getEmail(),
-                "roles", user.getRoles().stream().map(role -> role.getType().name()).toList()
+                "role", user.getRole().getType().name()
         ));
     }
 

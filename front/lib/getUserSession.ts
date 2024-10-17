@@ -1,6 +1,6 @@
 import { cookies } from "next/headers";
 
-export const getUserData = async () => {
+export const getUserSession = async () => {
   const sessionId = cookies().get('Session-Id');
   let user = null;
 
@@ -23,10 +23,6 @@ export const getUserData = async () => {
       return null;
     }
     user = await res.json();
-
-    if (user && Array.isArray(user.roles)) {
-      user.roles = user.roles.join(', ');
-    }
   } catch (error) {
     console.error("Fetch failed: ", error);
   }
