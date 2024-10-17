@@ -26,6 +26,10 @@ const RegisterForm = () => {
   const form = useForm<z.infer<typeof RegisterSchema>>({
     resolver: zodResolver(RegisterSchema),
     defaultValues: {
+      name: "",
+      surname: "",
+      phonePrefix: "",
+      phoneNumber: "",
       username: "",
       email: "",
       password: ""
@@ -33,6 +37,7 @@ const RegisterForm = () => {
   })
 
   const onSubmit = async (values : z.infer<typeof RegisterSchema>) => {
+    console.log("Registering user");
     setIsLoading(true);
     try {
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URI}/auth/register`, {
@@ -80,6 +85,85 @@ const RegisterForm = () => {
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
           <div className="space-y-4">
+            <div className="w-full flex gap-4">
+              <FormField 
+                control={form.control}
+                name="name"
+                render={({ field}) => (
+                  <FormItem className="w-full">
+                    <FormLabel className="ml-2 ">Nombre</FormLabel>
+                    <FormControl>
+                      <Input 
+                        {...field} 
+                        type="name" 
+                        placeholder="Tu nombre"
+                        disabled={isLoading}
+                      />
+                    </FormControl>
+                    <FormMessage className="ml-2"/>
+                  </FormItem>
+                )}
+              />
+              <FormField 
+                control={form.control}
+                name="surname"
+                render={({ field}) => (
+                  <FormItem className="w-full">
+                    <FormLabel className="ml-2">Apellidos</FormLabel>
+                    <FormControl>
+                      <Input 
+                        {...field} 
+                        type="name" 
+                        placeholder="Tus apellidos"
+                        disabled={isLoading}
+                      />
+                    </FormControl>
+                    <FormMessage className="ml-2"/>
+                  </FormItem>
+                )}
+              />
+            </div>
+            <div className="w-full flex gap-2">
+              <FormField 
+                control={form.control}
+                name="phonePrefix"
+                render={({ field}) => (
+                  <FormItem className="w-1/4">
+                    <FormLabel className="ml-2 ">Prefijo</FormLabel>
+                    <FormControl>
+                      <div className="flex items-center gap-1">
+                        <span>+</span>
+                        <Input 
+                          {...field}  
+                          type="string"
+                          placeholder="34"
+                          disabled={isLoading}
+                        />
+                      </div>
+                    </FormControl>
+                    <FormMessage className="ml-2"/>
+                  </FormItem>
+                )}
+              />
+              <FormField 
+                control={form.control}
+                name="phoneNumber"
+                render={({ field}) => (
+                  <FormItem className="w-full">
+                    <FormLabel className="ml-2">Número de teléfono</FormLabel>
+                    <FormControl>
+                      <Input 
+                        {...field}
+                        type="string" 
+                        placeholder="600 000 000"
+                        disabled={isLoading}
+                      />
+                    </FormControl>
+                    <FormMessage className="ml-2"/>
+                  </FormItem>
+                )}
+              />
+            </div>
             <FormField 
               control={form.control}
               name="username"

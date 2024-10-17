@@ -26,8 +26,8 @@ const CardWrapper = ({
     children
 } : CardWrapperProps) => {
   return (
-    <div className="w-full flex flex-col items-center justify-center">
-      <div className="w-full flex flex-col justify-center items-center py-8 absolute top-5 gap-4">
+    <div className="w-full flex flex-col min-h-screen items-center justify-center gap-12">
+      <div className="w-full flex flex-col justify-center items-center gap-4 py-4">
         <Image src="/static/Logotipo_MatchPoint.svg" width={300} height={100} alt="MatchPoint Logo" />
         <i className="text-muted-foreground">Gestor de torneos de tenis</i>
       </div>

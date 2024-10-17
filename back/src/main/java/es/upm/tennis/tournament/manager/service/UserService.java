@@ -70,23 +70,31 @@ public class UserService {
                 confirmationCodeRepository.delete(existingUserCode);
                 userRepository.delete(userExists);
             } else {
+                logger.info("Account already exists");
                 throw new EmailAlreadyExistsException("An account associated to that email already exists");
             }
         }
 
         userExists = userRepository.findByUsername(userDTO.getUsername());
-        if (userExists != null) throw new UserAlreadyExistsException("Username already taken");
+        if (userExists != null) {
+            logger.info("Username taken");
+            throw new UserAlreadyExistsException("Username already taken");
+        }
 
 
         User user = new User();
         user.setUsername(userDTO.getUsername());
         user.setEmail(userDTO.getEmail());
+        user.setName(userDTO.getName());
+        user.setSurname(userDTO.getSurname());
+        user.setPhonePrefix(userDTO.getPhonePrefix());
+        user.setPhoneNumber(userDTO.getPhoneNumber());
         user.setEnabled(false);
         user.setCreatedAt(LocalDateTime.now());
         user.setPassword(passwordEncoder.encode(userDTO.getPassword()));
 
         Role userRole = roleRepository.findByType(ERole.USER);
-        user.setRoles(Set.of(userRole));
+        user.setRole(userRole);
 
         userRepository.save(user);
 
@@ -97,6 +105,7 @@ public class UserService {
         try {
             sendConfirmationEmail(user, confirmationCode.getCode(), validMinutes);
         } catch (Exception e) {
+            logger.info("Error sending the email");
             throw new EmailNotSentException("Error sending the confirmation email");
         }
     }

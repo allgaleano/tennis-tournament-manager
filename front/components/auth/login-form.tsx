@@ -52,7 +52,6 @@ const LoginForm = () => {
 
         document.cookie = `Session-Id=${sessionId}; expires=${sessionExp.toUTCString()}; path=/; SameSite=Lax; Secure`;
 
-        setIsLoading(false);
         router.push(DEFAULT_LOGIN_REDIRECT);
         return;
       }

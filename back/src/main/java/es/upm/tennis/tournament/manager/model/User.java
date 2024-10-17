@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import javax.xml.stream.events.StartDocument;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
@@ -24,6 +25,16 @@ public class User {
     @Column(unique = true, nullable = false)
     private String email;
 
+    private String name;
+
+    private String surname;
+
+    @Column(length = 5)
+    private String phonePrefix;
+
+    @Column(length = 15)
+    private String phoneNumber;
+
     @Column(nullable = false)
     private String password;
 
@@ -32,9 +43,7 @@ public class User {
     @Temporal(TemporalType.TIMESTAMP)
     private LocalDateTime createdAt;
 
-    @ManyToMany(fetch = FetchType.EAGER)
-    @JoinTable(name = "user_roles",
-            joinColumns = @JoinColumn(name = "user_id"),
-            inverseJoinColumns = @JoinColumn(name = "role_id"))
-    private Set<Role> roles = new HashSet<>();
+    @OneToOne(targetEntity = Role.class, fetch = FetchType.EAGER, cascade = CascadeType.REMOVE)
+    @JoinColumn(nullable = false, name = "role")
+    private Role role;
 }
