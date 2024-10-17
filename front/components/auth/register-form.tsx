@@ -37,7 +37,6 @@ const RegisterForm = () => {
   })
 
   const onSubmit = async (values : z.infer<typeof RegisterSchema>) => {
-    console.log("Registering user");
     setIsLoading(true);
     try {
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URI}/auth/register`, {
