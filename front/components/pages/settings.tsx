@@ -11,6 +11,7 @@ import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, Di
 import { deleteUserAccount } from "@/lib/deleteUserAccount";
 import { getClientSideCookie } from "@/lib/getClientSideCookie";
 import { useToast } from "@/hooks/use-toast";
+import { IoMdSettings } from "react-icons/io";
 
 const Settings = () => {
   const [userData, setUserData] = useState<UserData>();
@@ -75,14 +76,17 @@ const Settings = () => {
 
   return (
     <div className="w-full flex flex-col justify-start items-center m-10 gap-8">
-      <h1 className="font-semibold text-2xl">Ajustes de perfil</h1>
+      <h1 className="font-semibold text-2xl flex items-center gap-2">
+        <IoMdSettings />
+        Ajustes de perfil
+      </h1>
       {userData ? (
         <div className="flex flex-col items-center space-y-4 w-full max-w-[600px]">
           <DataCard title="Nombre:" label={`${userData.name} ${userData.surname}`} />
 
-          <DataCard title="Nombre de usuario:" label={userData.username} isModifiable/>
+          <DataCard title="Nombre de usuario:" label={userData.username} isModifiable userData={userData}/>
           
-          <DataCard title="Teléfono:" label={userData.phoneNumber} isModifiable/>
+          <DataCard title="Teléfono:" label={userData.phoneNumber} isModifiable userData={userData}/>
 
           <DataCard title="Email:" label={userData.email} />
 
