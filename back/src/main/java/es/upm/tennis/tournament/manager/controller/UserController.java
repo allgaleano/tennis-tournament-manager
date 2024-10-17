@@ -15,8 +15,7 @@ import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 
@@ -50,6 +49,7 @@ public class UserController {
         try {
             User user = userService.getUserData(authentication);
             return ResponseEntity.ok(Map.of(
+                    "id", user.getId(),
                     "name", user.getName(),
                     "surname", user.getSurname(),
                     "username", user.getUsername(),
@@ -71,5 +71,15 @@ public class UserController {
 
         PagedModel<EntityModel<User>> pagedModel = pagedResourcesAssembler.toModel(users, EntityModel::of);
         return ResponseEntity.ok(pagedModel);
+    }
+
+    @DeleteMapping("/users/{id}")
+    public ResponseEntity<String> deleteUser(@PathVariable Long id, @RequestHeader("Session-Id") String sessionId) {
+        try {
+            userService.deleteUser(id, sessionId);
+            return ResponseEntity.ok("User deleted successfully");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
+        }
     }
 }

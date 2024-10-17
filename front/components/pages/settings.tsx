@@ -7,10 +7,15 @@ import { Skeleton } from "../ui/skeleton";
 import DataCard from "../data-card";
 import { Button } from "../ui/button";
 import { useRouter } from "next/navigation";
+import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "../ui/dialog";
+import { deleteUserAccount } from "@/lib/deleteUserAccount";
+import { getClientSideCookie } from "@/lib/getClientSideCookie";
+import { useToast } from "@/hooks/use-toast";
 
 const Settings = () => {
   const [userData, setUserData] = useState<UserData>();
   const router = useRouter();
+  const { toast } = useToast();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -30,6 +35,44 @@ const Settings = () => {
     })
   }
 
+  const deleteAccount = async () => {
+    const id = userData?.id;
+    const sessionId = getClientSideCookie("Session-Id");
+    if ((!id || !sessionId)) {
+      toast({
+        variant: "destructive",
+        title: "¡Algo ha ido mal!",
+        description: "Intentalo de nuevo más tarde"
+      })
+      return;
+    }
+    try {
+      const response = await deleteUserAccount(id, sessionId);
+      if (response) {
+        toast({
+          variant: "success",
+          title: "Cuenta eliminada",
+          description: "Tu cuenta ha sido eliminada exitosamente."
+        });
+        router.refresh();
+        return;
+      } else {
+        toast({
+          variant: "destructive",
+          title: "¡Algo ha ido mal!",
+          description: "No se pudo eliminar tu cuenta, intentalo de nuevo más tarde."
+        });
+      }
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "¡Algo ha ido mal!",
+        description: "Error de red, intentalo de nuevo más tarde."
+      });
+      console.error("Error while deleting user account:", error);
+    }
+  }
+
   return (
     <div className="w-full flex flex-col justify-start items-center m-10 gap-8">
       <h1 className="font-semibold text-2xl">Ajustes de perfil</h1>
@@ -47,11 +90,48 @@ const Settings = () => {
           
           <DataCard title="Fecha de creación de la cuenta:" label={formateDateToSpanish(userData.createdAt)} />
           
-          <Button 
-            variant="outline" 
-            className="self-start font-semibold"
-            onClick={() => router.push("/change-password")}
-          >Cambiar contraseña</Button>
+          <div className="self-start flex gap-4">
+
+            <Button 
+              variant="outline" 
+              className="font-semibold"
+              onClick={() => router.push("/change-password")}
+            >Cambiar contraseña</Button>
+
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button 
+                  variant="destructive" 
+                  className="font-semibold"
+                >Eliminar cuenta</Button>
+              </DialogTrigger>
+              <DialogContent className="bg-white">
+                <DialogHeader>
+                  <DialogTitle>Eliminar cuenta</DialogTitle>
+                  <DialogDescription>
+                    ¿Estás seguro de que quieres eliminar tu cuenta? Esta acción es irreversible. Se borrarán todos los datos asociados a esta cuenta.
+                  </DialogDescription>
+                </DialogHeader>
+                <DialogFooter>
+                  <DialogClose asChild>
+                    <div className="self-start flex gap-4">
+                      <Button 
+                        variant="outline"
+                      >
+                        Cancelar
+                      </Button>
+                      <Button 
+                        variant="destructive"
+                        onClick={() => deleteAccount()}
+                      >
+                        Eliminar
+                      </Button>
+                    </div>
+                  </DialogClose>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          </div>
         </div>
       ) : (
         <div className="flex flex-col justify-center items-center w-full space-y-4">

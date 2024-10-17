@@ -25,6 +25,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.Map;
+import java.util.Optional;
 
 import static es.upm.tennis.tournament.manager.utils.Endpoints.FRONTEND_URI;
 
@@ -254,5 +255,33 @@ public class UserService {
             throw new InvalidCodeException("Invalid or expired session");
         }
         return activeSession;
+    }
+
+    public void deleteUser(Long id, String sessionId) {
+        Optional<User> user = userRepository.findById(id);
+        if (user.isEmpty()) {
+            throw new UserNotFoundException("User not found");
+        }
+        UserSession userSession = userSessionRepository.findBySessionId(sessionId);
+        if (userSession == null) {
+            logger.info("Invalid session");
+            throw new InvalidCodeException("Invalid or expired session");
+        }
+        if (userSession.getExpirationDate().isBefore(Instant.now())) {
+            logger.info("Expired session");
+            throw new InvalidCodeException("Invalid or expired session");
+        }
+        if (!user.get().isEnabled()) {
+            throw new AccountNotEnabledException("Account not enabled");
+        }
+        if (!user.get().getId().equals(userSession.getUser().getId())) {
+            throw new UnauthorizedUserAction("Unauthorized to perform this action");
+        }
+        userSessionRepository.delete(userSession);
+        ConfirmationCode code = confirmationCodeRepository.findByUser(user.get());
+        if (code != null) {
+            confirmationCodeRepository.delete(code);
+        }
+        userRepository.delete(user.get());
     }
 }

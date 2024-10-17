@@ -1,8 +1,9 @@
 export interface UserData {
-  name: string,
-  surname: string,
-  phoneNumber: string,
-  createdAt: string,
+  id: number;
+  name: string;
+  surname: string;
+  phoneNumber: string;
+  createdAt: string;
   username: string;
   email: string;
   role: string;
