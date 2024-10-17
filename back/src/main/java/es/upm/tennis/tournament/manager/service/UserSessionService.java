@@ -2,16 +2,13 @@ package es.upm.tennis.tournament.manager.service;
 
 import es.upm.tennis.tournament.manager.model.User;
 import es.upm.tennis.tournament.manager.model.UserSession;
-import es.upm.tennis.tournament.manager.repo.UserRepository;
 import es.upm.tennis.tournament.manager.repo.UserSessionRepository;
-import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
-import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Service

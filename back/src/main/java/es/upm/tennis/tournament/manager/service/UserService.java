@@ -25,7 +25,6 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.Map;
-import java.util.Set;
 
 import static es.upm.tennis.tournament.manager.utils.Endpoints.FRONTEND_URI;
 
@@ -237,5 +236,23 @@ public class UserService {
         }
         userRepository.save(user);
         confirmationCodeRepository.delete(passCode);
+    }
+
+
+    public User getUserData(Authentication authentication) {
+        User user = (User) authentication.getPrincipal();
+        return userRepository.findByUsername(user.getUsername());
+    }
+
+    public UserSession getActiveSession(Authentication authentication) {
+        User user = (User) authentication.getPrincipal();
+        if (user == null) {
+            throw new UserNotFoundException("User not found");
+        }
+        UserSession activeSession = userSessionRepository.findByUser(user);
+        if (activeSession == null) {
+            throw new InvalidCodeException("Invalid or expired session");
+        }
+        return activeSession;
     }
 }

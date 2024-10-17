@@ -1,11 +1,11 @@
 import { cookies } from "next/headers";
+import { NextRequest, NextResponse } from "next/server";
 
-export const getUserSession = async () => {
+export const getUserSession = async (request: NextRequest) => {
   const sessionId = cookies().get('Session-Id');
-  let user = null;
 
   if (!sessionId) {
-    return null;
+    return { valid: false };
   }
   try {
     const res = await fetch(`${process.env.NEXT_PUBLIC_API_URI}/session`, {
@@ -20,11 +20,24 @@ export const getUserSession = async () => {
     });
 
     if (!res.ok) {
-      return null;
+      return { valid: false };
     }
-    user = await res.json();
+    const data = await res.json();
+
+    const response = NextResponse.next();
+
+    response.cookies.set({
+      name: "Session-Id",
+      value: data.sessionId,
+      expires: new Date(data.expirationDate),
+      sameSite: "lax",
+      secure: true,
+      path: "/"
+    })
+
+    return { valid: true, response }
   } catch (error) {
     console.error("Fetch failed: ", error);
+    return { valid: false };
   }
-  return user;
 }
