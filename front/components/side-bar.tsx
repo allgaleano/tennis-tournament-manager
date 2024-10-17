@@ -13,6 +13,7 @@ import AccountButton from '@/components/account-button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useEffect, useState } from 'react';
 import { getClientSideCookie } from '@/lib/getClientSideCookie';
+import { getClientSideUserData } from '@/lib/getClientSideUserData';
 
 const SideBar = () => {
 
@@ -23,24 +24,8 @@ const SideBar = () => {
 
   useEffect(() => {
     const fetchData = async () => {
-      const sessionId = getClientSideCookie("Session-Id");
-      if (!sessionId) return;
-      try {
-        const data = await fetch(`${process.env.NEXT_PUBLIC_API_URI}/session`, {
-          method: "GET",
-          headers: {
-            "Content-Type" : "application/json",
-            "Session-Id" : sessionId
-          }
-        });
-        if (!data) {
-          return;
-        }
-        setUserData(await data.json());
-      } catch (error) {
-        console.error(error);
-      }
-    } 
+      setUserData(await getClientSideUserData());
+    }
     fetchData();
   }, []);
 

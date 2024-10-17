@@ -1,7 +1,10 @@
 package es.upm.tennis.tournament.manager.controller;
 
 
+import es.upm.tennis.tournament.manager.exceptions.InvalidCodeException;
+import es.upm.tennis.tournament.manager.exceptions.UserNotFoundException;
 import es.upm.tennis.tournament.manager.model.User;
+import es.upm.tennis.tournament.manager.model.UserSession;
 import es.upm.tennis.tournament.manager.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -24,13 +27,42 @@ public class UserController {
     private UserService userService;
 
     @GetMapping("/session")
-    public ResponseEntity<Map<String, Object>> getUserInfo(Authentication authentication) {
-        User user = (User) authentication.getPrincipal();
-        return ResponseEntity.status(HttpStatus.OK).body(Map.of(
-                "username", user.getUsername(),
-                "email", user.getEmail(),
-                "role", user.getRole().getType().name()
-        ));
+    public ResponseEntity<Map<String, Object>> validateSession(Authentication authentication) {
+        try {
+            UserSession activeSession = userService.getActiveSession(authentication);
+            return ResponseEntity.ok(Map.of(
+                "sessionId", activeSession.getSessionId(),
+               "expirationDate", activeSession.getExpirationDate()
+            ));
+        } catch (UserNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of(
+                    "error", e.getMessage()
+            ));
+        } catch (InvalidCodeException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of(
+                    "error", e.getMessage()
+            ));
+        }
+    }
+
+    @GetMapping("/userData")
+    public ResponseEntity<Map<String, Object>> getUserData(Authentication authentication) {
+        try {
+            User user = userService.getUserData(authentication);
+            return ResponseEntity.ok(Map.of(
+                    "name", user.getName(),
+                    "surname", user.getSurname(),
+                    "username", user.getUsername(),
+                    "email", user.getEmail(),
+                    "phoneNumber", String.format("+ %s %s", user.getPhonePrefix(), user.getPhoneNumber()),
+                    "role", user.getRole().getType().name(),
+                    "createdAt", user.getCreatedAt()
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of(
+                    "error", "User data fetching failed unexpectedly"
+            ));
+        }
     }
 
     @GetMapping("/admin/users")

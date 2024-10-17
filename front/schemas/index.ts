@@ -48,3 +48,22 @@ export const ConfirmPasswordSchema = z.object({
     message: "Introduce una contraseña"
   })
 })
+
+export const ChangeUsername = z.object({
+  username: z.string().min(1, {
+    message: "Introduce un nombre de usuario válido"
+  })
+})
+
+export const ChangePhoneNumber = z.object({
+  phonePrefix: z
+    .string()
+    .min(1, { message: "Introduce un prefijo" }) // Allow minimum 1 digit for international prefixes
+    .max(5, { message: "Prefijo demasiado largo" }) // Max length of 5 digits for prefixes
+    .regex(/^\d+$/, { message: "El prefijo solo puede contener números" }), // Ensure it's numeric
+  phoneNumber: z
+    .string()
+    .min(9, { message: "Introduce un número de teléfono válido" }) // Minimum 9 digits
+    .max(15, { message: "Número demasiado largo" }) // Maximum 15 digits for international numbers
+    .regex(/^\d+$/, { message: "El número de teléfono solo puede contener números" }), // Ensure it's numeric
+})

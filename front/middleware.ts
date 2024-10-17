@@ -4,7 +4,7 @@ import { getUserSession } from "./lib/getUserSession";
 
 export async function middleware(request: NextRequest) {
     const { nextUrl } = request;
-    const userData = await getUserSession();
+    const { valid, response } = await getUserSession(request);
     
     const isPublicRoute = publicRoutes.includes(nextUrl.pathname);
     const isAuthRoute = authRoutes.includes(nextUrl.pathname);
@@ -14,17 +14,17 @@ export async function middleware(request: NextRequest) {
     }
 
     if (isAuthRoute) {
-        if (userData) {
+        if (valid) {
             return NextResponse.redirect(new URL(DEFAULT_LOGIN_REDIRECT, nextUrl));
         }
         return;
     }
 
-    if (!userData) {
+    if (!valid) {
         return NextResponse.redirect(new URL("/login", nextUrl));
     }
 
-    return;
+    return response || NextResponse.next();
 }
 
 export const config = {
