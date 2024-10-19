@@ -34,3 +34,5 @@ build/
 
 ### Environment Variables ###
 .env
+
+.VSCodeCounter
