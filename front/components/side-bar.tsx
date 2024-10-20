@@ -14,6 +14,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useEffect, useState } from 'react';
 import { getClientSideCookie } from '@/lib/getClientSideCookie';
 import { getClientSideUserData } from '@/lib/getClientSideUserData';
+import Link from 'next/link';
 
 const SideBar = () => {
 
@@ -38,9 +39,9 @@ const SideBar = () => {
         <Button
           variant={pathname === "/dashboard" ? "default" : "outline"}
           className="font-semibold justify-start gap-2"
-          onClick={() => router.push("/dashboard")}
+          asChild
         >
-          <MdInsights /> Dashboard
+          <Link href="/dashboard"> <MdInsights /> Dashboard </Link>
         </Button>
 
         <Button
@@ -92,9 +93,9 @@ const SideBar = () => {
               <Button
                 variant={pathname === "/dashboard" ? "default" : "outline"}
                 className="font-semibold justify-start gap-2 py-6"
-                onClick={() => router.push("/dashboard")}
+                asChild
               >
-                <MdInsights /> Dashboard
+                <Link href="/dashboard"> <MdInsights /> Dashboard </Link>
               </Button>
             </SheetClose>
             <Button
