@@ -10,6 +10,7 @@ import { FaUser } from "react-icons/fa";
 import { UserData } from '@/types';
 import { IoMdSettings } from "react-icons/io";
 import { cn } from '@/lib/utils';
+import Link from 'next/link';
 
 interface AccountButtonInterface {
   userData: UserData,
@@ -74,9 +75,9 @@ const AccountButton = ({ userData, isMobile, isSelected } : AccountButtonInterfa
       <DropdownMenuContent className={cn(isMobile ? "w-80" : "w-52")}>
         <DropdownMenuItem 
           className="font-semibold gap-2"
-          onClick={() => router.push("/settings")}
+          asChild
         >
-          <IoMdSettings /> Ajustes de perfil
+          <Link href="/settings"><IoMdSettings /> Ajustes de perfil </Link>
         </DropdownMenuItem>
         <DropdownMenuSeparator></DropdownMenuSeparator>
         <DropdownMenuItem 

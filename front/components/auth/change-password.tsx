@@ -62,7 +62,7 @@ const ChangePassword = () => {
       title="Cambiar contraseña"
       label="Introduce tu email para cambiar de contraseña"
       backButtonLabel="Volver"
-      backButtonHref="/login"
+      backButtonHref="/settings"
     >
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">

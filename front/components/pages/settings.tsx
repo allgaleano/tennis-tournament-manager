@@ -12,6 +12,7 @@ import { deleteUserAccount } from "@/lib/deleteUserAccount";
 import { getClientSideCookie } from "@/lib/getClientSideCookie";
 import { useToast } from "@/hooks/use-toast";
 import { IoMdSettings } from "react-icons/io";
+import Link from "next/link";
 
 const Settings = () => {
   const [userData, setUserData] = useState<UserData>();
@@ -99,8 +100,11 @@ const Settings = () => {
             <Button 
               variant="outline" 
               className="font-semibold"
-              onClick={() => router.push("/change-password")}
-            >Cambiar contraseña</Button>
+              asChild
+            >
+              <Link href="/change-password">Cambiar contraseña</Link>
+              
+            </Button>
 
             <Dialog>
               <DialogTrigger asChild>
