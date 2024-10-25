@@ -8,16 +8,19 @@ import { ChangeUsernameSchema } from "@/schemas";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { UserData } from "@/types";
 import { useToast } from "@/hooks/use-toast";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Form, FormControl, FormField, FormItem, FormMessage } from "@/components/ui/form";
 import { Input } from "./ui/input";
 import { useState } from "react";
+import { getClientSideCookie } from "@/lib/getClientSideCookie";
+import { useRouter } from "next/navigation";
 
 const ChangeUsernameDialog = ({ userData } : { userData : UserData | undefined }) => {
-
+  
   if (!userData) return;
 
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast(); 
+  const router = useRouter();
 
   const form = useForm<z.infer<typeof ChangeUsernameSchema>>({
     resolver: zodResolver(ChangeUsernameSchema),
@@ -27,10 +30,54 @@ const ChangeUsernameDialog = ({ userData } : { userData : UserData | undefined }
   })
 
   const onSubmit = async (values: z.infer<typeof ChangeUsernameSchema>) => {
-    toast({
-      variant: "success",
-      title: values.username
-    })
+    setIsLoading(true);
+    const id = userData?.id;
+    const sessionId = getClientSideCookie("Session-Id");
+    if ((!id || !sessionId)) {
+      toast({
+        variant: "destructive",
+        title: "¡Algo ha ido mal!",
+        description: "Intentalo de nuevo más tarde"
+      })
+      return;
+    }
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URI}/users/${id}`, {
+          method: "PUT",
+          headers: {
+            "Content-Type" : "application/json",
+            "Session-Id" : sessionId
+          }, 
+          body: JSON.stringify({ username: values.username })  
+      });
+      if (response.ok) {
+        toast({
+          variant: "success",
+          title: "Nombre de usuario cambiado con éxito"
+        });
+        return;
+      } else if (response.status === 409){
+        toast({
+          variant: "destructive",
+          title: "Nombre de usuario en uso",
+          description: "Prueba con otro nombre de usuario"
+        });
+      } else {
+        toast({
+          variant: "destructive",
+          title: "¡Algo ha ido mal!",
+          description: "Inténtalo de nuevo más tarde"
+        });  
+      }
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "¡Algo ha ido mal!",
+        description: "Inténtalo de nuevo más tarde"
+      });
+      console.log(error);
+    }
+    setIsLoading(false);
   }
 
   return (

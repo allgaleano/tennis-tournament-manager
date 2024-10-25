@@ -10,7 +10,7 @@ export const getClientSideUserData = async () => {
       headers: {
         "Content-Type" : "application/json",
         "Session-Id" : sessionId
-      }
+      },
     });
     if (!data) {
       return;

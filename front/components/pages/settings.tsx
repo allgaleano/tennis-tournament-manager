@@ -62,14 +62,14 @@ const Settings = () => {
         toast({
           variant: "destructive",
           title: "¡Algo ha ido mal!",
-          description: "No se pudo eliminar tu cuenta, intentalo de nuevo más tarde."
+          description: "No se pudo eliminar tu cuenta, Inténtalo de nuevo más tarde."
         });
       }
     } catch (error) {
       toast({
         variant: "destructive",
         title: "¡Algo ha ido mal!",
-        description: "Error de red, intentalo de nuevo más tarde."
+        description: "Error de red, Inténtalo de nuevo más tarde."
       });
       console.error("Error while deleting user account:", error);
     }

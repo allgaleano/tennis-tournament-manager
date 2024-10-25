@@ -1,7 +1,9 @@
 package es.upm.tennis.tournament.manager.controller;
 
 
+import es.upm.tennis.tournament.manager.DTO.UserDTO;
 import es.upm.tennis.tournament.manager.exceptions.InvalidCodeException;
+import es.upm.tennis.tournament.manager.exceptions.UserAlreadyExistsException;
 import es.upm.tennis.tournament.manager.exceptions.UserNotFoundException;
 import es.upm.tennis.tournament.manager.model.User;
 import es.upm.tennis.tournament.manager.model.UserSession;
@@ -80,6 +82,18 @@ public class UserController {
             return ResponseEntity.ok("User deleted successfully");
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
+        }
+    }
+
+    @PutMapping("/users/{id}")
+    public ResponseEntity<String> modifyUser(@PathVariable Long id, @RequestHeader("Session-Id") String sessionId, @RequestBody UserDTO userDTO) {
+        try {
+            userService.modifyUser(id, sessionId, userDTO);
+            return ResponseEntity.ok("User modified successfully");
+        } catch (UserAlreadyExistsException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
     }
 }
