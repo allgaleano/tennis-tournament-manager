@@ -127,10 +127,6 @@ public class UserService {
         emailService.sendEmail(user.getEmail(), "Verifica tu cuenta", emailBody);
     }
 
-    public User findByUsername(String username) {
-        return userRepository.findByUsername(username);
-    }
-
 
     public Page<User> getAllUsers(Pageable pageable) {
         return userRepository.findAll(pageable);
@@ -143,13 +139,17 @@ public class UserService {
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
         UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-        User user = findByUsername(userDetails.getUsername());
+        User user = userRepository.findByUsername(userDetails.getUsername());
 
         if (!user.isEnabled()) {
             throw new AccountNotEnabledException("Confirm your email to activate your account");
         }
+        UserSession session = sessionService.findByUser(user);
+        if (session != null) {
+            sessionService.invalidateSession(session.getSessionId());
+        }
 
-        UserSession session = sessionService.createSession(user);
+        session = sessionService.createSession(user);
 
         return Map.of(
                 "sessionId", session.getSessionId(),
@@ -262,26 +262,62 @@ public class UserService {
         if (user.isEmpty()) {
             throw new UserNotFoundException("User not found");
         }
+
         UserSession userSession = userSessionRepository.findBySessionId(sessionId);
-        if (userSession == null) {
-            logger.info("Invalid session");
-            throw new InvalidCodeException("Invalid or expired session");
-        }
-        if (userSession.getExpirationDate().isBefore(Instant.now())) {
-            logger.info("Expired session");
-            throw new InvalidCodeException("Invalid or expired session");
-        }
-        if (!user.get().isEnabled()) {
-            throw new AccountNotEnabledException("Account not enabled");
-        }
-        if (!user.get().getId().equals(userSession.getUser().getId())) {
-            throw new UnauthorizedUserAction("Unauthorized to perform this action");
-        }
+
+        validateUserPermission(user.get(), userSession);
+
         userSessionRepository.delete(userSession);
         ConfirmationCode code = confirmationCodeRepository.findByUser(user.get());
         if (code != null) {
             confirmationCodeRepository.delete(code);
         }
         userRepository.delete(user.get());
+    }
+
+    public void modifyUser(Long id, String sessionId, UserDTO userDTO) {
+        Optional<User> user = userRepository.findById(id);
+        if (user.isEmpty()) {
+            throw  new UserNotFoundException("User not found");
+        }
+
+        UserSession userSession = userSessionRepository.findBySessionId(sessionId);
+
+        validateUserPermission(user.get(), userSession);
+
+        User existingUser = userRepository.findByUsername(userDTO.getUsername());
+        if (existingUser != null) {
+            throw new UserAlreadyExistsException("Username already taken");
+        }
+        if (userDTO.getUsername() != null)
+            user.get().setUsername(userDTO.getUsername());
+
+        if (userDTO.getName() != null)
+            user.get().setName(userDTO.getName());
+
+        if (userDTO.getSurname() != null)
+            user.get().setSurname(userDTO.getSurname());
+
+        if (userDTO.getPhonePrefix() != null && userDTO.getPhoneNumber() != null) {
+            user.get().setPhonePrefix(userDTO.getPhonePrefix());
+            user.get().setPhoneNumber(userDTO.getPhoneNumber());
+        }
+
+        userRepository.save(user.get());
+    }
+
+    private void validateUserPermission (User user, UserSession userSession) {
+        if (userSession == null || userSession.getExpirationDate().isBefore(Instant.now())) {
+            throw new InvalidCodeException("Invalid or expired session");
+        }
+
+        boolean isAdmin = user.getRole().getType().name().equals("ADMIN");
+        if (!isAdmin && !user.isEnabled()) {
+            throw new AccountNotEnabledException("Account not enabled");
+        }
+
+        if (!isAdmin && !user.getId().equals(userSession.getUser().getId())) {
+            throw new UnauthorizedUserAction("Unauthorized to perform this action");
+        }
     }
 }

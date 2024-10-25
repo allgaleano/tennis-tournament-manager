@@ -61,5 +61,5 @@ public class UserSessionService {
         return userSessionRepository.findBySessionId(sessionId);
     }
 
-
+    public UserSession findByUser(User user) { return userSessionRepository.findByUser(user); }
 }
