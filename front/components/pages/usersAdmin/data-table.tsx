@@ -47,11 +47,11 @@ export function DataTable<TData, TValue>({
   };
 
   return (
-    <div className="w-full flex flex-col justify-start items-center m-10 gap-8">
+    <div className="w-full flex flex-col justify-center items-center m-10 gap-8">
       <h1 className="font-semibold text-2xl flex items-center gap-2">
         <FaUserShield /> Usuarios
       </h1>
-      <div>
+      <div className="w-full">
         <div className="rounded border">
           <Table>
             <TableHeader>
@@ -59,7 +59,10 @@ export function DataTable<TData, TValue>({
                 <TableRow key={headerGroup.id}>
                   {headerGroup.headers.map((header) => {
                     return (
-                      <TableHead key={header.id}>
+                      <TableHead 
+                        key={header.id}
+                        className="px-4 py-2 text-left min-w-max whitespace-nowrap"
+                      >
                         {header.isPlaceholder
                           ? null
                           : flexRender(
@@ -80,7 +83,7 @@ export function DataTable<TData, TValue>({
                     data-state={row.getIsSelected() && "selected"}
                   >
                     {row.getVisibleCells().map((cell) => (
-                      <TableCell key={cell.id}>
+                      <TableCell key={cell.id} className="whitespace-nowrap">
                         {flexRender(cell.column.columnDef.cell, cell.getContext())}
                       </TableCell>
                     ))}
@@ -96,26 +99,28 @@ export function DataTable<TData, TValue>({
             </TableBody>
           </Table>
         </div>
-        <div className="flex items-center justify-start space-x-2 py-4">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => handleNavigation(page - 1)}
-            disabled={page <= 0}
-          >
-            Anterior
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => handleNavigation(page + 1)}
-            disabled={page >= totalPages - 1}
-          >
-            Siguiente
-          </Button>
-        </div>
-        <div>
-          Página {page + 1} de {totalPages}
+        <div className="flex items-center justify-between space-x-2 py-4 px-2">
+          <div className="space-x-4">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handleNavigation(page - 1)}
+              disabled={page <= 0}
+            >
+              Anterior
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handleNavigation(page + 1)}
+              disabled={page >= totalPages - 1}
+            >
+              Siguiente
+            </Button>
+          </div>
+          <div>
+            <p className="text-sm text-primary/80">Página {page + 1} de {totalPages}</p>
+          </div>
         </div>
       </div>
     </div>
