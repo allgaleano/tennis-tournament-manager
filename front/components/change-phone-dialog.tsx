@@ -12,6 +12,8 @@ import { UserData } from "@/types";
 import { z } from "zod";
 import { useState } from "react";
 import { extractPhoneDetails } from "@/lib/extractPhoneDetails";
+import { getClientSideCookie } from "@/lib/getClientSideCookie";
+import { changePhoneNumber } from "@/lib/changePhoneNumber";
 
 const ChangePhoneDialog = ({ userData } : { userData : UserData | undefined }) => {
 
@@ -31,10 +33,49 @@ const ChangePhoneDialog = ({ userData } : { userData : UserData | undefined }) =
   })
 
   const onSubmit = async (values: z.infer<typeof ChangePhoneNumberSchema>) => {
-    toast({
-      variant: "success",
-      title: values.phoneNumber
-    })
+    setIsLoading(true);
+    const id = userData?.id;
+    const sessionId = getClientSideCookie("Session-Id");
+    if ((!id || !sessionId)) {
+      toast({
+        variant: "destructive",
+        title: "¡Algo ha ido mal!",
+        description: "Intentalo de nuevo más tarde"
+      })
+      setIsLoading(false);
+      return;
+    }
+    try {
+      const response = await changePhoneNumber({
+        userId: id,
+        sessionId: sessionId,
+        newPrefix: values.phonePrefix,
+        newPhoneNumber: values.phoneNumber
+      });
+
+      if (response.success) {
+        toast({
+          variant: "success",
+          title: "Número de teléfono cambiado con éxito"
+        });
+        setIsLoading(false);
+        return;
+      } else {
+        toast({
+          variant: "destructive",
+          title: "¡Algo ha ido mal!",
+          description: "Inténtalo de nuevo más tarde"
+        }); 
+      }
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "¡Algo ha ido mal!",
+        description: "Inténtalo de nuevo más tarde"
+      });
+      console.log(error);
+    }
+    setIsLoading(false);
   }
 
   return (

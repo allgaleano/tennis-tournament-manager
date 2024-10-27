@@ -19,7 +19,7 @@ public class UserSessionService {
     @Autowired
     private UserSessionRepository userSessionRepository;
 
-    private static final int SESSION_DURATION_MINUTES = 30;
+    private static final int SESSION_DURATION_MINUTES = 1440;
 
     public UserSession createSession(User user) { //
 

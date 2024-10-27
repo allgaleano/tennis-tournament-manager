@@ -12,6 +12,7 @@ import { Form, FormControl, FormField, FormItem, FormMessage } from "@/component
 import { Input } from "./ui/input";
 import { useState } from "react";
 import { getClientSideCookie } from "@/lib/getClientSideCookie";
+import { changeUsername } from "@/lib/changeUsername";
 import { useRouter } from "next/navigation";
 
 const ChangeUsernameDialog = ({ userData } : { userData : UserData | undefined }) => {
@@ -20,7 +21,6 @@ const ChangeUsernameDialog = ({ userData } : { userData : UserData | undefined }
 
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast(); 
-  const router = useRouter();
 
   const form = useForm<z.infer<typeof ChangeUsernameSchema>>({
     resolver: zodResolver(ChangeUsernameSchema),
@@ -39,24 +39,24 @@ const ChangeUsernameDialog = ({ userData } : { userData : UserData | undefined }
         title: "¡Algo ha ido mal!",
         description: "Intentalo de nuevo más tarde"
       })
+      setIsLoading(false);
       return;
     }
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URI}/users/${id}`, {
-          method: "PUT",
-          headers: {
-            "Content-Type" : "application/json",
-            "Session-Id" : sessionId
-          }, 
-          body: JSON.stringify({ username: values.username })  
+      const response = await changeUsername({
+        userId: id,
+        sessionId: sessionId,
+        newUsername: values.username
       });
-      if (response.ok) {
+
+      if (response.success) {
         toast({
           variant: "success",
           title: "Nombre de usuario cambiado con éxito"
         });
+        setIsLoading(false);
         return;
-      } else if (response.status === 409){
+      } else if (response.error === "username-taken"){
         toast({
           variant: "destructive",
           title: "Nombre de usuario en uso",

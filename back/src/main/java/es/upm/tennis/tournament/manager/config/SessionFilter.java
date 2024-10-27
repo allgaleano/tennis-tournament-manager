@@ -44,11 +44,9 @@ public class SessionFilter extends OncePerRequestFilter {
         String sessionId = request.getHeader("Session-Id");
 
         if (sessionId != null && sessionService.validateSession(sessionId)) {
-            logger.info("Valid session");
             UserSession session = sessionService.findBySessionId(sessionId);
             User user = session.getUser();
 
-            logger.info("User role: {}", user.getRole().getType().name());
 
             var authorities = new SimpleGrantedAuthority("ROLE_" + user.getRole().getType().name());
 

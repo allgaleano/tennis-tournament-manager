@@ -285,12 +285,13 @@ public class UserService {
 
         validateUserPermission(user.get(), userSession);
 
-        User existingUser = userRepository.findByUsername(userDTO.getUsername());
-        if (existingUser != null) {
-            throw new UserAlreadyExistsException("Username already taken");
-        }
-        if (userDTO.getUsername() != null)
+        if (userDTO.getUsername() != null) {
+            User existingUser = userRepository.findByUsername(userDTO.getUsername());
+            if (existingUser != null) {
+                throw new UserAlreadyExistsException("Username already taken");
+            }
             user.get().setUsername(userDTO.getUsername());
+        }
 
         if (userDTO.getName() != null)
             user.get().setName(userDTO.getName());

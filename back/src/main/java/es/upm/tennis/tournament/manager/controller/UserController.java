@@ -67,14 +67,6 @@ public class UserController {
         }
     }
 
-    @GetMapping("/admin/users")
-    public ResponseEntity<PagedModel<EntityModel<User>>> getAllUsers(Pageable pageable, PagedResourcesAssembler<User> pagedResourcesAssembler) {
-        Page<User> users = userService.getAllUsers(pageable);
-
-        PagedModel<EntityModel<User>> pagedModel = pagedResourcesAssembler.toModel(users, EntityModel::of);
-        return ResponseEntity.ok(pagedModel);
-    }
-
     @DeleteMapping("/users/{id}")
     public ResponseEntity<String> deleteUser(@PathVariable Long id, @RequestHeader("Session-Id") String sessionId) {
         try {
