@@ -39,7 +39,7 @@ public class User {
     @Temporal(TemporalType.TIMESTAMP)
     private LocalDateTime createdAt;
 
-    @OneToOne(targetEntity = Role.class, fetch = FetchType.EAGER)
+    @ManyToOne(targetEntity = Role.class, fetch = FetchType.EAGER)
     @JoinColumn(nullable = false, name = "role")
     private Role role;
 }

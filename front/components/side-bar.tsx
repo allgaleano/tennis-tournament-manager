@@ -56,8 +56,9 @@ const SideBar = () => {
           <Button
             variant={pathname === "/users" ? "default" : "outline"}
             className="font-semibold justify-start gap-2"
+            asChild
           >
-            <FaUserShield /> Usuarios
+            <Link href="/users"> <FaUserShield /> Usuarios </Link>
           </Button>
         )}
         <div className="flex-grow"></div>
@@ -109,8 +110,9 @@ const SideBar = () => {
               <Button
                 variant={pathname === "/users" ? "default" : "outline"}
                 className="font-semibold justify-start gap-2 py-6"
+                asChild
               >
-                <FaUserShield /> Usuarios
+                <Link href="/users"> <FaUserShield /> Usuarios </Link>
               </Button>
             )}
             <div className="flex-grow"></div>

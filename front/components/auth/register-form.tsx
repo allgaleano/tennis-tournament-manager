@@ -53,7 +53,13 @@ const RegisterForm = () => {
             title: "El usuario ya existe",
             description: "Cambia el nombre de usuario o el email e inténtalo de nuevo"
           });
-        } 
+        } else {
+          toast({
+            variant: "destructive",
+            title: "¡Algo ha salido mal!",
+            description: "Inténtalo de nuevo más tarde"
+          })
+        }
         setIsLoading(false);
         return;
       }
@@ -63,6 +69,7 @@ const RegisterForm = () => {
         title: "Confirma tu email",
         description: "Comprueba tu bandeja de entrada y verifica tu cuenta"
       })
+      form.reset();
     } catch(error) {
       toast({
         variant: "destructive",
