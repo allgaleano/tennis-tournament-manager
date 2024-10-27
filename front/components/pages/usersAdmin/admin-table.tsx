@@ -23,7 +23,7 @@ async function getData(page: number, size: number): Promise<{
       }
     });
     if (!response.ok) {
-      return { error: `Error: ${response.status}: ${response.statusText}`}
+      return { error: "No estás autorizado para ver este contenido"}
     }
     const result: UserDisplayList = await response.json();
     return {
@@ -45,7 +45,7 @@ export default async function AdminTable({
   searchParams: { page?: string; size?: string };
 }) {
   const page = parseInt(searchParams?.page ?? '0', 10);
-  const size = parseInt(searchParams?.size ?? '10', 10);
+  const size = parseInt(searchParams?.size ?? '20', 10);
 
   const result = await getData(page, size);
 
@@ -60,7 +60,7 @@ export default async function AdminTable({
   const { data, totalPages, currentPage } = result;
 
   return (
-    <div className="container mx-auto py-10">
+    <div className="flex justify-center w-full items-start overflow-hidden mx-4">
       <DataTable 
         columns={columns} 
         data={data}

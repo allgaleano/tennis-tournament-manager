@@ -1,5 +1,3 @@
-
-import { Toaster } from '@/components/ui/toaster';
 import React from 'react'
 
 const AuthLayout = ({ children }: { children: React.ReactNode }) => {
@@ -8,7 +6,6 @@ const AuthLayout = ({ children }: { children: React.ReactNode }) => {
         <div className="min-h-screen flex items-center justify-center">
             {children}
         </div>
-        <Toaster />
     </section>
   )
 }

@@ -1,4 +1,5 @@
 "use client";
+import { formateDateToSpanish } from "@/lib/formatDateToSpanish";
 import { cn } from "@/lib/utils";
 import { User } from "@/types";
 import { ColumnDef } from "@tanstack/react-table"
@@ -18,7 +19,12 @@ export const columns: ColumnDef<User>[] = [
   },
   {
     accessorKey: "createdAt",
-    header: "Fecha de creación"
+    header: "Fecha de creación",
+    cell: ({ row }) => {
+      return (
+        <div>{formateDateToSpanish(row.getValue("createdAt"))}</div>
+      )
+    }
   },
   {
     accessorKey: "enabledAccount",
