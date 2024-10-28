@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { authRoutes, DEFAULT_LOGIN_REDIRECT, publicRoutes } from "./routes";
-import { getUserData } from "./lib/getUserData";
+import { getUserSession } from "./lib/getUserSession";
 
 export async function middleware(request: NextRequest) {
     const { nextUrl } = request;
-    const userData = await getUserData();
+    const { valid, response } = await getUserSession();
     
     const isPublicRoute = publicRoutes.includes(nextUrl.pathname);
     const isAuthRoute = authRoutes.includes(nextUrl.pathname);
@@ -14,17 +14,17 @@ export async function middleware(request: NextRequest) {
     }
 
     if (isAuthRoute) {
-        if (userData) {
+        if (valid) {
             return NextResponse.redirect(new URL(DEFAULT_LOGIN_REDIRECT, nextUrl));
         }
         return;
     }
 
-    if (!userData) {
+    if (!valid) {
         return NextResponse.redirect(new URL("/login", nextUrl));
     }
 
-    return;
+    return response || NextResponse.next();
 }
 
 export const config = {

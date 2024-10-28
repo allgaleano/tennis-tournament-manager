@@ -23,9 +23,8 @@ import org.springframework.stereotype.Service;
 
 import java.time.Duration;
 import java.time.Instant;
-import java.time.LocalDateTime;
 import java.util.Map;
-import java.util.Set;
+import java.util.Optional;
 
 import static es.upm.tennis.tournament.manager.utils.Endpoints.FRONTEND_URI;
 
@@ -59,34 +58,47 @@ public class UserService {
 
     public void registerUser(UserDTO userDTO) {
         logger.info("Registering user");
-        User userExists = userRepository.findByEmail(userDTO.getEmail());
+        User existingUser = userRepository.findByEmail(userDTO.getEmail());
 
-        if (userExists != null) {
-            if (!userExists.isEnabled() &&
-                    Duration.between(LocalDateTime.now(), userExists.getCreatedAt())
-                            .compareTo(Duration.ofMinutes(30)) > 0)
-            {
-                ConfirmationCode existingUserCode = confirmationCodeRepository.findByUser(userExists);
+        if (existingUser != null) {
+            ConfirmationCode existingUserCode = confirmationCodeRepository.findByUser(existingUser);
+
+            boolean isCodeExpired = existingUserCode != null &&
+                    Duration.between(existingUserCode.getExpirationDate(), Instant.now())
+                            .compareTo(Duration.ZERO) < 0;
+
+            boolean isOlderThanOneDay = Duration.between(existingUser.getCreatedAt(), Instant.now())
+                    .compareTo(Duration.ofMinutes(1440)) > 0;
+
+            if (!existingUser.isConfirmed() && isCodeExpired && isOlderThanOneDay) {
                 confirmationCodeRepository.delete(existingUserCode);
-                userRepository.delete(userExists);
+                userRepository.delete(existingUser);
             } else {
+                logger.info("Account already exists");
                 throw new EmailAlreadyExistsException("An account associated to that email already exists");
             }
         }
 
-        userExists = userRepository.findByUsername(userDTO.getUsername());
-        if (userExists != null) throw new UserAlreadyExistsException("Username already taken");
+        existingUser = userRepository.findByUsername(userDTO.getUsername());
+        if (existingUser != null) {
+            logger.info("Username taken");
+            throw new UserAlreadyExistsException("Username already taken");
+        }
 
 
         User user = new User();
         user.setUsername(userDTO.getUsername());
         user.setEmail(userDTO.getEmail());
-        user.setEnabled(false);
-        user.setCreatedAt(LocalDateTime.now());
+        user.setName(userDTO.getName());
+        user.setSurname(userDTO.getSurname());
+        user.setPhonePrefix(userDTO.getPhonePrefix());
+        user.setPhoneNumber(userDTO.getPhoneNumber());
+        user.setConfirmed(false);
+        user.setCreatedAt(Instant.now());
         user.setPassword(passwordEncoder.encode(userDTO.getPassword()));
 
         Role userRole = roleRepository.findByType(ERole.USER);
-        user.setRoles(Set.of(userRole));
+        user.setRole(userRole);
 
         userRepository.save(user);
 
@@ -97,6 +109,7 @@ public class UserService {
         try {
             sendConfirmationEmail(user, confirmationCode.getCode(), validMinutes);
         } catch (Exception e) {
+            logger.info("Error sending the email");
             throw new EmailNotSentException("Error sending the confirmation email");
         }
     }
@@ -118,10 +131,6 @@ public class UserService {
         emailService.sendEmail(user.getEmail(), "Verifica tu cuenta", emailBody);
     }
 
-    public User findByUsername(String username) {
-        return userRepository.findByUsername(username);
-    }
-
 
     public Page<User> getAllUsers(Pageable pageable) {
         return userRepository.findAll(pageable);
@@ -134,13 +143,22 @@ public class UserService {
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
         UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-        User user = findByUsername(userDetails.getUsername());
+        User user = userRepository.findByUsername(userDetails.getUsername());
 
-        if (!user.isEnabled()) {
-            throw new AccountNotEnabledException("Confirm your email to activate your account");
+        if (!user.isConfirmed()) {
+            throw new AccountNotConfirmedException("Confirm your email to activate your account");
         }
 
-        UserSession session = sessionService.createSession(user);
+        if (!user.isEnabled()) {
+            throw new AccountDisabledException("Account disabled");
+        }
+
+        UserSession session = sessionService.findByUser(user);
+        if (session != null) {
+            sessionService.invalidateSession(session.getSessionId());
+        }
+
+        session = sessionService.createSession(user);
 
         return Map.of(
                 "sessionId", session.getSessionId(),
@@ -162,11 +180,11 @@ public class UserService {
 
         User user = confirmationCode.getUser();
 
-        if (user.isEnabled()) {
+        if (user.isConfirmed()) {
             throw new InvalidCodeException("User already verified");
         }
 
-        user.setEnabled(true);
+        user.setConfirmed(true);
         userRepository.save(user);
         confirmationCodeRepository.delete(confirmationCode);
     }
@@ -228,5 +246,107 @@ public class UserService {
         }
         userRepository.save(user);
         confirmationCodeRepository.delete(passCode);
+    }
+
+
+    public User getUserData(Authentication authentication) {
+        User user = (User) authentication.getPrincipal();
+        return userRepository.findByUsername(user.getUsername());
+    }
+
+    public UserSession getActiveSession(Authentication authentication) {
+        User user = (User) authentication.getPrincipal();
+        if (user == null) {
+            throw new UserNotFoundException("User not found");
+        }
+        UserSession activeSession = userSessionRepository.findByUser(user);
+        if (activeSession == null) {
+            throw new InvalidCodeException("Invalid or expired session");
+        }
+        return activeSession;
+    }
+
+    public void deleteUser(Long id, String sessionId) {
+        Optional<User> user = userRepository.findById(id);
+        if (user.isEmpty()) {
+            throw new UserNotFoundException("User not found");
+        }
+
+        UserSession userSession = userSessionRepository.findBySessionId(sessionId);
+
+        validateUserPermission(user.get(), userSession);
+
+        userSessionRepository.delete(userSession);
+        ConfirmationCode code = confirmationCodeRepository.findByUser(user.get());
+        if (code != null) {
+            confirmationCodeRepository.delete(code);
+        }
+        userRepository.delete(user.get());
+    }
+
+    public void modifyUser(Long id, String sessionId, UserDTO userDTO) {
+        Optional<User> user = userRepository.findById(id);
+        if (user.isEmpty()) {
+            throw  new UserNotFoundException("User not found");
+        }
+
+        UserSession userSession = userSessionRepository.findBySessionId(sessionId);
+
+        validateUserPermission(user.get(), userSession);
+
+        if (userDTO.getUsername() != null) {
+            User existingUser = userRepository.findByUsername(userDTO.getUsername());
+            if (existingUser != null) {
+                throw new UserAlreadyExistsException("Username already taken");
+            }
+            user.get().setUsername(userDTO.getUsername());
+        }
+
+        if (userDTO.getName() != null)
+            user.get().setName(userDTO.getName());
+
+        if (userDTO.getSurname() != null)
+            user.get().setSurname(userDTO.getSurname());
+
+        if (userDTO.getPhonePrefix() != null && userDTO.getPhoneNumber() != null) {
+            user.get().setPhonePrefix(userDTO.getPhonePrefix());
+            user.get().setPhoneNumber(userDTO.getPhoneNumber());
+        }
+        boolean isAdmin = userSession.getUser().getRole().getType().name().equals("ADMIN");
+        if (isAdmin) {
+            if (userDTO.getRole() != null) {
+                if (user.get().getRole().getType().name().equals(userDTO.getRole())) {
+                    throw new SameRoleException("Cannot change to same role");
+                }
+                ERole roleType = userDTO.getRole().equals("ADMIN") ? ERole.ADMIN : ERole.USER;
+                Role role = roleRepository.findByType(roleType);
+                user.get().setRole(role);
+            }
+
+            if (userDTO.getAccountState() != null) {
+                boolean enabledAccount = userDTO.getAccountState().equals("enabledAccount");
+                if (user.get().isEnabled() && enabledAccount) {
+                    throw new SameAccountStateException("Cannot change to same account state");
+                }
+                user.get().setEnabled(enabledAccount);
+            }
+        }
+
+        userRepository.save(user.get());
+    }
+
+    private void validateUserPermission (User user, UserSession userSession) {
+        if (userSession == null || userSession.getExpirationDate().isBefore(Instant.now())) {
+            throw new InvalidCodeException("Invalid or expired session");
+        }
+        boolean isAdmin = userSession.getUser().getRole().getType().name().equals("ADMIN");
+
+        if (!isAdmin && !user.isConfirmed()) {
+            throw new AccountNotConfirmedException("Account not confirmed");
+        }
+
+        if (!isAdmin && !user.getId().equals(userSession.getUser().getId())) {
+            throw new UnauthorizedUserAction("Unauthorized to perform this action");
+        }
     }
 }
