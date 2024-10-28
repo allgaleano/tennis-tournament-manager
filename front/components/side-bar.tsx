@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from '@/components/ui/button'
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import { BiSolidTennisBall } from "react-icons/bi";
 import { FaUserShield } from "react-icons/fa6";
 import { Sheet, SheetClose, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';

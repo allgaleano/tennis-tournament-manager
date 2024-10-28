@@ -1,7 +1,7 @@
 "use client";
 
 import { useToast } from "@/hooks/use-toast";
-import { ChangePhoneNumberSchema, ChangeUsernameSchema } from "@/schemas";
+import { ChangePhoneNumberSchema } from "@/schemas";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "./ui/dialog";
@@ -17,13 +17,11 @@ import { changePhoneNumber } from "@/lib/changePhoneNumber";
 
 const ChangePhoneDialog = ({ userData } : { userData : UserData | undefined }) => {
 
-  if (!userData) return;
-
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast(); 
 
-  const { prefix, phoneNumber } = extractPhoneDetails(userData.phoneNumber);
-
+  const { prefix, phoneNumber } = extractPhoneDetails(userData?.phoneNumber);
+  
   const form = useForm<z.infer<typeof ChangePhoneNumberSchema>>({
     resolver: zodResolver(ChangePhoneNumberSchema),
     defaultValues: {
@@ -77,6 +75,8 @@ const ChangePhoneDialog = ({ userData } : { userData : UserData | undefined }) =
     }
     setIsLoading(false);
   }
+
+  if (!userData) return;
 
   return (
     <Dialog>

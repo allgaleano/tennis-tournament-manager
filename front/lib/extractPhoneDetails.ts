@@ -1,4 +1,6 @@
-export function extractPhoneDetails(phoneString: string) {
+export function extractPhoneDetails(phoneString: string | undefined) {
+  if (!phoneString) return { error: "Invalid phone number"}
+
   const phonePattern = /^\+\s*(\d+)\s+(\d+)$/;
   const match = phoneString.match(phonePattern);
 
