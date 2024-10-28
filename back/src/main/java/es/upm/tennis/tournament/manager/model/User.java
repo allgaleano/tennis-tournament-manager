@@ -1,13 +1,10 @@
 package es.upm.tennis.tournament.manager.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.time.LocalDateTime;
-import java.util.HashSet;
-import java.util.Set;
+import java.time.Instant;
 
 @Entity
 @Getter
@@ -24,17 +21,29 @@ public class User {
     @Column(unique = true, nullable = false)
     private String email;
 
+    private String name;
+
+    private String surname;
+
+    @Column(length = 5)
+    private String phonePrefix;
+
+    @Column(length = 15)
+    private String phoneNumber;
+
     @Column(nullable = false)
     private String password;
 
-    private boolean isEnabled;
+    @Column(nullable = false)
+    private boolean isConfirmed;
+
+    @Column(nullable = false)
+    private boolean isEnabled = true;
 
     @Temporal(TemporalType.TIMESTAMP)
-    private LocalDateTime createdAt;
+    private Instant createdAt;
 
-    @ManyToMany(fetch = FetchType.EAGER)
-    @JoinTable(name = "user_roles",
-            joinColumns = @JoinColumn(name = "user_id"),
-            inverseJoinColumns = @JoinColumn(name = "role_id"))
-    private Set<Role> roles = new HashSet<>();
+    @ManyToOne(targetEntity = Role.class, fetch = FetchType.EAGER)
+    @JoinColumn(nullable = false, name = "role")
+    private Role role;
 }
