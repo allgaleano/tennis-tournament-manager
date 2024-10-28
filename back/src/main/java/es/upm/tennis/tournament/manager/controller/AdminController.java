@@ -32,6 +32,7 @@ public class AdminController {
             dto.setCreatedAt(user.getCreatedAt().toString());
             dto.setUsername(user.getUsername());
             dto.setEmail(user.getEmail());
+            dto.setConfirmedAccount(user.isConfirmed());
             dto.setEnabledAccount(user.isEnabled());
             dto.setRole(user.getRole().getType().name());
             return dto;

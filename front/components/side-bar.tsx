@@ -12,14 +12,12 @@ import Image from 'next/image';
 import AccountButton from '@/components/account-button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useEffect, useState } from 'react';
-import { getClientSideCookie } from '@/lib/getClientSideCookie';
 import { getClientSideUserData } from '@/lib/getClientSideUserData';
 import Link from 'next/link';
 
 const SideBar = () => {
 
   const pathname = usePathname();
-  const router = useRouter();
 
   const [ userData, setUserData ] = useState<UserData>();
 

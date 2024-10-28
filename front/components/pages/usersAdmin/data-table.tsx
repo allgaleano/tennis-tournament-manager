@@ -51,7 +51,7 @@ export function DataTable<TData, TValue>({
       <h1 className="font-semibold text-2xl flex items-center gap-2">
         <FaUserShield /> Usuarios
       </h1>
-      <div className="w-full">
+      <div className="w-full max-w-[1600px]">
         <div className="rounded border">
           <Table>
             <TableHeader>
@@ -61,7 +61,7 @@ export function DataTable<TData, TValue>({
                     return (
                       <TableHead 
                         key={header.id}
-                        className="px-4 py-2 text-left min-w-max whitespace-nowrap"
+                        className="whitespace-nowrap"
                       >
                         {header.isPlaceholder
                           ? null

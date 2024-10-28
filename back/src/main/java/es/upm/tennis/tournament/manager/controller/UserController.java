@@ -3,6 +3,7 @@ package es.upm.tennis.tournament.manager.controller;
 
 import es.upm.tennis.tournament.manager.DTO.UserDTO;
 import es.upm.tennis.tournament.manager.exceptions.InvalidCodeException;
+import es.upm.tennis.tournament.manager.exceptions.SameRoleException;
 import es.upm.tennis.tournament.manager.exceptions.UserAlreadyExistsException;
 import es.upm.tennis.tournament.manager.exceptions.UserNotFoundException;
 import es.upm.tennis.tournament.manager.model.User;
@@ -82,7 +83,7 @@ public class UserController {
         try {
             userService.modifyUser(id, sessionId, userDTO);
             return ResponseEntity.ok("User modified successfully");
-        } catch (UserAlreadyExistsException e) {
+        } catch (UserAlreadyExistsException | SameRoleException e) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
