@@ -13,21 +13,20 @@ import { Input } from "./ui/input";
 import { useState } from "react";
 import { getClientSideCookie } from "@/lib/getClientSideCookie";
 import { changeUsername } from "@/lib/changeUsername";
-import { useRouter } from "next/navigation";
 
 const ChangeUsernameDialog = ({ userData } : { userData : UserData | undefined }) => {
   
-  if (!userData) return;
-
+  
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast(); 
-
+  
   const form = useForm<z.infer<typeof ChangeUsernameSchema>>({
     resolver: zodResolver(ChangeUsernameSchema),
     defaultValues: {
-      username: userData.username,
+      username: userData?.username,
     }
   })
+  if (!userData) return;
 
   const onSubmit = async (values: z.infer<typeof ChangeUsernameSchema>) => {
     setIsLoading(true);

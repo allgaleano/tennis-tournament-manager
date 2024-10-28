@@ -1,7 +1,7 @@
 import { cookies } from "next/headers";
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 
-export const getUserSession = async (request: NextRequest) => {
+export const getUserSession = async () => {
   const sessionId = cookies().get('Session-Id');
 
   if (!sessionId) {

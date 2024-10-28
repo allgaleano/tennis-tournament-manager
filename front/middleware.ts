@@ -4,7 +4,7 @@ import { getUserSession } from "./lib/getUserSession";
 
 export async function middleware(request: NextRequest) {
     const { nextUrl } = request;
-    const { valid, response } = await getUserSession(request);
+    const { valid, response } = await getUserSession();
     
     const isPublicRoute = publicRoutes.includes(nextUrl.pathname);
     const isAuthRoute = authRoutes.includes(nextUrl.pathname);

@@ -50,11 +50,14 @@ export const columns: ColumnDef<User>[] = [
   {
     accessorKey: "enabledAccount",
     header: "Cuenta",
-    cell: ({ row }) => {
+    cell: function Cell ({ row }) {
       const originalAccountState = row.getValue("enabledAccount") as boolean;
       
       const userId = row.original.id;
       const sessionId = getClientSideCookie("Session-Id") as string;
+      
+      const [accountState, setAccountState] = useState(originalAccountState);
+      const { toast } = useToast();
 
       const handleAccountStateChange = async (state: string) => {
         const accountState = state === "enabledAccount";
@@ -92,8 +95,6 @@ export const columns: ColumnDef<User>[] = [
         }
       }
 
-      const [accountState, setAccountState] = useState(originalAccountState);
-      const { toast } = useToast();
 
       return (
         <div className="max-w-[150px]">
@@ -128,7 +129,7 @@ export const columns: ColumnDef<User>[] = [
   {
     accessorKey: "role",
     header: "Rol",
-    cell: ({ row }) => {
+    cell: function Cell ({ row }) {
       const originalRole = row.getValue("role") as string;
       const userId = row.original.id;
       const sessionId = getClientSideCookie("Session-Id") as string;
