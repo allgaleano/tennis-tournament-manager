@@ -30,7 +30,7 @@ export const getUserSession = async (request: NextRequest) => {
       name: "Session-Id",
       value: data.sessionId,
       expires: new Date(data.expirationDate),
-      sameSite: "lax",
+      sameSite: "none",
       secure: true,
       path: "/"
     })

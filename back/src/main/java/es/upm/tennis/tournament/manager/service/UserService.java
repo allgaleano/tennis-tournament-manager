@@ -23,7 +23,6 @@ import org.springframework.stereotype.Service;
 
 import java.time.Duration;
 import java.time.Instant;
-import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.Optional;
 
@@ -59,24 +58,29 @@ public class UserService {
 
     public void registerUser(UserDTO userDTO) {
         logger.info("Registering user");
-        User userExists = userRepository.findByEmail(userDTO.getEmail());
+        User existingUser = userRepository.findByEmail(userDTO.getEmail());
 
-        if (userExists != null) {
-            if (!userExists.isEnabled() &&
-                    Duration.between(LocalDateTime.now(), userExists.getCreatedAt())
-                            .compareTo(Duration.ofMinutes(30)) > 0)
-            {
-                ConfirmationCode existingUserCode = confirmationCodeRepository.findByUser(userExists);
+        if (existingUser != null) {
+            ConfirmationCode existingUserCode = confirmationCodeRepository.findByUser(existingUser);
+
+            boolean isCodeExpired = existingUserCode != null &&
+                    Duration.between(existingUserCode.getExpirationDate(), Instant.now())
+                            .compareTo(Duration.ZERO) < 0;
+
+            boolean isOlderThanOneDay = Duration.between(existingUser.getCreatedAt(), Instant.now())
+                    .compareTo(Duration.ofMinutes(1440)) > 0;
+
+            if (!existingUser.isConfirmed() && isCodeExpired && isOlderThanOneDay) {
                 confirmationCodeRepository.delete(existingUserCode);
-                userRepository.delete(userExists);
+                userRepository.delete(existingUser);
             } else {
                 logger.info("Account already exists");
                 throw new EmailAlreadyExistsException("An account associated to that email already exists");
             }
         }
 
-        userExists = userRepository.findByUsername(userDTO.getUsername());
-        if (userExists != null) {
+        existingUser = userRepository.findByUsername(userDTO.getUsername());
+        if (existingUser != null) {
             logger.info("Username taken");
             throw new UserAlreadyExistsException("Username already taken");
         }
@@ -89,8 +93,8 @@ public class UserService {
         user.setSurname(userDTO.getSurname());
         user.setPhonePrefix(userDTO.getPhonePrefix());
         user.setPhoneNumber(userDTO.getPhoneNumber());
-        user.setEnabled(false);
-        user.setCreatedAt(LocalDateTime.now());
+        user.setConfirmed(false);
+        user.setCreatedAt(Instant.now());
         user.setPassword(passwordEncoder.encode(userDTO.getPassword()));
 
         Role userRole = roleRepository.findByType(ERole.USER);
@@ -141,9 +145,14 @@ public class UserService {
         UserDetails userDetails = (UserDetails) authentication.getPrincipal();
         User user = userRepository.findByUsername(userDetails.getUsername());
 
-        if (!user.isEnabled()) {
-            throw new AccountNotEnabledException("Confirm your email to activate your account");
+        if (!user.isConfirmed()) {
+            throw new AccountNotConfirmedException("Confirm your email to activate your account");
         }
+
+        if (!user.isEnabled()) {
+            throw new AccountDisabledException("Account disabled");
+        }
+
         UserSession session = sessionService.findByUser(user);
         if (session != null) {
             sessionService.invalidateSession(session.getSessionId());
@@ -171,11 +180,11 @@ public class UserService {
 
         User user = confirmationCode.getUser();
 
-        if (user.isEnabled()) {
+        if (user.isConfirmed()) {
             throw new InvalidCodeException("User already verified");
         }
 
-        user.setEnabled(true);
+        user.setConfirmed(true);
         userRepository.save(user);
         confirmationCodeRepository.delete(confirmationCode);
     }
@@ -303,6 +312,25 @@ public class UserService {
             user.get().setPhonePrefix(userDTO.getPhonePrefix());
             user.get().setPhoneNumber(userDTO.getPhoneNumber());
         }
+        boolean isAdmin = userSession.getUser().getRole().getType().name().equals("ADMIN");
+        if (isAdmin) {
+            if (userDTO.getRole() != null) {
+                if (user.get().getRole().getType().name().equals(userDTO.getRole())) {
+                    throw new SameRoleException("Cannot change to same role");
+                }
+                ERole roleType = userDTO.getRole().equals("ADMIN") ? ERole.ADMIN : ERole.USER;
+                Role role = roleRepository.findByType(roleType);
+                user.get().setRole(role);
+            }
+
+            if (userDTO.getAccountState() != null) {
+                boolean enabledAccount = userDTO.getAccountState().equals("enabledAccount");
+                if (user.get().isEnabled() && enabledAccount) {
+                    throw new SameAccountStateException("Cannot change to same account state");
+                }
+                user.get().setEnabled(enabledAccount);
+            }
+        }
 
         userRepository.save(user.get());
     }
@@ -311,10 +339,10 @@ public class UserService {
         if (userSession == null || userSession.getExpirationDate().isBefore(Instant.now())) {
             throw new InvalidCodeException("Invalid or expired session");
         }
+        boolean isAdmin = userSession.getUser().getRole().getType().name().equals("ADMIN");
 
-        boolean isAdmin = user.getRole().getType().name().equals("ADMIN");
-        if (!isAdmin && !user.isEnabled()) {
-            throw new AccountNotEnabledException("Account not enabled");
+        if (!isAdmin && !user.isConfirmed()) {
+            throw new AccountNotConfirmedException("Account not confirmed");
         }
 
         if (!isAdmin && !user.getId().equals(userSession.getUser().getId())) {

@@ -54,7 +54,7 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of(
                     "error", "User not found"
             ));
-        } catch (AccountNotEnabledException e) {
+        } catch (AccountNotConfirmedException | AccountDisabledException e) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of(
                     "error", e.getMessage()
             ));

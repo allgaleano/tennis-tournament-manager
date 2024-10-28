@@ -36,7 +36,7 @@ const AccountButton = ({ userData, isMobile, isSelected } : AccountButtonInterfa
         },
       });
       if (response.ok) {
-        document.cookie = "Session-Id=;expires=Thu, 01 Jan 1970 00:00:01 GMT;";
+        document.cookie = "Session-Id=; Path=/; Secure; SameSite=None; Expires=Thu, 01 Jan 1970 00:00:00 GMT;";
         router.push("/login");
         router.refresh();
       } else {

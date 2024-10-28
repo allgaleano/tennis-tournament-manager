@@ -4,7 +4,7 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Entity
 @Getter
@@ -34,10 +34,14 @@ public class User {
     @Column(nullable = false)
     private String password;
 
-    private boolean isEnabled;
+    @Column(nullable = false)
+    private boolean isConfirmed;
+
+    @Column(nullable = false)
+    private boolean isEnabled = true;
 
     @Temporal(TemporalType.TIMESTAMP)
-    private LocalDateTime createdAt;
+    private Instant createdAt;
 
     @ManyToOne(targetEntity = Role.class, fetch = FetchType.EAGER)
     @JoinColumn(nullable = false, name = "role")

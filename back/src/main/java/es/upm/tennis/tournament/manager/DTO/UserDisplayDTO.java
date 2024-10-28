@@ -12,6 +12,7 @@ public class UserDisplayDTO {
     private String createdAt;
     private String username;
     private String email;
+    private boolean confirmedAccount;
     private boolean enabledAccount;
     private String role;
 }

@@ -16,6 +16,7 @@ export type User = {
   createdAt: string;
   username: string;
   email: string;
+  confirmedAccount: boolean;
   enabledAccount: boolean;
   role: string;
 }
