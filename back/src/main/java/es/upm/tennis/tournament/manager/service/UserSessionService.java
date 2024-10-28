@@ -39,7 +39,7 @@ public class UserSessionService {
 
     public boolean validateSession(String sessionId) {
         UserSession session = userSessionRepository.findBySessionId(sessionId);
-        if (session != null && session.getExpirationDate().isAfter(Instant.now())) {
+        if (session != null && session.getExpirationDate().isAfter(Instant.now()) && session.getUser().isEnabled()) {
             // Refresh session expiration date
             session.setExpirationDate(Instant.now().plusSeconds(SESSION_DURATION_MINUTES * 60));
             userSessionRepository.save(session);
