@@ -5,8 +5,6 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
 
 @Entity
 @Getter
@@ -23,5 +21,9 @@ public class Tournament {
     @Temporal(TemporalType.TIMESTAMP)
     private Instant registrationDeadline;
 
+    @Column(nullable = false)
     private int maxPlayers = 16;
+
+    @Column(nullable = false)
+    private boolean isOpen = false;
 }
