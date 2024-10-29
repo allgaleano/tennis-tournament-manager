@@ -19,4 +19,7 @@ public class SetResult {
 
     private int player1GamesWon;
     private int player2GamesWon;
+
+    private int player1TieBreakGamesWon;
+    private int player2TieBreakGamesWon;
 }
