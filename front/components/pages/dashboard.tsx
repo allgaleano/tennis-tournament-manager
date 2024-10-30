@@ -1,13 +1,11 @@
 import { MdInsights } from "react-icons/md"
+import SectionHeader from "@/components/section-header"
 
 const Dashboard = () => {
   return (
-    <div className="w-full flex flex-col justify-start items-center m-10">
-      <h1 className="font-semibold text-2xl flex items-center gap-2">
-        <MdInsights />
-        Dashboard
-      </h1>
-    </div>
+    <section className="w-full flex flex-col justify-start items-center m-10">
+      <SectionHeader  title="Dashboard" Icon={MdInsights} />
+    </section>
   )
 }
 
