@@ -3,10 +3,11 @@
 import ChangePhoneDialog from "@/components/change-phone-dialog";
 import ChangeUsernameDialog from "@/components/change-username-dialog";
 import { UserData } from "@/types";
+import { Skeleton } from "./ui/skeleton";
 
 interface DataCardProps {
-  title: string;
-  label: string;
+  title: string | undefined;
+  label: string | undefined;
   isModifiable?: boolean
   userData?: UserData
 }
@@ -18,9 +19,18 @@ const DataCard = ({
 }: DataCardProps) => {
   return (
     <div className="border w-full rounded-lg py-2 px-4 shadow-sm flex justify-between items-center">
-      <div className="">
-        <p className="font-bold">{title}</p>
-        <p>{label}</p>
+      <div>
+        {(title && label) ? (
+          <div>
+            <p className="font-bold">{title}</p>
+            <p>{label}</p>
+          </div>
+        ) : (
+          <div className="h-10 flex items-center">
+            <Skeleton className="w-36 h-2" />
+          </div>
+        )
+        }
       </div>
       {isModifiable &&
         title === "Nombre de usuario:" ? (

@@ -30,7 +30,7 @@ const SideBar = () => {
 
   return (
     <div className="flex">
-      <div className="hidden md:flex flex-col h-screen p-4 border-r w-[250px] gap-2">
+      <div className="hidden md:flex flex-col fixed top-0 left-0 h-screen p-4 border-r w-[250px] gap-2 bg-white z-50">
         <div className="w-full flex items-center justify-center p-4">
           <Image src="/static/Logotipo_MatchPoint.svg" width={200} height={25} alt="Match Point" />
         </div>
@@ -45,8 +45,11 @@ const SideBar = () => {
         <Button
           variant={pathname === "/tournaments" ? "default" : "outline"}
           className="font-semibold justify-start gap-2"
+          asChild
         >
-          <BiSolidTennisBall /> Torneos
+          <Link href="/tournaments">
+            <BiSolidTennisBall /> Torneos
+          </Link>
         </Button>
 
         {userData && (

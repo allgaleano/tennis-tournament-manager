@@ -27,7 +27,6 @@ public class User {
 
     @Column(length = 5)
     private String phonePrefix;
-
     @Column(length = 15)
     private String phoneNumber;
 
