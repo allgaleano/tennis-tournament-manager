@@ -21,8 +21,8 @@ public class PlayerTournament {
     @JoinColumn(name = "tournament_id", nullable = false)
     private Tournament tournament;
 
-    private int points;
-    private int setsWon;
-    private int gamesWon;
-    private int gamesLost;
+    private int points = 0;
+    private int setsWon = 0;
+    private int gamesWon = 0;
+    private int gamesLost = 0;
 }
