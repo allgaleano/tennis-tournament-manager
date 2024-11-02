@@ -3,9 +3,8 @@
 import { getClientSideUserData } from "@/lib/getClientSideUserData";
 import { UserData } from "@/types";
 import { useEffect, useState } from "react";
-import { Skeleton } from "../ui/skeleton";
-import DataCard from "../data-card";
-import { Button } from "../ui/button";
+import DataCard from "@/components/data-card";
+import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "../ui/dialog";
 import { deleteUserAccount } from "@/lib/deleteUserAccount";
@@ -73,17 +72,17 @@ const Settings = () => {
         Ajustes de perfil
       </h1>
       <div className="flex flex-col items-center space-y-4 w-full max-w-[600px]">
-        <DataCard title="Nombre:" label={`${userData?.name} ${userData?.surname}`} />
+        <DataCard title="Nombre:" label={`${userData?.name} ${userData?.surname}`} userData={userData}/>
 
         <DataCard title="Nombre de usuario:" label={userData?.username} isModifiable userData={userData} />
 
         <DataCard title="Teléfono:" label={userData?.phoneNumber} isModifiable userData={userData} />
 
-        <DataCard title="Email:" label={userData?.email} />
+        <DataCard title="Email:" label={userData?.email} userData={userData}/>
 
-        <DataCard title="Rol:" label={userData?.role === "ADMIN" ? "Administrador" : "Jugador"} />
+        <DataCard title="Rol:" label={userData?.role === "ADMIN" ? "Administrador" : "Jugador"} userData={userData} />
 
-        <DataCard title="Fecha de creación de la cuenta:" label={userData ? formateDateToSpanish(userData.createdAt) : undefined} />
+        <DataCard title="Fecha de creación de la cuenta:" label={userData ? formateDateToSpanish(userData.createdAt) : undefined} userData={userData}/>
 
         <div className="self-start flex gap-4">
 

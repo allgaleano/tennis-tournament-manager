@@ -32,3 +32,10 @@ export interface UserDisplayList {
     number: number;
   };
 } 
+
+export type Tournament = {
+  id: number;
+  name: string;
+  registrationDeadline: string;
+  maxPlayers: number;
+}

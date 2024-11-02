@@ -23,7 +23,4 @@ public class Tournament {
 
     @Column(nullable = false)
     private int maxPlayers = 16;
-
-    @Column(nullable = false)
-    private boolean isOpen = false;
 }

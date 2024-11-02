@@ -14,7 +14,7 @@ import { useState } from "react";
 import { getClientSideCookie } from "@/lib/getClientSideCookie";
 import { changeUsername } from "@/lib/changeUsername";
 
-const ChangeUsernameDialog = ({ userData } : { userData : UserData | undefined }) => {
+const ChangeUsernameDialog = ({ userData } : { userData : UserData }) => {
   
   
   const [isLoading, setIsLoading] = useState(false);
@@ -23,10 +23,9 @@ const ChangeUsernameDialog = ({ userData } : { userData : UserData | undefined }
   const form = useForm<z.infer<typeof ChangeUsernameSchema>>({
     resolver: zodResolver(ChangeUsernameSchema),
     defaultValues: {
-      username: userData?.username,
+      username: userData.username,
     }
   })
-  if (!userData) return;
 
   const onSubmit = async (values: z.infer<typeof ChangeUsernameSchema>) => {
     setIsLoading(true);

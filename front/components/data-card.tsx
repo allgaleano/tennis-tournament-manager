@@ -20,7 +20,7 @@ const DataCard = ({
   return (
     <div className="border w-full rounded-lg py-2 px-4 shadow-sm flex justify-between items-center">
       <div>
-        {(title && label) ? (
+        {(userData) ? (
           <div>
             <p className="font-bold">{title}</p>
             <p>{label}</p>
@@ -32,12 +32,13 @@ const DataCard = ({
         )
         }
       </div>
-      {isModifiable &&
+      {(isModifiable && userData ) && (
         title === "Nombre de usuario:" ? (
           <ChangeUsernameDialog userData={userData}/>
         ) : title === "Teléfono:" && (
           <ChangePhoneDialog userData={userData}/>
         )
+      )
       }
     </div>
   )
