@@ -15,12 +15,12 @@ import { extractPhoneDetails } from "@/lib/extractPhoneDetails";
 import { getClientSideCookie } from "@/lib/getClientSideCookie";
 import { changePhoneNumber } from "@/lib/changePhoneNumber";
 
-const ChangePhoneDialog = ({ userData } : { userData : UserData | undefined }) => {
+const ChangePhoneDialog = ({ userData } : { userData : UserData }) => {
 
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast(); 
 
-  const { prefix, phoneNumber } = extractPhoneDetails(userData?.phoneNumber);
+  const { prefix, phoneNumber } = extractPhoneDetails(userData.phoneNumber);
   
   const form = useForm<z.infer<typeof ChangePhoneNumberSchema>>({
     resolver: zodResolver(ChangePhoneNumberSchema),
@@ -75,8 +75,6 @@ const ChangePhoneDialog = ({ userData } : { userData : UserData | undefined }) =
     }
     setIsLoading(false);
   }
-
-  if (!userData) return;
 
   return (
     <Dialog>

@@ -8,6 +8,5 @@ import java.util.List;
 
 @Repository
 public interface PlayerTournamentRepository extends JpaRepository<PlayerTournament, Long> {
-    List<PlayerTournament> findByTournamentId(Long tournamentId);
     boolean existsByTournamentIdAndPlayerId(Long tournamentId, Long playerId);
 }
