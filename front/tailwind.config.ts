@@ -44,6 +44,10 @@ const config: Config = {
           DEFAULT: 'hsl(var(--success))',
           foreground: 'hsl(var(--success-foreground))'
         },
+        progress: {
+          DEFAULT: 'hsl(var(--progress))',
+          foreground: 'hsl(var(--progress-foreground))'
+        },
   			border: 'hsl(var(--border))',
   			input: 'hsl(var(--input))',
   			ring: 'hsl(var(--ring))',

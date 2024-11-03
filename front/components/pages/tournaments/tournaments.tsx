@@ -1,10 +1,8 @@
-import React, { useEffect, useState } from 'react'
-import SectionHeader from '@/components/section-header'
+import SectionHeader from '@/components/common/section-header'
 import { BiSolidTennisBall } from 'react-icons/bi'
-import TournamentCard from '@/components/tournament-card'
+import TournamentCard from '@/components/pages/tournaments/tournament-card'
 import { cookies } from 'next/headers'
 import { Tournament } from '@/types'
-import { formateDateToSpanish } from '@/lib/formatDateToSpanish'
 
 async function getTournaments(): Promise<{ tournaments?: Tournament[]; error?: string }> {
   try {
@@ -25,8 +23,9 @@ async function getTournaments(): Promise<{ tournaments?: Tournament[]; error?: s
     const tournaments: Tournament[] = data._embedded.tournamentList.map((tournament: Tournament) => ({
       id: tournament.id,
       name: tournament.name,
-      registrationDeadline: formateDateToSpanish(tournament.registrationDeadline),
+      registrationDeadline:tournament.registrationDeadline,
       maxPlayers: tournament.maxPlayers,
+      status: tournament.status
     }));
 
     return { tournaments }

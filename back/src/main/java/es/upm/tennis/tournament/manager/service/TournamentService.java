@@ -7,17 +7,22 @@ import es.upm.tennis.tournament.manager.exceptions.PlayerAlreadyEnrolledExceptio
 import es.upm.tennis.tournament.manager.exceptions.PlayerNotEnrolledException;
 import es.upm.tennis.tournament.manager.model.*;
 import es.upm.tennis.tournament.manager.repo.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 
 
 @Service
 public class TournamentService {
+
+    private static final Logger logger = LoggerFactory.getLogger(TournamentService.class);
 
     @Autowired
     TournamentRepository tournamentRepository;
@@ -67,6 +72,9 @@ public class TournamentService {
     }
 
     public Page<TournamentEnrollmentDTO> getTournamentEnrollments(Long tournamentId, Pageable pageable) {
+        if (!tournamentRepository.existsById(tournamentId)) {
+            throw new NoSuchElementException("Tournament not found");
+        }
         Page<TournamentEnrollment> enrollments = tournamentEnrollmentRepository.findAllByTournamentId(tournamentId, pageable);
         return enrollments.map(enrollment -> {
             TournamentEnrollmentDTO tournamentEnrollmentDTO = new TournamentEnrollmentDTO();
@@ -85,6 +93,7 @@ public class TournamentService {
     }
 
     public void unenrollPlayerFromTournament(Long tournamentId, Long playerId, String sessionId) {
+        logger.info("Unenrolling player {} from tournament {}", playerId, tournamentId);
         Tournament tournament = tournamentRepository.findById(tournamentId).orElseThrow();
 
         User user = userRepository.findById(playerId).orElseThrow();
@@ -106,5 +115,13 @@ public class TournamentService {
         }
 
         tournamentEnrollmentRepository.delete(tournamentEnrollment.get());
+    }
+
+    public Tournament getTournament(Long tournamentId) {
+        return tournamentRepository.findById(tournamentId).orElseThrow();
+    }
+
+    public boolean isPlayerEnrolled(Long tournamentId, Long playerId) {
+        return tournamentEnrollmentRepository.existsByTournamentIdAndPlayerId(tournamentId, playerId);
     }
 }

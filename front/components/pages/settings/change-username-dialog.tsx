@@ -9,10 +9,10 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { UserData } from "@/types";
 import { useToast } from "@/hooks/use-toast";
 import { Form, FormControl, FormField, FormItem, FormMessage } from "@/components/ui/form";
-import { Input } from "./ui/input";
+import { Input } from "@/components/ui/input";
 import { useState } from "react";
-import { getClientSideCookie } from "@/lib/getClientSideCookie";
-import { changeUsername } from "@/lib/changeUsername";
+import { getClientSideCookie } from "@/lib/users/getClientSideCookie";
+import { changeUsername } from "@/lib/settings/changeUsername";
 
 const ChangeUsernameDialog = ({ userData } : { userData : UserData }) => {
   

@@ -1,8 +1,8 @@
 "use client";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { formateDateToSpanish } from "@/lib/formatDateToSpanish";
-import { getClientSideCookie } from "@/lib/getClientSideCookie";
+import { formateDateToSpanish } from "@/lib/common/formatDateToSpanish";
+import { getClientSideCookie } from "@/lib/users/getClientSideCookie";
 import { cn } from "@/lib/utils";
 import { User } from "@/types";
 import { ColumnDef } from "@tanstack/react-table";
