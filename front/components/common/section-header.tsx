@@ -10,6 +10,9 @@ const SectionHeader = ({
   title,
   Icon
 } : SectionHeaderInterface) => {
+  
+  if (!title || !Icon) return;
+  
   return (
     <h1 className="font-semibold text-2xl flex items-center gap-2">
       <Icon />
@@ -18,4 +21,4 @@ const SectionHeader = ({
   )
 }
 
-export default SectionHeader
+export default SectionHeader;

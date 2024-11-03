@@ -1,5 +1,5 @@
 import { MdInsights } from "react-icons/md"
-import SectionHeader from "@/components/section-header"
+import SectionHeader from "@/components/common/section-header"
 
 const Dashboard = () => {
   return (

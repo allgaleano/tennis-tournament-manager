@@ -38,4 +38,29 @@ export type Tournament = {
   name: string;
   registrationDeadline: string;
   maxPlayers: number;
+  status: string;
+}
+
+export type Enrollment = {
+  id: number;
+  player: {
+    id: number;
+    name: string;
+    surname: string;
+    email: string;
+    username: string;
+  };
+  status: string;
+};
+
+export interface EnrollmentDisplayList {
+  _embedded: {
+    tournamentEnrollmentDTOList: Enrollment[];
+  };
+  page: {
+    size: number;
+    totalElements: number;
+    totalPages: number;
+    number: number;
+  };
 }

@@ -23,4 +23,8 @@ public class Tournament {
 
     @Column(nullable = false)
     private int maxPlayers = 16;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false)
+    private TournamentStatus status;
 }

@@ -1,18 +1,18 @@
 "use client";
 
-import { getClientSideUserData } from "@/lib/getClientSideUserData";
+import { getClientSideUserData } from "@/lib/users/getClientSideUserData";
 import { UserData } from "@/types";
 import { useEffect, useState } from "react";
-import DataCard from "@/components/data-card";
+import DataCard from "@/components/pages/settings/data-card";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
-import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "../ui/dialog";
-import { deleteUserAccount } from "@/lib/deleteUserAccount";
-import { getClientSideCookie } from "@/lib/getClientSideCookie";
+import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { deleteUserAccount } from "@/lib/settings/deleteUserAccount";
+import { getClientSideCookie } from "@/lib/users/getClientSideCookie";
 import { useToast } from "@/hooks/use-toast";
 import { IoMdSettings } from "react-icons/io";
 import Link from "next/link";
-import { formateDateToSpanish } from "@/lib/formatDateToSpanish";
+import { formateDateToSpanish } from "@/lib/common/formatDateToSpanish";
 
 const Settings = () => {
   const [userData, setUserData] = useState<UserData>();

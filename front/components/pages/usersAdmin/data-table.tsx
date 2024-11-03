@@ -18,7 +18,7 @@ import {
 import { FaUserShield } from "react-icons/fa6";
 import { Button } from "@/components/ui/button";
 import { useRouter, useSearchParams } from "next/navigation";
-import SectionHeader from "@/components/section-header";
+import SectionHeader from "@/components/common/section-header";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];

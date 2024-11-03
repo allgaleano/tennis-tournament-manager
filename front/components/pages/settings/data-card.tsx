@@ -1,9 +1,9 @@
 "use client";
 
-import ChangePhoneDialog from "@/components/change-phone-dialog";
-import ChangeUsernameDialog from "@/components/change-username-dialog";
+import ChangePhoneDialog from "@/components/pages/settings/change-phone-dialog";
+import ChangeUsernameDialog from "@/components/pages/settings/change-username-dialog";
 import { UserData } from "@/types";
-import { Skeleton } from "./ui/skeleton";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface DataCardProps {
   title: string | undefined;
