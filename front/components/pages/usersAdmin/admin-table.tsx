@@ -8,10 +8,6 @@ async function getData(page: number, size: number): Promise<{
   totalPages: number
   totalElements: number;
   currentPage: number;
-  nextLink?: string;
-  prevLink?: string;
-  firstLink?: string;
-  lastLink?: string;
 } | { error: string }> {
   try {
     const sessionId = cookies().get("Session-Id");

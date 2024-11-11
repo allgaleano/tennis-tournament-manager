@@ -10,7 +10,7 @@
 	</parent>
 	<groupId>es.upm</groupId>
 	<artifactId>tennis.tournament.manager</artifactId>
-	<version>0.0.1</version>
+	<version>0.1.0</version>
 	<name>tennis.tournament.manager</name>
 	<description>Tennis Tournament Manager</description>
 	<url/>

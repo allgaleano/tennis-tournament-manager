@@ -4,23 +4,23 @@ import { useToast } from "@/hooks/use-toast";
 import { ChangePhoneNumberSchema } from "@/schemas";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { Dialog, DialogClose, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "./ui/dialog";
-import { Button } from "./ui/button";
-import { Form, FormControl, FormField, FormItem, FormMessage } from "./ui/form";
-import { Input } from "./ui/input";
+import { Dialog, DialogClose, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Form, FormControl, FormField, FormItem, FormMessage } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
 import { UserData } from "@/types";
 import { z } from "zod";
 import { useState } from "react";
-import { extractPhoneDetails } from "@/lib/extractPhoneDetails";
-import { getClientSideCookie } from "@/lib/getClientSideCookie";
-import { changePhoneNumber } from "@/lib/changePhoneNumber";
+import { extractPhoneDetails } from "@/lib/settings/extractPhoneDetails";
+import { getClientSideCookie } from "@/lib/users/getClientSideCookie";
+import { changePhoneNumber } from "@/lib/settings/changePhoneNumber";
 
-const ChangePhoneDialog = ({ userData } : { userData : UserData | undefined }) => {
+const ChangePhoneDialog = ({ userData } : { userData : UserData }) => {
 
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast(); 
 
-  const { prefix, phoneNumber } = extractPhoneDetails(userData?.phoneNumber);
+  const { prefix, phoneNumber } = extractPhoneDetails(userData.phoneNumber);
   
   const form = useForm<z.infer<typeof ChangePhoneNumberSchema>>({
     resolver: zodResolver(ChangePhoneNumberSchema),
@@ -75,8 +75,6 @@ const ChangePhoneDialog = ({ userData } : { userData : UserData | undefined }) =
     }
     setIsLoading(false);
   }
-
-  if (!userData) return;
 
   return (
     <Dialog>

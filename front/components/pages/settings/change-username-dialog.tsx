@@ -9,12 +9,12 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { UserData } from "@/types";
 import { useToast } from "@/hooks/use-toast";
 import { Form, FormControl, FormField, FormItem, FormMessage } from "@/components/ui/form";
-import { Input } from "./ui/input";
+import { Input } from "@/components/ui/input";
 import { useState } from "react";
-import { getClientSideCookie } from "@/lib/getClientSideCookie";
-import { changeUsername } from "@/lib/changeUsername";
+import { getClientSideCookie } from "@/lib/users/getClientSideCookie";
+import { changeUsername } from "@/lib/settings/changeUsername";
 
-const ChangeUsernameDialog = ({ userData } : { userData : UserData | undefined }) => {
+const ChangeUsernameDialog = ({ userData } : { userData : UserData }) => {
   
   
   const [isLoading, setIsLoading] = useState(false);
@@ -23,10 +23,9 @@ const ChangeUsernameDialog = ({ userData } : { userData : UserData | undefined }
   const form = useForm<z.infer<typeof ChangeUsernameSchema>>({
     resolver: zodResolver(ChangeUsernameSchema),
     defaultValues: {
-      username: userData?.username,
+      username: userData.username,
     }
   })
-  if (!userData) return;
 
   const onSubmit = async (values: z.infer<typeof ChangeUsernameSchema>) => {
     setIsLoading(true);
