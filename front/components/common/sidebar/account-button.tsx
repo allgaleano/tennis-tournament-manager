@@ -4,7 +4,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSepara
 import { Button } from '@/components/ui/button'
 import { TbLogout2 } from 'react-icons/tb'
 import { useToast } from '@/hooks/use-toast';
-import { getClientSideCookie } from '@/lib/getClientSideCookie';
+import { getClientSideCookie } from '@/lib/users/getClientSideCookie';
 import { useRouter } from 'next/navigation';
 import { FaUser } from "react-icons/fa";
 import { UserData } from '@/types';

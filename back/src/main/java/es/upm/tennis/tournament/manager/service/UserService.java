@@ -56,6 +56,9 @@ public class UserService {
     @Autowired
     private EmailService emailService;
 
+    @Autowired
+    private PermissionChecker permissionChecker;
+
     public void registerUser(UserDTO userDTO) {
         logger.info("Registering user");
         User existingUser = userRepository.findByEmail(userDTO.getEmail());
@@ -274,7 +277,7 @@ public class UserService {
 
         UserSession userSession = userSessionRepository.findBySessionId(sessionId);
 
-        validateUserPermission(user.get(), userSession);
+        permissionChecker.validateUserPermission(user.get(), userSession);
 
         userSessionRepository.delete(userSession);
         ConfirmationCode code = confirmationCodeRepository.findByUser(user.get());
@@ -292,7 +295,7 @@ public class UserService {
 
         UserSession userSession = userSessionRepository.findBySessionId(sessionId);
 
-        validateUserPermission(user.get(), userSession);
+        permissionChecker.validateUserPermission(user.get(), userSession);
 
         if (userDTO.getUsername() != null) {
             User existingUser = userRepository.findByUsername(userDTO.getUsername());
@@ -333,20 +336,5 @@ public class UserService {
         }
 
         userRepository.save(user.get());
-    }
-
-    private void validateUserPermission (User user, UserSession userSession) {
-        if (userSession == null || userSession.getExpirationDate().isBefore(Instant.now())) {
-            throw new InvalidCodeException("Invalid or expired session");
-        }
-        boolean isAdmin = userSession.getUser().getRole().getType().name().equals("ADMIN");
-
-        if (!isAdmin && !user.isConfirmed()) {
-            throw new AccountNotConfirmedException("Account not confirmed");
-        }
-
-        if (!isAdmin && !user.getId().equals(userSession.getUser().getId())) {
-            throw new UnauthorizedUserAction("Unauthorized to perform this action");
-        }
     }
 }

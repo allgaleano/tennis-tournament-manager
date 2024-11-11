@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { authRoutes, DEFAULT_LOGIN_REDIRECT, publicRoutes } from "./routes";
-import { getUserSession } from "./lib/getUserSession";
+import { getUserSession } from "./lib/users/getUserSession";
 
 export async function middleware(request: NextRequest) {
     const { nextUrl } = request;

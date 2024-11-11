@@ -10,7 +10,7 @@ WORKDIR /opt/app
 #ENV SPRING_DATASOURCE_PASSWORD=${DB_PASSWORD}
 #ENV SPRING_JPA_HIBERNATE_DDL_AUTO=update
 # Retrieve needed files and dependencies
-COPY ./target/tennis.tournament.manager-0.0.1.jar tennis.tournament.manager-0.0.1.jar
+COPY ./target/tennis.tournament.manager-0.1.0.jar tennis.tournament.manager-0.1.0.jar
 
 # Specify a start-up command
-CMD ["java","-jar","/opt/app/tennis.tournament.manager-0.0.1.jar"]
+CMD ["java","-jar","/opt/app/tennis.tournament.manager-0.1.0.jar"]
