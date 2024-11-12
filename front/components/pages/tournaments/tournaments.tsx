@@ -62,4 +62,4 @@ const Tournaments = async () => {
   )
 }
 
-export default Tournaments
+export default Tournaments;

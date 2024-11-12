@@ -1,5 +1,7 @@
 import TournamentDetails from "@/components/pages/tournaments/tournament-details";
 
+export const dynamic = "force-dynamic";
+
 const TournamentPage = ({
   params,
   searchParams
