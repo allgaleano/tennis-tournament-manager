@@ -43,7 +43,7 @@ export function DataTable<TData, TValue>({
   const searchParams = useSearchParams();
 
   const handleNavigation = (newPage: number) => {
-    const size = searchParams.get("size") || "10";
+    const size = searchParams.get("size") || "20";
     router.push(`/users?page=${newPage}&size=${size}`);
   };
 
