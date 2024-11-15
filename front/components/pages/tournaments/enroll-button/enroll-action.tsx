@@ -17,7 +17,12 @@ const EnrollAction = async ({
   }
   const { enrolled } = result;
   return (
-    <EnrollButton tournamentIsOpen={tournamentIsOpen} enrolled={enrolled} userId={userData.id} tournamentId={tournament.id}/>
+    <EnrollButton 
+      tournamentIsOpen={tournamentIsOpen} 
+      enrolled={enrolled} 
+      userId={userData.id}
+      tournamentId={tournament.id}
+    />
   )
 }
 
