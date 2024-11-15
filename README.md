@@ -4,6 +4,17 @@ This repository contains two main folders:
 - `back`: A Spring Boot application
 - `front`: A Next.js application
 
+## Production
+
+```bash
+cd back
+docker compose up db -d
+mvn clean install
+docker compose up app --build -d
+cd ../front
+npm run build && npm start
+```
+
 ## Prerequisites
 
 ### Dependecies for development collaboration
@@ -14,8 +25,8 @@ This repository contains two main folders:
 - **npm**
   
 Make sure these dependencies are installed globally on your system.
-
 ---
+## Collboration
 
 ## Backend (`back`) - Spring Boot Application
 
