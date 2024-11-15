@@ -6,6 +6,18 @@ This repository contains two main folders:
 
 ## Production
 
+- It is required to define this environment variables as files named '.env' in both front/ and back/ directories:
+
+### front/.env
+```
+NEXT_PUBLIC_API_URI=...
+```
+### back/.env
+```
+SMTP_MAIL=...
+SMTP_APP_PASSWORD=...
+```
+
 ```bash
 cd back
 docker compose up db -d
