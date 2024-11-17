@@ -72,6 +72,7 @@ export default async function Enrollments ({
   const { data, totalPages, currentPage } = result;
   return (
     <DataTable 
+      tournamentId={tournamentId}
       columns={columns} 
       data={data}
       page={currentPage}

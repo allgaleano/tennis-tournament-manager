@@ -9,6 +9,7 @@ interface DataTableProps<TData, TValue> {
   data: TData[];
   page: number;
   totalPages: number;
+  tournamentId: number;
 }
 
 export function DataTable<TData, TValue>({
@@ -16,6 +17,7 @@ export function DataTable<TData, TValue>({
   data,
   page,
   totalPages,
+  tournamentId,
 }: DataTableProps<TData, TValue>) {
   const table = useReactTable({
     data,
@@ -27,8 +29,8 @@ export function DataTable<TData, TValue>({
   const searchParams = useSearchParams();
 
   const handleNavigation = (newPage: number) => {
-    const size = searchParams.get("size") || "10";
-    router.push(`/tournaments/?page=${newPage}&size=${size}`);
+    const size = searchParams.get("size") || "20";
+    router.push(`/tournaments/${tournamentId}?page=${newPage}&size=${size}`);
   };
 
   return (
