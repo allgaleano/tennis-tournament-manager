@@ -1,0 +1,66 @@
+# Test files
+**/*.test.ts
+**/*.test.tsx
+**/*.spec.ts
+**/*.spec.tsx
+**/__tests__/*
+**/test/*
+**/tests/*
+**/*Test.java
+**/*IT.java
+**/src/test/*
+
+# Build and dependency directories
+**/node_modules/*
+**/dist/*
+**/build/*
+**/target/*
+**/out/*
+**/.mvn/*
+
+# Batch files (build/deployment scripts)
+*.bat
+*.cmd
+*.sh
+*.batch
+
+# SVG files (usually assets)
+*.svg
+
+# Configuration files
+*.json
+*.xml
+*.yaml
+*.yml
+*.properties
+.editorconfig
+.gitignore
+.prettierrc
+.eslintrc
+.env*
+*.config.js
+*.config.ts
+tsconfig.json
+package.json
+package-lock.json
+pom.xml
+
+# Documentation
+*.md
+*.markdown
+LICENSE
+README
+
+# IDE files
+.idea/*
+.vscode/*
+*.iml
+
+# Temporary files
+*.log
+*.tmp
+.DS_Store
+
+# Others
+mvnw*
+Dockerfile
