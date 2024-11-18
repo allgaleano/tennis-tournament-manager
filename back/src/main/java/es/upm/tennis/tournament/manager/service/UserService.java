@@ -67,7 +67,7 @@ public class UserService {
             ConfirmationCode existingUserCode = confirmationCodeRepository.findByUser(existingUser);
 
             boolean isCodeExpired = existingUserCode != null &&
-                    Duration.between(existingUserCode.getExpirationDate(), Instant.now())
+                    Duration.between(Instant.now(), existingUserCode.getExpirationDate())
                             .compareTo(Duration.ZERO) < 0;
 
             boolean isOlderThanOneDay = Duration.between(existingUser.getCreatedAt(), Instant.now())
