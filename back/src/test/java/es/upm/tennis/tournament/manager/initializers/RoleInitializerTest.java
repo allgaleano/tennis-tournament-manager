@@ -1,9 +1,8 @@
-package es.upm.tennis.tournament.manager;
+package es.upm.tennis.tournament.manager.initializers;
 
 import es.upm.tennis.tournament.manager.model.ERole;
 import es.upm.tennis.tournament.manager.model.Role;
 import es.upm.tennis.tournament.manager.repo.RoleRepository;
-import es.upm.tennis.tournament.manager.repo.UserRepository;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.springframework.beans.factory.annotation.Autowired;
