@@ -30,4 +30,4 @@ jobs:
         working-directory: back
       - name: Run tests on back
         run: mvn test --file pom.xml
-        working-directory: rest-api
+        working-directory: back
