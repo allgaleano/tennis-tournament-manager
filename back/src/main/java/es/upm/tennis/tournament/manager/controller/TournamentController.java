@@ -108,4 +108,15 @@ public class TournamentController {
             return ResponseEntity.internalServerError().body(Map.of("error", e.getMessage()));
         }
     }
+
+    @PutMapping("/{tournamentId}/selectPlayer/{playerId}")
+    public ResponseEntity<Map<String, Object>> selectPlayer(@PathVariable Long tournamentId, @PathVariable Long playerId, @RequestHeader("Session-Id") String sessionId) {
+        try {
+            tournamentService.selectPlayer(tournamentId, playerId, sessionId);
+            return ResponseEntity.ok(Map.of("message", "Player selected successfully"));
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body(Map.of("error", e.getMessage()));
+        }
+    }
+
 }
