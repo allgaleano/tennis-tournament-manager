@@ -2,15 +2,14 @@ package es.upm.tennis.tournament.manager.service;
 
 import es.upm.tennis.tournament.manager.DTO.TournamentEnrollmentDTO;
 import es.upm.tennis.tournament.manager.DTO.UserEnrolledDTO;
-import es.upm.tennis.tournament.manager.exceptions.PlayerAlreadyAcceptedException;
-import es.upm.tennis.tournament.manager.exceptions.PlayerAlreadyEnrolledException;
-import es.upm.tennis.tournament.manager.exceptions.PlayerNotEnrolledException;
+import es.upm.tennis.tournament.manager.exceptions.*;
 import es.upm.tennis.tournament.manager.model.*;
 import es.upm.tennis.tournament.manager.repo.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
@@ -55,6 +54,10 @@ public class TournamentService {
         UserSession userSession = userSessionRepository.findBySessionId(sessionId);
 
         permissionChecker.validateUserPermission(user, userSession);
+
+        if (!user.getRole().getType().name().equals("ADMIN") && !tournament.getStatus().name().equals("ENROLLMENT_OPEN")) {
+            throw new IllegalStateException("Tournament is closed for enrollments");
+        }
 
         if (!userSession.getUser().getRole().getType().name().equals("ADMIN") && tournament.getRegistrationDeadline() != null && tournament.getRegistrationDeadline().isBefore(Instant.now())) {
             throw new IllegalStateException("Tournament registration deadline has passed");
@@ -123,5 +126,32 @@ public class TournamentService {
 
     public boolean isPlayerEnrolled(Long tournamentId, Long playerId) {
         return tournamentEnrollmentRepository.existsByTournamentIdAndPlayerId(tournamentId, playerId);
+    }
+
+    public void selectPlayer(Long tournamentId, Long playerId, String sessionId) {
+        UserSession userSession = userSessionRepository.findBySessionId(sessionId);
+        if (userSession == null || userSession.getExpirationDate().isBefore(Instant.now())) {
+            throw new InvalidCodeException("Invalid or expired session");
+        }
+
+        // Verify admin permissions
+        if (!userSession.getUser().getRole().getType().name().equals("ADMIN")) {
+            throw new UnauthorizedUserAction("Only administrators can select players");
+        }
+
+        Tournament tournament = tournamentRepository.findById(tournamentId).orElseThrow();
+        TournamentEnrollment enrollment = tournamentEnrollmentRepository
+                .findByTournamentIdAndPlayerId(tournamentId, playerId)
+                .orElseThrow(() -> new PlayerNotEnrolledException("Player is not enrolled in the tournament"));
+
+        // Check if maximum players reached
+        Page<TournamentEnrollment> selectedPlayers = tournamentEnrollmentRepository
+                .findAllByTournamentIdAndStatus(tournamentId, EnrollmentStatus.SELECTED, PageRequest.of(0, Integer.MAX_VALUE));
+        if (selectedPlayers.getTotalElements() >= tournament.getMaxPlayers()) {
+            throw new IllegalStateException("Tournament has reached maximum number of selected players");
+        }
+
+        enrollment.setStatus(EnrollmentStatus.SELECTED);
+        tournamentEnrollmentRepository.save(enrollment);
     }
 }
