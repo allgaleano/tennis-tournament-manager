@@ -114,6 +114,10 @@ public class TournamentController {
         try {
             tournamentService.selectPlayer(tournamentId, playerId, sessionId);
             return ResponseEntity.ok(Map.of("message", "Player selected successfully"));
+        } catch (InvalidCodeException | UnauthorizedUserAction e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", e.getMessage()));
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of("error", e.getMessage()));
         } catch (Exception e) {
             return ResponseEntity.internalServerError().body(Map.of("error", e.getMessage()));
         }
