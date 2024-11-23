@@ -134,7 +134,6 @@ public class TournamentService {
             throw new InvalidCodeException("Invalid or expired session");
         }
 
-        // Verify admin permissions
         if (!userSession.getUser().getRole().getType().name().equals("ADMIN")) {
             throw new UnauthorizedUserAction("Only administrators can select players");
         }
@@ -144,10 +143,7 @@ public class TournamentService {
                 .findByTournamentIdAndPlayerId(tournamentId, playerId)
                 .orElseThrow(() -> new PlayerNotEnrolledException("Player is not enrolled in the tournament"));
 
-        // Check if maximum players reached
-        Page<TournamentEnrollment> selectedPlayers = tournamentEnrollmentRepository
-                .findAllByTournamentIdAndStatus(tournamentId, EnrollmentStatus.SELECTED, PageRequest.of(0, Integer.MAX_VALUE));
-        if (selectedPlayers.getTotalElements() >= tournament.getMaxPlayers()) {
+        if (tournamentEnrollmentRepository.countByTournamentIdAndStatus(tournamentId, EnrollmentStatus.SELECTED) >= tournament.getMaxPlayers()) {
             throw new IllegalStateException("Tournament has reached maximum number of selected players");
         }
 

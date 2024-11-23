@@ -426,24 +426,15 @@ class TournamentServiceTest {
             user.setRole(adminRole);
             userSession.setUser(user);
             tournamentEnrollment.setStatus(EnrollmentStatus.PENDING);
-            Page<TournamentEnrollment> mockSelectedPlayers = new PageImpl<>(
-                    new ArrayList<>(), // empty list of selected players
-                    PageRequest.of(0, Integer.MAX_VALUE),
-                    2 // total elements
-            );
 
             when(userSessionRepository.findBySessionId("test-session")).thenReturn(userSession);
             when(tournamentRepository.findById(1L)).thenReturn(Optional.of(tournament));
             when(tournamentEnrollmentRepository.findByTournamentIdAndPlayerId(1L, 1L)).thenReturn(Optional.of(tournamentEnrollment));
-            when(tournamentEnrollmentRepository.findAllByTournamentIdAndStatus(
-                    eq(1L),
-                    eq(EnrollmentStatus.SELECTED),
-                    any(PageRequest.class)
-            )).thenReturn(mockSelectedPlayers);
+            when(tournamentEnrollmentRepository.countByTournamentIdAndStatus(tournament.getId(), EnrollmentStatus.SELECTED)).thenReturn(2L);
 
             // Act
             assertDoesNotThrow(() ->
-                    tournamentService.selectPlayer(1L, 1L, "test-session"));
+                    tournamentService.selectPlayer(tournament.getId(), user.getId(), "test-session"));
 
             // Assert
             assertEquals(EnrollmentStatus.SELECTED, tournamentEnrollment.getStatus());
@@ -459,17 +450,11 @@ class TournamentServiceTest {
             tournament.setMaxPlayers(1);
             tournamentEnrollment.setStatus(EnrollmentStatus.PENDING);
 
-            TournamentEnrollment existingSelected = new TournamentEnrollment();
-            existingSelected.setStatus(EnrollmentStatus.SELECTED);
-            Page<TournamentEnrollment> selectedPlayers = new PageImpl<>(
-                    Collections.singletonList(existingSelected));
-
             when(userSessionRepository.findBySessionId("test-session")).thenReturn(userSession);
             when(tournamentRepository.findById(1L)).thenReturn(Optional.of(tournament));
             when(tournamentEnrollmentRepository.findByTournamentIdAndPlayerId(1L, 1L))
                     .thenReturn(Optional.of(tournamentEnrollment));
-            when(tournamentEnrollmentRepository.findAllByTournamentIdAndStatus(1L, EnrollmentStatus.SELECTED, PageRequest.of(0, Integer.MAX_VALUE)))
-                    .thenReturn(selectedPlayers);
+            when(tournamentEnrollmentRepository.countByTournamentIdAndStatus(tournament.getId(), EnrollmentStatus.SELECTED)).thenReturn(18L);
 
             // Act & Assert
             assertThrows(IllegalStateException.class,
