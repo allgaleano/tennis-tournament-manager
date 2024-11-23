@@ -31,12 +31,22 @@ public class SessionFilter extends OncePerRequestFilter {
     @Autowired
     private UserSessionService sessionService;
 
+    private boolean isPublicEndpoint(String requestURI) {
+        return PUBLIC_ENDPOINTS.stream().anyMatch(pattern -> {
+            if (pattern.endsWith("/**")) {
+                String prefix = pattern.substring(0, pattern.length() - 2);
+                return requestURI.startsWith(prefix);
+            }
+            return pattern.equals(requestURI);
+        });
+    }
+
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
 
         String requestURI = request.getRequestURI();
 
-        if (PUBLIC_ENDPOINTS.contains(requestURI)) {
+        if (isPublicEndpoint(requestURI)) {
             filterChain.doFilter(request, response);
             return;
         }

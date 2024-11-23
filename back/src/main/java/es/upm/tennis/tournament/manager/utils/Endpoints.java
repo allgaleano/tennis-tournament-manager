@@ -8,7 +8,12 @@ public class Endpoints {
             "/auth/login",
             "/auth/confirm-email",
             "/auth/confirm-password",
-            "/auth/change-password"
+            "/auth/change-password",
+            "/v3/api-docs",
+            "/v3/api-docs/**",
+            "/swagger-ui/**",
+            "/swagger-ui.html",
+            "/webjars/**"
     );
 
     public static final String FRONTEND_URI = "http://localhost:3000";
