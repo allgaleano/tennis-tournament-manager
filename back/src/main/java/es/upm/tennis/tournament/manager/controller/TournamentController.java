@@ -109,7 +109,7 @@ public class TournamentController {
         }
     }
 
-    @PutMapping("/{tournamentId}/selectPlayer/{playerId}")
+    @PostMapping("/{tournamentId}/selectPlayer/{playerId}")
     public ResponseEntity<Map<String, Object>> selectPlayer(@PathVariable Long tournamentId, @PathVariable Long playerId, @RequestHeader("Session-Id") String sessionId) {
         try {
             tournamentService.selectPlayer(tournamentId, playerId, sessionId);
