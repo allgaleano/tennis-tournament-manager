@@ -116,8 +116,26 @@ public class TournamentController {
             return ResponseEntity.ok(Map.of("message", "Player selected successfully"));
         } catch (InvalidCodeException | UnauthorizedUserAction e) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", e.getMessage()));
-        } catch (IllegalStateException e) {
+        } catch (IllegalStateException | PlayerNotEnrolledException e) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of("error", e.getMessage()));
+        } catch (BadEnrollmentStatusException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    @PostMapping("/{tournamentId}/deselectPlayer/{playerId}")
+    public ResponseEntity<Map<String, Object>> deselectPlayer(@PathVariable Long tournamentId, @PathVariable Long playerId, @RequestHeader("Session-Id") String sessionId) {
+        try {
+            tournamentService.deselectPlayer(tournamentId, playerId, sessionId);
+            return ResponseEntity.ok(Map.of("message", "Player deselected successfully"));
+        } catch (InvalidCodeException | UnauthorizedUserAction e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", e.getMessage()));
+        } catch (IllegalStateException | PlayerNotEnrolledException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of("error", e.getMessage()));
+        } catch (BadEnrollmentStatusException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         } catch (Exception e) {
             return ResponseEntity.internalServerError().body(Map.of("error", e.getMessage()));
         }

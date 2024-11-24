@@ -1,7 +1,6 @@
 package es.upm.tennis.tournament.manager.service;
 
 import es.upm.tennis.tournament.manager.DTO.TournamentEnrollmentDTO;
-import es.upm.tennis.tournament.manager.DTO.UserEnrolledDTO;
 import es.upm.tennis.tournament.manager.exceptions.*;
 import es.upm.tennis.tournament.manager.model.*;
 import es.upm.tennis.tournament.manager.repo.*;
@@ -459,6 +458,51 @@ class TournamentServiceTest {
             // Act & Assert
             assertThrows(IllegalStateException.class,
                     () -> tournamentService.selectPlayer(1L, 1L, "test-session"));
+        }
+
+        @Test
+        @DisplayName("Should throw when player already selected")
+        void selectPlayer_ShouldThrow_WhenPlayerAlreadySelected() {
+            user.setRole(adminRole);
+            tournamentEnrollment.setStatus(EnrollmentStatus.SELECTED);
+
+            when(userSessionRepository.findBySessionId(userSession.getSessionId())).thenReturn(userSession);
+            when(tournamentRepository.findById(tournament.getId())).thenReturn(Optional.of(tournament));
+            when(tournamentEnrollmentRepository.findByTournamentIdAndPlayerId(user.getId(), tournament.getId()))
+                    .thenReturn(Optional.of(tournamentEnrollment));
+
+            assertThrows(BadEnrollmentStatusException.class,
+                    () -> tournamentService.selectPlayer(tournament.getId(), user.getId(), userSession.getSessionId()));
+        }
+    }
+
+    @Nested
+    @DisplayName("Player Deselection Tests")
+    class PlayerDeselectionTests {
+
+        @Test
+        @DisplayName("Should throw when non-admin tries to deselect player")
+        void deselectPlayer_ShouldThrow_WhenNotAdmin() {
+            when(userSessionRepository.findBySessionId("test-session")).thenReturn(userSession);
+
+            assertThrows(UnauthorizedUserAction.class,
+                    () -> tournamentService.deselectPlayer(user.getId(), tournament.getId(), userSession.getSessionId()));
+        }
+
+        @Test
+        @DisplayName("Admin should be able to deselect player already selected")
+        void deselectPlayer_ShouldSucceed_WhenAdminAndPlayerSelected() {
+            user.setRole(adminRole);
+            tournamentEnrollment.setStatus(EnrollmentStatus.SELECTED);
+
+            when(userSessionRepository.findBySessionId(userSession.getSessionId())).thenReturn(userSession);
+            when(tournamentRepository.findById(tournament.getId())).thenReturn(Optional.of(tournament));
+            when(tournamentEnrollmentRepository.findByTournamentIdAndPlayerId(user.getId(), tournament.getId()))
+                    .thenReturn(Optional.of(tournamentEnrollment));
+
+            assertDoesNotThrow(
+                    () -> tournamentService.deselectPlayer(tournament.getId(), user.getId(), userSession.getSessionId())
+            );
         }
     }
 }
