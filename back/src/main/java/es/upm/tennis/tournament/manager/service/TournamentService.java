@@ -9,7 +9,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
@@ -143,11 +142,38 @@ public class TournamentService {
                 .findByTournamentIdAndPlayerId(tournamentId, playerId)
                 .orElseThrow(() -> new PlayerNotEnrolledException("Player is not enrolled in the tournament"));
 
+        if (enrollment.getStatus().equals(EnrollmentStatus.SELECTED)) {
+            throw new BadEnrollmentStatusException("Player is already selected");
+        }
+
         if (tournamentEnrollmentRepository.countByTournamentIdAndStatus(tournamentId, EnrollmentStatus.SELECTED) >= tournament.getMaxPlayers()) {
             throw new IllegalStateException("Tournament has reached maximum number of selected players");
         }
 
         enrollment.setStatus(EnrollmentStatus.SELECTED);
+        tournamentEnrollmentRepository.save(enrollment);
+    }
+
+    public void deselectPlayer(Long tournamentId, Long playerId, String sessionId) {
+        UserSession userSession = userSessionRepository.findBySessionId(sessionId);
+        if (userSession == null || userSession.getExpirationDate().isBefore(Instant.now())) {
+            throw new UnauthorizedUserAction("Invalid or expired session");
+        }
+
+        if (!userSession.getUser().getRole().getType().name().equals("ADMIN")) {
+            throw new UnauthorizedUserAction("Only administrators can deselect players");
+        }
+
+        Tournament tournament = tournamentRepository.findById(tournamentId).orElseThrow();
+        TournamentEnrollment enrollment = tournamentEnrollmentRepository
+                .findByTournamentIdAndPlayerId(tournamentId, playerId)
+                .orElseThrow(() -> new PlayerNotEnrolledException("Player is not enrolled in the tournament"));
+
+        if (!enrollment.getStatus().equals(EnrollmentStatus.SELECTED)) {
+            throw new BadEnrollmentStatusException("User must be previously selected to deselect");
+        }
+
+        enrollment.setStatus(EnrollmentStatus.PENDING);
         tournamentEnrollmentRepository.save(enrollment);
     }
 }
