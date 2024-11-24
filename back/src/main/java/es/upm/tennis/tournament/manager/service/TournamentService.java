@@ -1,5 +1,6 @@
 package es.upm.tennis.tournament.manager.service;
 
+import es.upm.tennis.tournament.manager.DTO.PlayerIdsRequest;
 import es.upm.tennis.tournament.manager.DTO.TournamentEnrollmentDTO;
 import es.upm.tennis.tournament.manager.DTO.UserEnrolledDTO;
 import es.upm.tennis.tournament.manager.exceptions.*;
@@ -13,8 +14,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
-import java.util.NoSuchElementException;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -127,7 +128,7 @@ public class TournamentService {
         return tournamentEnrollmentRepository.existsByTournamentIdAndPlayerId(tournamentId, playerId);
     }
 
-    public void selectPlayer(Long tournamentId, Long playerId, String sessionId) {
+    public void selectPlayer(Long tournamentId, PlayerIdsRequest playerIds, String sessionId) {
         UserSession userSession = userSessionRepository.findBySessionId(sessionId);
         if (userSession == null || userSession.getExpirationDate().isBefore(Instant.now())) {
             throw new InvalidCodeException("Invalid or expired session");
@@ -138,23 +139,44 @@ public class TournamentService {
         }
 
         Tournament tournament = tournamentRepository.findById(tournamentId).orElseThrow();
-        TournamentEnrollment enrollment = tournamentEnrollmentRepository
-                .findByTournamentIdAndPlayerId(tournamentId, playerId)
-                .orElseThrow(() -> new PlayerNotEnrolledException("Player is not enrolled in the tournament"));
 
-        if (enrollment.getStatus().equals(EnrollmentStatus.SELECTED)) {
-            throw new BadEnrollmentStatusException("Player is already selected");
+        long currentSelectedCount = tournamentEnrollmentRepository
+                .countByTournamentIdAndStatus(tournamentId, EnrollmentStatus.SELECTED);
+        if (currentSelectedCount + playerIds.getPlayerIds().size() > tournament.getMaxPlayers()) {
+            throw new IllegalStateException(
+                    String.format("Cannot select %d players. Only %d spots remaining (Maximum: %d, Current: %d)",
+                            playerIds.getPlayerIds().size(),
+                            tournament.getMaxPlayers() - currentSelectedCount,
+                            tournament.getMaxPlayers(),
+                            currentSelectedCount)
+            );
         }
 
-        if (tournamentEnrollmentRepository.countByTournamentIdAndStatus(tournamentId, EnrollmentStatus.SELECTED) >= tournament.getMaxPlayers()) {
-            throw new IllegalStateException("Tournament has reached maximum number of selected players");
+        List<TournamentEnrollment> enrollments = tournamentEnrollmentRepository
+                .findByTournamentIdAndPlayerIdIn(tournamentId, playerIds.getPlayerIds());
+
+        Map<Long, TournamentEnrollment> enrollmentMap = enrollments.stream()
+                .collect(Collectors.toMap(e -> e.getPlayer().getId(), e -> e));
+
+        List<String> errors = new ArrayList<>();
+        for (Long playerId : playerIds.getPlayerIds()) {
+            TournamentEnrollment enrollment = enrollmentMap.get(playerId);
+            if (enrollment == null) {
+                errors.add("Player " + playerId + " is not enrolled in the tournament");
+            } else if (enrollment.getStatus().equals(EnrollmentStatus.SELECTED)) {
+                errors.add("Player " + playerId + " is already selected");
+            }
         }
 
-        enrollment.setStatus(EnrollmentStatus.SELECTED);
-        tournamentEnrollmentRepository.save(enrollment);
+        if (!errors.isEmpty()) {
+            throw new BadEnrollmentStatusException(String.join(", ", errors));
+        }
+
+        enrollments.forEach(enrollment -> enrollment.setStatus(EnrollmentStatus.SELECTED));
+        tournamentEnrollmentRepository.saveAll(enrollments);
     }
 
-    public void deselectPlayer(Long tournamentId, Long playerId, String sessionId) {
+    public void deselectPlayer(Long tournamentId, PlayerIdsRequest playerIds, String sessionId) {
         UserSession userSession = userSessionRepository.findBySessionId(sessionId);
         if (userSession == null || userSession.getExpirationDate().isBefore(Instant.now())) {
             throw new UnauthorizedUserAction("Invalid or expired session");
@@ -164,16 +186,27 @@ public class TournamentService {
             throw new UnauthorizedUserAction("Only administrators can deselect players");
         }
 
-        Tournament tournament = tournamentRepository.findById(tournamentId).orElseThrow();
-        TournamentEnrollment enrollment = tournamentEnrollmentRepository
-                .findByTournamentIdAndPlayerId(tournamentId, playerId)
-                .orElseThrow(() -> new PlayerNotEnrolledException("Player is not enrolled in the tournament"));
+        List<TournamentEnrollment> enrollments = tournamentEnrollmentRepository
+                .findByTournamentIdAndPlayerIdIn(tournamentId, playerIds.getPlayerIds());
 
-        if (!enrollment.getStatus().equals(EnrollmentStatus.SELECTED)) {
-            throw new BadEnrollmentStatusException("User must be previously selected to deselect");
+        Map<Long, TournamentEnrollment> enrollmentMap = enrollments.stream()
+                .collect(Collectors.toMap(e -> e.getPlayer().getId(), e -> e));
+
+        List<String> errors = new ArrayList<>();
+        for (Long playerId : playerIds.getPlayerIds()) {
+            TournamentEnrollment enrollment = enrollmentMap.get(playerId);
+            if (enrollment == null) {
+                errors.add("Player " + playerId + " is not enrolled in the tournament");
+            } else if (!enrollment.getStatus().equals(EnrollmentStatus.SELECTED)) {
+                errors.add("Player " + playerId + " is not currently selected");
+            }
         }
 
-        enrollment.setStatus(EnrollmentStatus.PENDING);
-        tournamentEnrollmentRepository.save(enrollment);
+        if (!errors.isEmpty()) {
+            throw new BadEnrollmentStatusException(String.join(", ", errors));
+        }
+
+        enrollments.forEach(enrollment -> enrollment.setStatus(EnrollmentStatus.PENDING));
+        tournamentEnrollmentRepository.saveAll(enrollments);
     }
 }
