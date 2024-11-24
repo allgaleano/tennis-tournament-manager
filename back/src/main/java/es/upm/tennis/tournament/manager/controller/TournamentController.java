@@ -1,5 +1,6 @@
 package es.upm.tennis.tournament.manager.controller;
 
+import es.upm.tennis.tournament.manager.DTO.PlayerIdsRequest;
 import es.upm.tennis.tournament.manager.DTO.TournamentEnrollmentDTO;
 import es.upm.tennis.tournament.manager.exceptions.*;
 import es.upm.tennis.tournament.manager.model.Tournament;
@@ -14,6 +15,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 
@@ -109,11 +111,18 @@ public class TournamentController {
         }
     }
 
-    @PostMapping("/{tournamentId}/selectPlayer/{playerId}")
-    public ResponseEntity<Map<String, Object>> selectPlayer(@PathVariable Long tournamentId, @PathVariable Long playerId, @RequestHeader("Session-Id") String sessionId) {
+    @PostMapping("/{tournamentId}/selectPlayers")
+    public ResponseEntity<Map<String, Object>> selectPlayer(
+            @PathVariable Long tournamentId,
+            @RequestBody PlayerIdsRequest playerIds,
+            @RequestHeader("Session-Id") String sessionId
+    ) {
         try {
-            tournamentService.selectPlayer(tournamentId, playerId, sessionId);
-            return ResponseEntity.ok(Map.of("message", "Player selected successfully"));
+            tournamentService.selectPlayer(tournamentId, playerIds, sessionId);
+            return ResponseEntity.ok(Map.of(
+                    "message", "Players selected successfully",
+                    "selectedCount", playerIds.getPlayerIds().size()
+            ));
         } catch (InvalidCodeException | UnauthorizedUserAction e) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", e.getMessage()));
         } catch (IllegalStateException | PlayerNotEnrolledException e) {
@@ -125,11 +134,18 @@ public class TournamentController {
         }
     }
 
-    @PostMapping("/{tournamentId}/deselectPlayer/{playerId}")
-    public ResponseEntity<Map<String, Object>> deselectPlayer(@PathVariable Long tournamentId, @PathVariable Long playerId, @RequestHeader("Session-Id") String sessionId) {
+    @PostMapping("/{tournamentId}/deselectPlayers")
+    public ResponseEntity<Map<String, Object>> deselectPlayer(
+            @PathVariable Long tournamentId,
+            @RequestBody PlayerIdsRequest playerIds,
+            @RequestHeader("Session-Id") String sessionId
+    ) {
         try {
-            tournamentService.deselectPlayer(tournamentId, playerId, sessionId);
-            return ResponseEntity.ok(Map.of("message", "Player deselected successfully"));
+            tournamentService.deselectPlayer(tournamentId, playerIds, sessionId);
+            return ResponseEntity.ok(Map.of(
+                    "message", "Players deselected successfully",
+                    "deselectedCount", playerIds.getPlayerIds().size()
+            ));
         } catch (InvalidCodeException | UnauthorizedUserAction e) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", e.getMessage()));
         } catch (IllegalStateException | PlayerNotEnrolledException e) {
