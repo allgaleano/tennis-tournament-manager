@@ -3,6 +3,8 @@ import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { ColumnDef, flexRender, getCoreRowModel, useReactTable } from "@tanstack/react-table";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useState } from "react";
+import PlayerSelectionControls from "./player-selection-controls";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -10,6 +12,7 @@ interface DataTableProps<TData, TValue> {
   page: number;
   totalPages: number;
   tournamentId: number;
+  isAdmin: boolean;
 }
 
 export function DataTable<TData, TValue>({
@@ -18,11 +21,18 @@ export function DataTable<TData, TValue>({
   page,
   totalPages,
   tournamentId,
+  isAdmin,
 }: DataTableProps<TData, TValue>) {
+  const [rowSelection, setRowSelection] = useState({});
+
   const table = useReactTable({
     data,
     columns,
     getCoreRowModel: getCoreRowModel(),
+    onRowSelectionChange: setRowSelection,
+    state: {
+      rowSelection
+    }
   });
 
   const router = useRouter();
@@ -36,6 +46,12 @@ export function DataTable<TData, TValue>({
   return (
     <div className="w-full flex flex-col overflow-x-auto">
       <h2 className="mb-2">Jugadores Inscritos:</h2>
+      {isAdmin && (
+        <PlayerSelectionControls
+          rowSelection={rowSelection}
+          tournamentId={tournamentId}
+        />
+      )}
       <div className="rounded border">
         <Table>
           <TableHeader>
