@@ -125,7 +125,7 @@ public class TournamentController {
             ));
         } catch (InvalidCodeException | UnauthorizedUserAction e) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", e.getMessage()));
-        } catch (IllegalStateException | PlayerNotEnrolledException e) {
+        } catch (IllegalStateException e) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of("error", e.getMessage()));
         } catch (BadEnrollmentStatusException e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
@@ -148,8 +148,6 @@ public class TournamentController {
             ));
         } catch (InvalidCodeException | UnauthorizedUserAction e) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", e.getMessage()));
-        } catch (IllegalStateException | PlayerNotEnrolledException e) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of("error", e.getMessage()));
         } catch (BadEnrollmentStatusException e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         } catch (Exception e) {
