@@ -39,6 +39,7 @@ export type Tournament = {
   registrationDeadline: string;
   maxPlayers: number;
   status: string;
+  selectedPlayersCount: number;
 }
 
 export type Enrollment = {

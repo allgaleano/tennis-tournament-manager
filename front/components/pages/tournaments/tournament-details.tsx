@@ -29,7 +29,8 @@ async function getTournament(id: string): Promise<{ tournament?: Tournament; err
       name: data.name,
       registrationDeadline: data.registrationDeadline,
       maxPlayers: data.maxPlayers,
-      status: data.status
+      status: data.status,
+      selectedPlayersCount: data.selectedPlayersCount
     };
 
     return { tournament }

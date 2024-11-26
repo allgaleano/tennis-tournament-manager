@@ -1,6 +1,7 @@
 package es.upm.tennis.tournament.manager.service;
 
 import es.upm.tennis.tournament.manager.DTO.PlayerIdsRequest;
+import es.upm.tennis.tournament.manager.DTO.TournamentDTO;
 import es.upm.tennis.tournament.manager.DTO.TournamentEnrollmentDTO;
 import es.upm.tennis.tournament.manager.DTO.UserEnrolledDTO;
 import es.upm.tennis.tournament.manager.exceptions.*;
@@ -122,8 +123,13 @@ public class TournamentService {
         tournamentEnrollmentRepository.delete(tournamentEnrollment.get());
     }
 
-    public Tournament getTournament(Long tournamentId) {
-        return tournamentRepository.findById(tournamentId).orElseThrow();
+    public TournamentDTO getTournament(Long tournamentId) {
+        Tournament tournament = tournamentRepository.findById(tournamentId)
+                .orElseThrow(() -> new NoSuchElementException("Tournament not found with id: " + tournamentId));
+
+        long selectedPlayersCount = tournamentEnrollmentRepository.countByTournamentIdAndStatus(tournamentId, EnrollmentStatus.SELECTED);
+
+        return TournamentDTO.fromTournament(tournament, selectedPlayersCount);
     }
 
     public boolean isPlayerEnrolled(Long tournamentId, Long playerId) {
@@ -141,6 +147,10 @@ public class TournamentService {
         }
 
         Tournament tournament = tournamentRepository.findById(tournamentId).orElseThrow();
+
+        if (!tournament.getStatus().equals(TournamentStatus.ENROLLMENT_CLOSED)) {
+
+        }
 
         long currentSelectedCount = tournamentEnrollmentRepository
                 .countByTournamentIdAndStatus(tournamentId, EnrollmentStatus.SELECTED);
