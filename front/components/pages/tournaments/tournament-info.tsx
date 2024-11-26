@@ -7,6 +7,7 @@ const TournamentInfo = ({
 } : { 
   tournament: Tournament
 }) => {
+  console.log(tournament)
   return (
     <div className="w-full space-y-4 flex flex-col">
       <div className="flex justify-between border-b">
@@ -20,6 +21,10 @@ const TournamentInfo = ({
       <div className="flex justify-between border-b">
         <p>Número máximo de jugadores: </p>
         <p>{tournament.maxPlayers}</p>
+      </div>
+      <div className="flex justify-between border-b">
+        <p>Jugadores seleccionados: </p>
+        <p>{tournament.selectedPlayersCount}</p>
       </div>
     </div>
   )

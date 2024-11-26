@@ -1,6 +1,7 @@
 package es.upm.tennis.tournament.manager.controller;
 
 import es.upm.tennis.tournament.manager.DTO.PlayerIdsRequest;
+import es.upm.tennis.tournament.manager.DTO.TournamentDTO;
 import es.upm.tennis.tournament.manager.DTO.TournamentEnrollmentDTO;
 import es.upm.tennis.tournament.manager.exceptions.*;
 import es.upm.tennis.tournament.manager.model.Tournament;
@@ -35,7 +36,7 @@ public class TournamentController {
     }
 
     @GetMapping("/{tournamentId}")
-    public ResponseEntity<Tournament> getTournament(@PathVariable Long tournamentId) {
+    public ResponseEntity<TournamentDTO> getTournament(@PathVariable Long tournamentId) {
         try {
             return ResponseEntity.ok(tournamentService.getTournament(tournamentId));
         } catch (NoSuchElementException e) {

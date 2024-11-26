@@ -1,5 +1,6 @@
 package es.upm.tennis.tournament.manager.service;
 
+import es.upm.tennis.tournament.manager.DTO.TournamentDTO;
 import es.upm.tennis.tournament.manager.DTO.TournamentEnrollmentDTO;
 import es.upm.tennis.tournament.manager.exceptions.*;
 import es.upm.tennis.tournament.manager.model.*;
@@ -119,7 +120,7 @@ class TournamentServiceTest {
             when(tournamentRepository.findById(1L)).thenReturn(Optional.of(tournament));
 
             // Act
-            Tournament result = tournamentService.getTournament(1L);
+            TournamentDTO result = tournamentService.getTournament(1L);
 
             // Assert
             assertNotNull(result);
