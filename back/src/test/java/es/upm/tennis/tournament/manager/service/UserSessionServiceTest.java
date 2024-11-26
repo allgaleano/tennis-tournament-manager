@@ -1,5 +1,7 @@
 package es.upm.tennis.tournament.manager.service;
 
+import es.upm.tennis.tournament.manager.exceptions.CustomException;
+import es.upm.tennis.tournament.manager.exceptions.ErrorCode;
 import es.upm.tennis.tournament.manager.model.Role;
 import es.upm.tennis.tournament.manager.model.User;
 import es.upm.tennis.tournament.manager.model.UserSession;
@@ -195,10 +197,11 @@ class UserSessionServiceTest {
             doNothing().when(userSessionRepository).delete(testSession);
 
             // Act
-            boolean result = userSessionService.invalidateSession(testSession.getSessionId());
+             assertDoesNotThrow(
+                     () -> userSessionService.invalidateSession(testSession.getSessionId())
+             );
 
             // Assert
-            assertTrue(result);
             verify(userSessionRepository).delete(testSession);
         }
 
@@ -209,10 +212,11 @@ class UserSessionServiceTest {
             when(userSessionRepository.findBySessionId(anyString())).thenReturn(null);
 
             // Act
-            boolean result = userSessionService.invalidateSession("non-existent-session");
+            CustomException ex  = assertThrows(CustomException.class,
+                    () -> userSessionService.invalidateSession("non-existent-session"));
 
             // Assert
-            assertFalse(result);
+            assertEquals(ErrorCode.INVALID_TOKEN, ex.getErrorCode());
             verify(userSessionRepository, never()).delete(any(UserSession.class));
         }
     }
