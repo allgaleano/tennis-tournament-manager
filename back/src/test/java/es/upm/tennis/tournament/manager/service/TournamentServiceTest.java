@@ -291,7 +291,7 @@ class TournamentServiceTest {
             Page<TournamentEnrollment> enrollmentPage = new PageImpl<>(
                     Collections.singletonList(tournamentEnrollment));
             when(tournamentRepository.existsById(1L)).thenReturn(true);
-            when(tournamentEnrollmentRepository.findAllByTournamentId(1L, pageable))
+            when(tournamentEnrollmentRepository.findAllByTournamentIdOrderByCustomStatus(1L, pageable))
                     .thenReturn(enrollmentPage);
 
             // Act
