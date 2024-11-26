@@ -7,7 +7,6 @@ const TournamentInfo = ({
 } : { 
   tournament: Tournament
 }) => {
-  console.log(tournament)
   return (
     <div className="w-full space-y-4 flex flex-col">
       <div className="flex justify-between border-b">

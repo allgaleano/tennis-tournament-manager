@@ -17,6 +17,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { ApiResponse } from "@/types";
 
 
 const RegisterForm = () => {
@@ -46,30 +47,22 @@ const RegisterForm = () => {
         },
         body: JSON.stringify(values),
       });
-      if (!response.ok) {
-        if (response.status === 409) {
-          toast({
-            variant: "destructive",
-            title: "El usuario ya existe",
-            description: "Cambia el nombre de usuario o el email e inténtalo de nuevo"
-          });
-        } else {
-          toast({
-            variant: "destructive",
-            title: "¡Algo ha salido mal!",
-            description: "Inténtalo de nuevo más tarde"
-          })
-        }
-        setIsLoading(false);
-        return;
-      }
 
+      const data: ApiResponse = await response.json();
+
+      const variant = response.ok ? "success" : "destructive";
+
+      
       toast({
-        variant: "success",
-        title: "Confirma tu email",
-        description: "Comprueba tu bandeja de entrada y verifica tu cuenta"
+        variant,
+        title: data.title,
+        ...(data.description && { description: data.description })
       })
-      form.reset();
+      
+      if (response.ok) {
+        form.reset();
+      } 
+
     } catch(error) {
       toast({
         variant: "destructive",

@@ -12,7 +12,6 @@ import { Form, FormControl, FormField, FormItem, FormMessage } from "@/component
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
 import { getClientSideCookie } from "@/lib/users/getClientSideCookie";
-import { changeUsername } from "@/lib/settings/changeUsername";
 
 const ChangeUsernameDialog = ({ userData } : { userData : UserData }) => {
   
@@ -41,32 +40,24 @@ const ChangeUsernameDialog = ({ userData } : { userData : UserData }) => {
       return;
     }
     try {
-      const response = await changeUsername({
-        userId: id,
-        sessionId: sessionId,
-        newUsername: values.username
+
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URI}/users/${id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type" : "application/json",
+          "Session-Id" : sessionId
+        }, 
+        body: JSON.stringify({ username: values.username })  
       });
 
-      if (response.success) {
-        toast({
-          variant: "success",
-          title: "Nombre de usuario cambiado con éxito"
-        });
-        setIsLoading(false);
-        return;
-      } else if (response.error === "username-taken"){
-        toast({
-          variant: "destructive",
-          title: "Nombre de usuario en uso",
-          description: "Prueba con otro nombre de usuario"
-        });
-      } else {
-        toast({
-          variant: "destructive",
-          title: "¡Algo ha ido mal!",
-          description: "Inténtalo de nuevo más tarde"
-        });  
-      }
+      const data = await response.json();
+
+      toast({
+        variant: response.ok ? "success" : "destructive",
+        title: data.title,
+        ...(data.description && { description: data.description })
+      });      
+
     } catch (error) {
       toast({
         variant: "destructive",

@@ -60,39 +60,17 @@ const PlayerSelectionControls = ({
       });
       const data = await response.json();
 
-      if (response.ok) {
-        toast({
-          variant: "success",
-          title: action === "select" ? "Jugadores seleccionados con éxito" : "Jugadores deseleccionados con éxito",
-          description: `${action === "select" ? "Seleccionados" : "Deseleccionados"}: ${
-            data.selectedCount || data.deselectedCount
-          } jugadores`,
-        });
+      toast({
+        variant: response.ok ? "success" : "destructive",
+        title: data.title,
+        ...(data.description && { description: data.description })
+      })
 
+      if (response.ok) {
         onActionSuccess();
         router.refresh();
-
-      } else if (response.status === 403) {
-        toast({
-          variant: "destructive",
-          title: "Acción no permitida",
-          description: "No tienes permisos para realizar esta acción."
-        });
-      } else if (response.status === 400) {
-        toast({
-          variant: "destructive",
-          title: `${action === "select" ? "Selección" : "Deselección"} fallida`,
-          description: `${action === "select" ? "Algún jugador estaba previamente seleccionado" : "Algún jugador no estaba seleccionado"}`,
-        })
-      } else if (response.status === 409) {
-        toast({
-          variant: "destructive",
-          title: "Error al seleccionar jugadores",
-          description: "Excede el número máximo de jugadores seleccionados."
-        })
-      } else {
-        throw new Error("Error desconocido");
       }
+
     } catch (error) {
       toast({
         variant: "destructive",

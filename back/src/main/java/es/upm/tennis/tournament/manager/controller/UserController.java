@@ -52,22 +52,25 @@ public class UserController {
     }
 
     @DeleteMapping("/users/{id}")
-    public ResponseEntity<String> deleteUser(
+    public ResponseEntity<Map<String, String>> deleteUser(
             @PathVariable Long id,
             @RequestHeader("Session-Id") String sessionId
     ) {
         userService.deleteUser(id, sessionId);
-        return ResponseEntity.ok("User deleted successfully");
-
+        return ResponseEntity.ok(Map.of(
+                "title", "Usuario eliminado con éxito"
+        ));
     }
 
     @PutMapping("/users/{id}")
-    public ResponseEntity<String> modifyUser(
+    public ResponseEntity<Map<String, String>> modifyUser(
             @PathVariable Long id,
             @RequestHeader("Session-Id") String sessionId,
             @RequestBody UserDTO userDTO
     ) {
         userService.modifyUser(id, sessionId, userDTO);
-        return ResponseEntity.ok("User modified successfully");
+        return ResponseEntity.ok(Map.of(
+                "title", "Usuario modificado con éxito"
+        ));
     }
 }

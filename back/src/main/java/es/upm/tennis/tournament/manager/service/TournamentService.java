@@ -234,7 +234,7 @@ public class TournamentService {
                     String.format(
                             "Solo quedan %d plazas disponibles y se han seleccionado %d jugadores",
                             tournament.getMaxPlayers() - currentSelectedCount,
-                            currentSelectedCount
+                            playerIds.getPlayerIds().size()
                     )
             );
         }
