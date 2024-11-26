@@ -78,7 +78,9 @@ public class TournamentService {
         if (!tournamentRepository.existsById(tournamentId)) {
             throw new NoSuchElementException("Tournament not found");
         }
-        Page<TournamentEnrollment> enrollments = tournamentEnrollmentRepository.findAllByTournamentId(tournamentId, pageable);
+        Page<TournamentEnrollment> enrollments = tournamentEnrollmentRepository
+                .findAllByTournamentIdOrderByCustomStatus(tournamentId, pageable);
+
         return enrollments.map(enrollment -> {
             TournamentEnrollmentDTO tournamentEnrollmentDTO = new TournamentEnrollmentDTO();
             UserEnrolledDTO userEnrolledDTO = new UserEnrolledDTO();
