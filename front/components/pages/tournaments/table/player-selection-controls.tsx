@@ -1,22 +1,29 @@
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { getClientSideCookie } from "@/lib/users/getClientSideCookie";
+import { useRouter } from "next/navigation";
 
 interface PlayerSelectionControlsProps {
   rowSelection: Record<string, boolean>;
   tournamentId: number;
+  onActionSuccess: () => void;
 }
 const PlayerSelectionControls = ({
   rowSelection,
   tournamentId,
+  onActionSuccess,
 }: PlayerSelectionControlsProps) => {
   const { toast } = useToast();
+  const router = useRouter();
 
   const hasSelectedRows = Object.values(rowSelection).some((isSelected) => isSelected);
 
   const handleAction = async (action: "select" | "deselect") => {
-    const selectedPlayers = Object.keys(rowSelection).filter((key) => rowSelection[key]);
+    const selectedPlayers = Object.keys(rowSelection)
+      .filter((key) => rowSelection[key])
+
     console.log(selectedPlayers);
+
     if (selectedPlayers.length === 0) {
       toast({
         variant: "destructive",
@@ -61,6 +68,10 @@ const PlayerSelectionControls = ({
             data.selectedCount || data.deselectedCount
           } jugadores`,
         });
+
+        onActionSuccess();
+        router.refresh();
+
       } else if (response.status === 403) {
         toast({
           variant: "destructive",
@@ -92,7 +103,7 @@ const PlayerSelectionControls = ({
   }
 
   return (
-    <div className="flex space-x-4 mb-4">
+    <div className="flex space-x-2">
       <Button
         variant="default"
         size="sm"
