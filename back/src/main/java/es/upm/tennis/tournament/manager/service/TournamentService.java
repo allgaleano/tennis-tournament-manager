@@ -48,20 +48,41 @@ public class TournamentService {
     }
 
     public void enrollPlayerToTournament(Long tournamentId, Long playerId, String sessionId) {
-        Tournament tournament = tournamentRepository.findById(tournamentId).orElseThrow();
+        logger.info("Enrolling player {} to tournament {}", playerId, tournamentId);
+        Tournament tournament = tournamentRepository.findById(tournamentId)
+                .orElseThrow(
+                        () -> new CustomException(
+                                ErrorCode.TOURNAMENT_NOT_FOUND,
+                                "Torneo no encontrado"
+                        )
+                );
 
-        User user = userRepository.findById(playerId).orElseThrow();
+        User user = userRepository.findById(playerId)
+                .orElseThrow(
+                        () -> new CustomException(
+                                ErrorCode.USER_NOT_FOUND,
+                                "Usuario no encontrado"
+                        )
+                );
 
         UserSession userSession = userSessionRepository.findBySessionId(sessionId);
 
         permissionChecker.validateUserPermission(user, userSession);
 
-        if (!user.getRole().getType().name().equals("ADMIN") && !tournament.getStatus().name().equals("ENROLLMENT_OPEN")) {
-            throw new IllegalStateException("Tournament is closed for enrollments");
+        boolean isAdmin = user.getRole().getType().name().equals("ADMIN");
+
+        if (!isAdmin && !tournament.getStatus().name().equals("ENROLLMENT_OPEN")) {
+            throw new CustomException(
+                    ErrorCode.INVALID_TOURNAMENT_STATUS,
+                    "Inscripciones cerradas"
+            );
         }
 
-        if (!userSession.getUser().getRole().getType().name().equals("ADMIN") && tournament.getRegistrationDeadline() != null && tournament.getRegistrationDeadline().isBefore(Instant.now())) {
-            throw new IllegalStateException("Tournament registration deadline has passed");
+        if (!isAdmin && tournament.getRegistrationDeadline() != null && tournament.getRegistrationDeadline().isBefore(Instant.now())) {
+            throw new CustomException(
+                    ErrorCode.INVALID_TOURNAMENT_STATUS,
+                    "La fecha límite de inscripción ha pasado"
+            );
         }
 
         TournamentEnrollment tournamentEnrollment = new TournamentEnrollment();
@@ -69,7 +90,10 @@ public class TournamentService {
         tournamentEnrollment.setTournament(tournament);
 
         if (tournamentEnrollmentRepository.existsByTournamentIdAndPlayerId(tournamentId, playerId)) {
-            throw new PlayerAlreadyEnrolledException("Player already enrolled in the tournament");
+            throw new CustomException(
+                    ErrorCode.BAD_ENROLLMENT_STATUS,
+                    "Jugador ya inscrito en el torneo"
+            );
         }
 
         tournamentEnrollmentRepository.save(tournamentEnrollment);
@@ -77,7 +101,10 @@ public class TournamentService {
 
     public Page<TournamentEnrollmentDTO> getTournamentEnrollments(Long tournamentId, Pageable pageable) {
         if (!tournamentRepository.existsById(tournamentId)) {
-            throw new NoSuchElementException("Tournament not found");
+            throw new CustomException(
+                    ErrorCode.TOURNAMENT_NOT_FOUND,
+                    "Torneo no encontrado"
+            );
         }
         Page<TournamentEnrollment> enrollments = tournamentEnrollmentRepository
                 .findAllByTournamentIdOrderByCustomStatus(tournamentId, pageable);
@@ -100,24 +127,52 @@ public class TournamentService {
 
     public void unenrollPlayerFromTournament(Long tournamentId, Long playerId, String sessionId) {
         logger.info("Unenrolling player {} from tournament {}", playerId, tournamentId);
-        Tournament tournament = tournamentRepository.findById(tournamentId).orElseThrow();
+        Tournament tournament = tournamentRepository.findById(tournamentId)
+                .orElseThrow(
+                        () -> new CustomException(
+                                ErrorCode.TOURNAMENT_NOT_FOUND,
+                                "Torneo no encontrado"
+                        )
+                );
 
-        User user = userRepository.findById(playerId).orElseThrow();
+        User user = userRepository.findById(playerId)
+                .orElseThrow(
+                        () -> new CustomException(
+                                ErrorCode.USER_NOT_FOUND,
+                                "Usuario no encontrado"
+                        )
+                );
 
         UserSession userSession = userSessionRepository.findBySessionId(sessionId);
 
         permissionChecker.validateUserPermission(user, userSession);
 
-        if (!userSession.getUser().getRole().getType().name().equals("ADMIN") && tournament.getRegistrationDeadline() != null && tournament.getRegistrationDeadline().isBefore(Instant.now())) {
-            throw new IllegalStateException("Tournament registration deadline has passed");
+        boolean isAdmin = user.getRole().getType().name().equals("ADMIN");
+
+        if (
+                !isAdmin
+                && tournament.getRegistrationDeadline() != null
+                && tournament.getRegistrationDeadline().isBefore(Instant.now())
+        ) {
+            throw new CustomException(
+                    ErrorCode.INVALID_TOURNAMENT_STATUS,
+                    "La fecha límite de inscripción ha pasado"
+            );
         }
+
         Optional<TournamentEnrollment> tournamentEnrollment = tournamentEnrollmentRepository.findByTournamentIdAndPlayerId(tournamentId, playerId);
         if (tournamentEnrollment.isEmpty()) {
-            throw new PlayerNotEnrolledException("Player is not enrolled in the tournament");
+            throw new CustomException(
+                    ErrorCode.BAD_ENROLLMENT_STATUS,
+                    "Jugador no inscrito en el torneo"
+            );
         }
 
         if (tournamentEnrollment.get().getStatus().equals(EnrollmentStatus.SELECTED)) {
-            throw new PlayerAlreadyAcceptedException("Player is already accepted in the tournament");
+            throw new CustomException(
+                    ErrorCode.BAD_ENROLLMENT_STATUS,
+                    "Jugador ya aceptado en el torneo"
+            );
         }
 
         tournamentEnrollmentRepository.delete(tournamentEnrollment.get());
@@ -125,7 +180,10 @@ public class TournamentService {
 
     public TournamentDTO getTournament(Long tournamentId) {
         Tournament tournament = tournamentRepository.findById(tournamentId)
-                .orElseThrow(() -> new NoSuchElementException("Tournament not found with id: " + tournamentId));
+                .orElseThrow(() -> new CustomException(
+                        ErrorCode.TOURNAMENT_NOT_FOUND,
+                        "Torneo no encontrado"
+                ));
 
         long selectedPlayersCount = tournamentEnrollmentRepository.countByTournamentIdAndStatus(tournamentId, EnrollmentStatus.SELECTED);
 
@@ -139,28 +197,45 @@ public class TournamentService {
     public void selectPlayer(Long tournamentId, PlayerIdsRequest playerIds, String sessionId) {
         UserSession userSession = userSessionRepository.findBySessionId(sessionId);
         if (userSession == null || userSession.getExpirationDate().isBefore(Instant.now())) {
-            throw new InvalidCodeException("Invalid or expired session");
+            throw new CustomException(
+                    ErrorCode.INVALID_TOKEN,
+                    "Sesión inválida o expirada"
+            );
         }
 
         if (!userSession.getUser().getRole().getType().name().equals("ADMIN")) {
-            throw new UnauthorizedUserAction("Only administrators can select players");
+            throw new CustomException(
+                    ErrorCode.UNAUTHORIZED_ACTION,
+                    "Acción no autorizada",
+                    "Solo los administradores pueden seleccionar jugadores"
+            );
         }
 
-        Tournament tournament = tournamentRepository.findById(tournamentId).orElseThrow();
+        Tournament tournament = tournamentRepository.findById(tournamentId)
+                .orElseThrow(() -> new CustomException(
+                        ErrorCode.TOURNAMENT_NOT_FOUND,
+                        "Torneo no encontrado"
+                ));
 
         if (!tournament.getStatus().equals(TournamentStatus.ENROLLMENT_CLOSED)) {
-
+            throw new CustomException(
+                    ErrorCode.INVALID_TOURNAMENT_STATUS,
+                    "Las inscripciones deben estar cerradas"
+            );
         }
 
         long currentSelectedCount = tournamentEnrollmentRepository
                 .countByTournamentIdAndStatus(tournamentId, EnrollmentStatus.SELECTED);
+
         if (currentSelectedCount + playerIds.getPlayerIds().size() > tournament.getMaxPlayers()) {
-            throw new IllegalStateException(
-                    String.format("Cannot select %d players. Only %d spots remaining (Maximum: %d, Current: %d)",
-                            playerIds.getPlayerIds().size(),
+            throw new CustomException(
+                    ErrorCode.MAX_PLAYERS_EXCEEDED,
+                    "No se pueden seleccionar jugadores",
+                    String.format(
+                            "Solo quedan %d plazas disponibles y se han seleccionado %d jugadores",
                             tournament.getMaxPlayers() - currentSelectedCount,
-                            tournament.getMaxPlayers(),
-                            currentSelectedCount)
+                            currentSelectedCount
+                    )
             );
         }
 
@@ -174,14 +249,18 @@ public class TournamentService {
         for (Long playerId : playerIds.getPlayerIds()) {
             TournamentEnrollment enrollment = enrollmentMap.get(playerId);
             if (enrollment == null) {
-                errors.add("Player " + playerId + " is not enrolled in the tournament");
+                errors.add("Jugador "+ playerId + " no inscrito en el torneo");
             } else if (enrollment.getStatus().equals(EnrollmentStatus.SELECTED)) {
-                errors.add("Player " + playerId + " is already selected");
+                errors.add(enrollment.getPlayer().getUsername() + " ya seleccionado");
             }
         }
 
         if (!errors.isEmpty()) {
-            throw new BadEnrollmentStatusException(String.join(", ", errors));
+            throw new CustomException(
+                    ErrorCode.BAD_ENROLLMENT_STATUS,
+                    "Error al seleccionar jugadores",
+                    String.join(", ", errors)
+            );
         }
 
         enrollments.forEach(enrollment -> enrollment.setStatus(EnrollmentStatus.SELECTED));
@@ -191,15 +270,42 @@ public class TournamentService {
     public void deselectPlayer(Long tournamentId, PlayerIdsRequest playerIds, String sessionId) {
         UserSession userSession = userSessionRepository.findBySessionId(sessionId);
         if (userSession == null || userSession.getExpirationDate().isBefore(Instant.now())) {
-            throw new UnauthorizedUserAction("Invalid or expired session");
+            throw new CustomException(
+                    ErrorCode.INVALID_TOKEN,
+                    "Sesión inválida o expirada"
+            );
         }
 
         if (!userSession.getUser().getRole().getType().name().equals("ADMIN")) {
-            throw new UnauthorizedUserAction("Only administrators can deselect players");
+            throw new CustomException(
+                    ErrorCode.UNAUTHORIZED_ACTION,
+                    "Acción no autorizada",
+                    "Solo los administradores pueden deseleccionar jugadores"
+            );
+        }
+
+        Tournament tournament = tournamentRepository.findById(tournamentId)
+                .orElseThrow(() -> new CustomException(
+                        ErrorCode.TOURNAMENT_NOT_FOUND,
+                        "Torneo no encontrado"
+                ));
+
+        if (!tournament.getStatus().equals(TournamentStatus.ENROLLMENT_CLOSED)) {
+            throw new CustomException(
+                    ErrorCode.INVALID_TOURNAMENT_STATUS,
+                    "Las inscripciones deben estar cerradas"
+            );
         }
 
         List<TournamentEnrollment> enrollments = tournamentEnrollmentRepository
                 .findByTournamentIdAndPlayerIdIn(tournamentId, playerIds.getPlayerIds());
+
+        if (enrollments.isEmpty()) {
+            throw new CustomException(
+                    ErrorCode.BAD_ENROLLMENT_STATUS,
+                    "Jugadores no inscritos en el torneo"
+            );
+        }
 
         Map<Long, TournamentEnrollment> enrollmentMap = enrollments.stream()
                 .collect(Collectors.toMap(e -> e.getPlayer().getId(), e -> e));
@@ -208,14 +314,18 @@ public class TournamentService {
         for (Long playerId : playerIds.getPlayerIds()) {
             TournamentEnrollment enrollment = enrollmentMap.get(playerId);
             if (enrollment == null) {
-                errors.add("Player " + playerId + " is not enrolled in the tournament");
+                errors.add("Jugador " + playerId + " no inscrito en el torneo");
             } else if (!enrollment.getStatus().equals(EnrollmentStatus.SELECTED)) {
-                errors.add("Player " + playerId + " is not currently selected");
+                errors.add(enrollment.getPlayer().getUsername() + " no seleccionado");
             }
         }
 
         if (!errors.isEmpty()) {
-            throw new BadEnrollmentStatusException(String.join(", ", errors));
+            throw new CustomException(
+                    ErrorCode.BAD_ENROLLMENT_STATUS,
+                    "Error al deseleccionar jugadores",
+                    String.join(", ", errors)
+            );
         }
 
         enrollments.forEach(enrollment -> enrollment.setStatus(EnrollmentStatus.PENDING));

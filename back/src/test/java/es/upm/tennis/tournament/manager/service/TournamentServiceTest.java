@@ -135,8 +135,10 @@ class TournamentServiceTest {
             when(tournamentRepository.findById(1L)).thenReturn(Optional.empty());
 
             // Act & Assert
-            assertThrows(NoSuchElementException.class,
+            CustomException ex = assertThrows(CustomException.class,
                     () -> tournamentService.getTournament(1L));
+
+            assertEquals(ErrorCode.TOURNAMENT_NOT_FOUND, ex.getErrorCode());
         }
     }
 
@@ -174,8 +176,10 @@ class TournamentServiceTest {
             doNothing().when(permissionChecker).validateUserPermission(any(), any());
 
             // Act & Assert
-            assertThrows(IllegalStateException.class,
+            CustomException ex = assertThrows(CustomException.class,
                     () -> tournamentService.enrollPlayerToTournament(1L, 1L, "test-session"));
+
+            assertEquals(ErrorCode.INVALID_TOURNAMENT_STATUS, ex.getErrorCode());
         }
 
         @Test
@@ -258,8 +262,10 @@ class TournamentServiceTest {
             doNothing().when(permissionChecker).validateUserPermission(any(), any());
 
             // Act & Assert
-            assertThrows(PlayerNotEnrolledException.class,
+            CustomException ex = assertThrows(CustomException.class,
                     () -> tournamentService.unenrollPlayerFromTournament(1L, 1L, "test-session"));
+
+            assertEquals(ErrorCode.BAD_ENROLLMENT_STATUS, ex.getErrorCode());
         }
 
         @Test
@@ -275,8 +281,10 @@ class TournamentServiceTest {
             doNothing().when(permissionChecker).validateUserPermission(any(), any());
 
             // Act & Assert
-            assertThrows(PlayerAlreadyAcceptedException.class,
+            CustomException ex = assertThrows(CustomException.class,
                     () -> tournamentService.unenrollPlayerFromTournament(1L, 1L, "test-session"));
+
+            assertEquals(ErrorCode.BAD_ENROLLMENT_STATUS, ex.getErrorCode());
         }
     }
 
@@ -316,8 +324,10 @@ class TournamentServiceTest {
             when(tournamentRepository.existsById(1L)).thenReturn(false);
 
             // Act & Assert
-            assertThrows(NoSuchElementException.class,
+            CustomException ex = assertThrows(CustomException.class,
                     () -> tournamentService.getTournamentEnrollments(1L, pageable));
+
+            assertEquals(ErrorCode.TOURNAMENT_NOT_FOUND, ex.getErrorCode());
         }
     }
 
@@ -369,8 +379,10 @@ class TournamentServiceTest {
             doNothing().when(permissionChecker).validateUserPermission(any(), any());
 
             // Act & Assert
-            assertThrows(IllegalStateException.class,
+            CustomException ex = assertThrows(CustomException.class,
                     () -> tournamentService.enrollPlayerToTournament(1L, 1L, "test-session"));
+
+            assertEquals(ErrorCode.INVALID_TOURNAMENT_STATUS, ex.getErrorCode());
         }
 
         @Test
@@ -384,8 +396,10 @@ class TournamentServiceTest {
             doNothing().when(permissionChecker).validateUserPermission(any(), any());
 
             // Act & Assert
-            assertThrows(IllegalStateException.class,
+            CustomException ex = assertThrows(CustomException.class,
                     () -> tournamentService.enrollPlayerToTournament(1L, 1L, "test-session"));
+
+            assertEquals(ErrorCode.INVALID_TOURNAMENT_STATUS, ex.getErrorCode());
         }
 
         @Test
@@ -399,8 +413,10 @@ class TournamentServiceTest {
             doNothing().when(permissionChecker).validateUserPermission(any(), any());
 
             // Act & Assert
-            assertThrows(IllegalStateException.class,
+            CustomException ex = assertThrows(CustomException.class,
                     () -> tournamentService.enrollPlayerToTournament(1L, 1L, "test-session"));
+
+            assertEquals(ErrorCode.INVALID_TOURNAMENT_STATUS, ex.getErrorCode());
         }
     }
 }
