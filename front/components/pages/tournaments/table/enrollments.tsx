@@ -1,4 +1,4 @@
-import { Enrollment, EnrollmentDisplayList, User, UserData } from "@/types";
+import { Enrollment, EnrollmentDisplayList, UserData } from "@/types";
 import { cookies } from "next/headers";
 import { DataTable } from "./data-table";
 import { columns } from "./columns";
