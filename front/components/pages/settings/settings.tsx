@@ -7,7 +7,6 @@ import DataCard from "@/components/pages/settings/data-card";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { deleteUserAccount } from "@/lib/settings/deleteUserAccount";
 import { getClientSideCookie } from "@/lib/users/getClientSideCookie";
 import { useToast } from "@/hooks/use-toast";
 import { IoMdSettings } from "react-icons/io";
@@ -39,22 +38,26 @@ const Settings = () => {
       return;
     }
     try {
-      const response = await deleteUserAccount(id, sessionId);
-      if (response) {
-        toast({
-          variant: "success",
-          title: "Cuenta eliminada",
-          description: "Tu cuenta ha sido eliminada exitosamente."
-        });
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URI}/users/${id}`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type" : "application/json",
+          "Session-Id" : sessionId
+        }
+      });
+  
+      const data = await response.json();
+
+      toast({
+        variant: response.ok ? "success" : "destructive",
+        title: data.title,
+        ...(data.description && { description: data.description })
+      });
+
+      if (response.ok) {
         router.refresh();
-        return;
-      } else {
-        toast({
-          variant: "destructive",
-          title: "¡Algo ha ido mal!",
-          description: "No se pudo eliminar tu cuenta, Inténtalo de nuevo más tarde."
-        });
-      }
+      } 
+
     } catch (error) {
       toast({
         variant: "destructive",

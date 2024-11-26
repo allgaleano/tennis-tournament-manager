@@ -149,20 +149,18 @@ export const columns: ColumnDef<User>[] = [
             },
             body: JSON.stringify({ role: newRole }),
           })
-          
-          if (!response.ok) {
-            toast({
-              variant: "destructive",
-              title: "Error inesperado al cambiar de rol"
-            });
-            setSelectedRole(originalRole);
-            return;
-          };
+
+          const data = await response.json();
 
           toast({
-            variant: "success",
-            title: "Rol cambiado con éxito"
-          });
+            variant: response.ok ? "success" : "destructive",
+            title: data.title,
+            ...(data.description && { description: data.description })
+          })
+
+          if (!response.ok) {
+            setSelectedRole(originalRole);
+          } 
         } catch (error) {
           toast({
             variant: "destructive",

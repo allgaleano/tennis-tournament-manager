@@ -10,6 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
 import { Button } from "../ui/button";
+import { ApiResponse } from "@/types";
 
 const ChangePassword = () => {
   const { toast } = useToast();
@@ -32,27 +33,28 @@ const ChangePassword = () => {
         },
         body: JSON.stringify(values.email)
       });
+
+      const data: ApiResponse = await response.json();
+      
       if (response.ok) {
         toast({
           variant: "success",
-          title: "Email de confirmación enviado",
-          description: "Comprueba de tu bandeja de entrada"
-        })
-      } else if (response.status === 404) {
-        toast({
-          variant: "destructive",
-          title: "Usuario inexistente",
-          description: "No existe ninguna cuenta con ese email asociado"
+          title: data.title,
+          ...(data.description && { description: data.description })
         })
       } else {
-        throw new Error("Error interno del servidor");
-      }
+        toast({
+          variant: "destructive",
+          title: data.title,
+          ...(data.description && { description: data.description })
+        })
+      } 
     } catch (error) {
       toast({
         variant: "destructive",
         title: "¡Algo ha salido mal!",
         description: "Inténtalo de nuevo más tarde"
-      })
+      });
       console.error(error);
     }
     setIsLoading(false);

@@ -1,3 +1,9 @@
+export interface ApiResponse {
+  title: string;
+  description: string;
+  errorCode: string;
+}
+
 export interface UserData {
   id: number;
   name: string;

@@ -45,8 +45,10 @@ const LoginForm = () => {
         },
         body: JSON.stringify(values),
       });
+
+      const data = await response.json();
+      
       if (response.ok) {
-        const data = await response.json();
         const sessionId = data.sessionId;
         const sessionExp = new Date(data.sessionExp);
 
@@ -54,28 +56,11 @@ const LoginForm = () => {
 
         router.push(DEFAULT_LOGIN_REDIRECT);
         return;
-      }
-      if (response.status === 401) {
+      } else {
         toast({
           variant: "destructive",
-          title: "Usuario o contraseña incorrectos",
-          description: "Revisa que las credenciales sean correctas"
-        });
-      } else if (response.status === 403) {
-        const errorData = await response.json();
-        if (errorData.error === "Account disabled") {
-          toast({
-            variant: "destructive",
-            title: "Cuenta deshabilitada",
-            description: "Contacta con el soporte técnico para solicitar un nuevo permiso"
-          });
-          setIsLoading(false);
-          return;
-        }
-        toast({
-          variant: "destructive",
-          title: "Cuenta no activada",
-          description: "Confirma tu email para activar tu cuenta antes de inciar sesión"
+          title: data.title,
+          description: data.description
         });
       }
     } catch (error) {

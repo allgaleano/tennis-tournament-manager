@@ -12,6 +12,7 @@ import { useEffect, useState } from "react";
 import { CheckCircledIcon, CrossCircledIcon } from "@radix-ui/react-icons";
 import { useSearchParams } from "next/navigation";
 import BackButton from "@/components/auth/back-button";
+import { ApiResponse } from "@/types";
 
 const ConfirmEmail = () => {
   const searchParams = useSearchParams();
@@ -41,15 +42,17 @@ const ConfirmEmail = () => {
           },
         });
 
+        const data: ApiResponse = await response.json();
+
         if (response.ok) {
-          setTitle("Cuenta verificada con éxito");
-          setLabel("Ya puedes iniciar sesión con tu cuenta");
           setSuccess(true);
         } else {
-          setTitle("Error al verificar la cuenta");
-          setLabel("El enlace ha expirado o no es válido");
           setSuccess(false);
         }
+
+        setTitle(data.title);
+        setLabel(data.description);
+      
       } catch(error) {
         setTitle("Error al verificar la cuenta");
         setLabel("Ha ocurrido un error, por favor inténtelo de nuevo más tarde");
