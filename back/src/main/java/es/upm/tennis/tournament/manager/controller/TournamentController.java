@@ -3,7 +3,6 @@ package es.upm.tennis.tournament.manager.controller;
 import es.upm.tennis.tournament.manager.DTO.PlayerIdsRequest;
 import es.upm.tennis.tournament.manager.DTO.TournamentDTO;
 import es.upm.tennis.tournament.manager.DTO.TournamentEnrollmentDTO;
-import es.upm.tennis.tournament.manager.exceptions.*;
 import es.upm.tennis.tournament.manager.model.Tournament;
 import es.upm.tennis.tournament.manager.service.TournamentService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,13 +11,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.PagedModel;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.Map;
-import java.util.NoSuchElementException;
 
 @RestController
 @RequestMapping("/tournaments")
