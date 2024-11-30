@@ -1,6 +1,8 @@
 "use client";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
+import { useAccountStateManager } from "@/hooks/useAccountStateManager";
+import { useUserRoleChange } from "@/hooks/useUserRoleChange";
 import { formateDateToSpanish } from "@/lib/common/formatDateToSpanish";
 import { getClientSideCookie } from "@/lib/users/getClientSideCookie";
 import { cn } from "@/lib/utils";
@@ -52,49 +54,9 @@ export const columns: ColumnDef<User>[] = [
     header: "Cuenta",
     cell: function Cell ({ row }) {
       const originalAccountState = row.getValue("enabledAccount") as boolean;
-      
       const userId = row.original.id;
-      const sessionId = getClientSideCookie("Session-Id") as string;
       
-      const [accountState, setAccountState] = useState(originalAccountState);
-      const { toast } = useToast();
-
-      const handleAccountStateChange = async (state: string) => {
-        const accountState = state === "enabledAccount";
-        setAccountState(accountState);
-
-        try {
-          const response = await fetch(`${process.env.NEXT_PUBLIC_API_URI}/users/${userId}`, {
-            method: "PUT",
-            headers: {
-              "Content-Type" : "application/json",
-              "Session-Id" : sessionId
-            },
-            body: JSON.stringify({ accountState: state }),
-          });
-  
-          if (!response.ok) {
-            toast({
-              variant: "destructive",
-              title: "Error al cambiar estado de la cuenta",
-            });
-            setAccountState(originalAccountState);
-            return;
-          }
-  
-          toast({
-            variant: "success",
-            title: "Estado de la cuenta cambiado con éxtio",
-          });
-        } catch (error) {
-          toast({
-            variant: "destructive",
-            title: "Error inesperado al cambiar el estado de la cuenta",
-          });
-          setAccountState(originalAccountState);
-        }
-      }
-
+      const { accountState, handleAccountStateChange } = useAccountStateManager(originalAccountState, userId);
 
       return (
         <div className="max-w-[150px]">
@@ -132,48 +94,13 @@ export const columns: ColumnDef<User>[] = [
     cell: function Cell ({ row }) {
       const originalRole = row.getValue("role") as string;
       const userId = row.original.id;
-      const sessionId = getClientSideCookie("Session-Id") as string;
-
-      const [selectedRole, setSelectedRole] = useState(originalRole);
-      const { toast } = useToast();
-
-      const handleRoleChange = async (newRole: string) => {
-        setSelectedRole(newRole);
-
-        try {
-          const response = await fetch(`${process.env.NEXT_PUBLIC_API_URI}/users/${userId}`, {
-            method: "PUT",
-            headers: {
-              "Content-Type" : "application/json",
-              "Session-Id" : sessionId
-            },
-            body: JSON.stringify({ role: newRole }),
-          })
-
-          const data = await response.json();
-
-          toast({
-            variant: response.ok ? "success" : "destructive",
-            title: data.title,
-            ...(data.description && { description: data.description })
-          })
-
-          if (!response.ok) {
-            setSelectedRole(originalRole);
-          } 
-        } catch (error) {
-          toast({
-            variant: "destructive",
-            title: "Error inesperado al cambiar de rol"
-          });
-          setSelectedRole(originalRole);
-        }
-      }
+      
+      const { role, handleRoleChange } = useUserRoleChange(originalRole, userId);
 
       return (
         <div className="max-w-[150px]">
           <Select 
-            defaultValue={selectedRole} 
+            defaultValue={role} 
             onValueChange={handleRoleChange}
           >
             <SelectTrigger>
