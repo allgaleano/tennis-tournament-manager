@@ -1,4 +1,4 @@
-import { Enrollment, EnrollmentDisplayList } from "@/types";
+import { Enrollment, EnrollmentDisplayList, UserData } from "@/types";
 import { cookies } from "next/headers";
 import { DataTable } from "./data-table";
 import { columns } from "./columns";
@@ -51,13 +51,17 @@ async function getEnrollments(tournamentId: number, page: number, size: number):
 
 export default async function Enrollments ({ 
   searchParams, 
-  tournamentId
+  tournamentId,
+  userData,
 }: { 
   searchParams: { page?: string; size?: string },
-  tournamentId: number 
+  tournamentId: number,
+  userData: UserData, 
 }) {
   const page = parseInt(searchParams?.page ?? '0', 10);
   const size = parseInt(searchParams?.size ?? '20', 10);
+
+  const isAdmin = userData.role === "ADMIN";
 
   const result = await getEnrollments(tournamentId, page, size);
 
@@ -70,6 +74,7 @@ export default async function Enrollments ({
   }
 
   const { data, totalPages, currentPage } = result;
+
   return (
     <DataTable 
       tournamentId={tournamentId}
@@ -77,6 +82,7 @@ export default async function Enrollments ({
       data={data}
       page={currentPage}
       totalPages={totalPages}
+      isAdmin={isAdmin}
     />
   )
 }

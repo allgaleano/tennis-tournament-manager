@@ -21,6 +21,10 @@ const TournamentInfo = ({
         <p>Número máximo de jugadores: </p>
         <p>{tournament.maxPlayers}</p>
       </div>
+      <div className="flex justify-between border-b">
+        <p>Jugadores seleccionados: </p>
+        <p>{tournament.selectedPlayersCount}</p>
+      </div>
     </div>
   )
 }

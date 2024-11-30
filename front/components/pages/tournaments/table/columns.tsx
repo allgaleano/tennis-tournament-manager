@@ -1,8 +1,21 @@
 "use client";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Enrollment } from "@/types";
 import { ColumnDef } from "@tanstack/react-table";
 
 export const columns: ColumnDef<Enrollment>[] = [
+  {
+    id: "select",
+    cell: function Cell ({ row }) {
+      return (
+        <Checkbox
+          checked={row.getIsSelected()}
+          onCheckedChange={(value) => row.toggleSelected(!!value)}
+          aria-label="Select row"
+        />
+      )
+    }
+  },
   {
     header: "Nombre",
     accessorFn: (row) => row.player.name,

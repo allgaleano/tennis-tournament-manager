@@ -1,3 +1,9 @@
+export interface ApiResponse {
+  title: string;
+  description: string;
+  errorCode: string;
+}
+
 export interface UserData {
   id: number;
   name: string;
@@ -39,6 +45,7 @@ export type Tournament = {
   registrationDeadline: string;
   maxPlayers: number;
   status: string;
+  selectedPlayersCount: number;
 }
 
 export type Enrollment = {

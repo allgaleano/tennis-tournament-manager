@@ -1,8 +1,7 @@
 package es.upm.tennis.tournament.manager.service;
 
-import es.upm.tennis.tournament.manager.exceptions.AccountNotConfirmedException;
-import es.upm.tennis.tournament.manager.exceptions.InvalidCodeException;
-import es.upm.tennis.tournament.manager.exceptions.UnauthorizedUserAction;
+import es.upm.tennis.tournament.manager.exceptions.CustomException;
+import es.upm.tennis.tournament.manager.exceptions.ErrorCode;
 import es.upm.tennis.tournament.manager.model.User;
 import es.upm.tennis.tournament.manager.model.UserSession;
 import org.springframework.stereotype.Service;
@@ -14,16 +13,29 @@ public class PermissionChecker {
 
     public void validateUserPermission (User user, UserSession userSession) {
         if (userSession == null || userSession.getExpirationDate().isBefore(Instant.now())) {
-            throw new InvalidCodeException("Invalid or expired session");
+            throw new CustomException(
+                    ErrorCode.INVALID_TOKEN,
+                    "Sesión no inválida o expirada"
+            );
         }
         boolean isAdmin = userSession.getUser().getRole().getType().name().equals("ADMIN");
 
-        if (!isAdmin && !user.isConfirmed()) {
-            throw new AccountNotConfirmedException("Account not confirmed");
+        if (isAdmin) return;
+
+        if (!user.isConfirmed()) {
+            throw new CustomException(
+                    ErrorCode.ACCOUNT_NOT_CONFIRMED,
+                    "Cuenta no confirmada",
+                    "Por favor, confirme su cuenta para continuar"
+            );
         }
 
-        if (!isAdmin && !user.getId().equals(userSession.getUser().getId())) {
-            throw new UnauthorizedUserAction("Unauthorized to perform this action");
+        if (!user.getId().equals(userSession.getUser().getId())) {
+            throw new CustomException(
+                    ErrorCode.UNAUTHORIZED_ACTION,
+                    "Acción no autorizada",
+                    "No tiene permisos para realizar esta acción"
+            );
         }
     }
 }

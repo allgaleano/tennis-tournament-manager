@@ -19,21 +19,25 @@ import { FaUserShield } from "react-icons/fa6";
 import { Button } from "@/components/ui/button";
 import { useRouter, useSearchParams } from "next/navigation";
 import SectionHeader from "@/components/common/section-header";
+import { User } from "@/types";
 
-interface DataTableProps<TData, TValue> {
-  columns: ColumnDef<TData, TValue>[];
-  data: TData[];
+type CellValue = string | number | boolean | React.ReactNode | null;
+
+interface DataTableProps {
+  columns: ColumnDef<User, CellValue>[];
+  data: User[];
   page: number;
   totalPages: number;
 }
 
-export function DataTable<TData, TValue>({
+export function DataTable({
   columns,
   data,
   page,
   totalPages,
-}: DataTableProps<TData, TValue>) {
+}: DataTableProps) {
   const table = useReactTable({
+    getRowId: (row) => row.id.toString(),
     data,
     columns,
     getCoreRowModel: getCoreRowModel(),
@@ -45,6 +49,7 @@ export function DataTable<TData, TValue>({
   const handleNavigation = (newPage: number) => {
     const size = searchParams.get("size") || "20";
     router.push(`/users?page=${newPage}&size=${size}`);
+    router.refresh();
   };
 
   return (
