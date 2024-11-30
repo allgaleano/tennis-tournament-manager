@@ -1,14 +1,11 @@
 "use client";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useToast } from "@/hooks/use-toast";
 import { useAccountStateManager } from "@/hooks/useAccountStateManager";
 import { useUserRoleChange } from "@/hooks/useUserRoleChange";
 import { formateDateToSpanish } from "@/lib/common/formatDateToSpanish";
-import { getClientSideCookie } from "@/lib/users/getClientSideCookie";
 import { cn } from "@/lib/utils";
 import { User } from "@/types";
 import { ColumnDef } from "@tanstack/react-table";
-import { useState } from "react";
 
 export const columns: ColumnDef<User>[] = [
   {
