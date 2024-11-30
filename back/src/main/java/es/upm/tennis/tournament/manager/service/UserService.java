@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -78,14 +79,21 @@ public class UserService {
                 userRepository.delete(existingUser);
             } else {
                 logger.info("Account already exists");
-                throw new EmailAlreadyExistsException("An account associated to that email already exists");
+                throw new CustomException(
+                        ErrorCode.EMAIL_ALREADY_EXISTS,
+                        "Una cuenta con este email ya existe",
+                        "Intente con otro email"
+                );
             }
         }
 
         existingUser = userRepository.findByUsername(userDTO.getUsername());
         if (existingUser != null) {
-            logger.info("Username taken");
-            throw new UserAlreadyExistsException("Username already taken");
+            throw new CustomException(
+                    ErrorCode.USERNAME_ALREADY_EXISTS,
+                    "Nombre de usuario no disponible",
+                    "Intente con otro nombre de usuario"
+            );
         }
 
 
@@ -103,6 +111,7 @@ public class UserService {
         Role userRole = roleRepository.findByType(ERole.USER);
         user.setRole(userRole);
 
+        logger.info("Account created successfully");
         userRepository.save(user);
 
         int validMinutes = 30;
@@ -111,9 +120,14 @@ public class UserService {
 
         try {
             sendConfirmationEmail(user, confirmationCode.getCode(), validMinutes);
+            logger.info("Email sent successfully");
         } catch (Exception e) {
             logger.info("Error sending the email");
-            throw new EmailNotSentException("Error sending the confirmation email");
+            throw new CustomException(
+                    ErrorCode.EMAIL_NOT_SENT,
+                    "Se ha producido un error al enviar el email de confirmación",
+                    "Inténtelo de nuevo más tarde"
+            );
         }
     }
 
@@ -140,51 +154,77 @@ public class UserService {
     }
 
     public Map<String, Object> authenticateUser(String username, String password) {
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(username, password)
-        );
-        SecurityContextHolder.getContext().setAuthentication(authentication);
+        try {
+            Authentication authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(username, password)
+            );
+            SecurityContextHolder.getContext().setAuthentication(authentication);
 
-        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-        User user = userRepository.findByUsername(userDetails.getUsername());
+            UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+            User user = userRepository.findByUsername(userDetails.getUsername());
 
-        if (!user.isConfirmed()) {
-            throw new AccountNotConfirmedException("Confirm your email to activate your account");
+            if (!user.isConfirmed()) {
+                throw new CustomException(
+                        ErrorCode.ACCOUNT_NOT_CONFIRMED,
+                        "Confirma tu email para activar tu cuenta",
+                        "Revisa tu bandeja de entrada"
+                );
+            }
+
+            if (!user.isEnabled()) {
+                throw new CustomException(
+                        ErrorCode.ACCOUNT_DISABLED,
+                        "Cuenta deshabilitada",
+                        "Contacta con soporte"
+                );
+            }
+
+            UserSession session = sessionService.findByUser(user);
+            if (session != null) {
+                sessionService.invalidateSession(session.getSessionId());
+            }
+
+            session = sessionService.createSession(user);
+
+            return Map.of(
+                    "sessionId", session.getSessionId(),
+                    "sessionExp", session.getExpirationDate()
+            );
+        } catch (BadCredentialsException e) {
+            throw new CustomException(
+                    ErrorCode.BAD_CREDENTIALS,
+                    "Usuario o contraseña incorrectos"
+            );
         }
-
-        if (!user.isEnabled()) {
-            throw new AccountDisabledException("Account disabled");
-        }
-
-        UserSession session = sessionService.findByUser(user);
-        if (session != null) {
-            sessionService.invalidateSession(session.getSessionId());
-        }
-
-        session = sessionService.createSession(user);
-
-        return Map.of(
-                "sessionId", session.getSessionId(),
-                "sessionExp", session.getExpirationDate()
-        );
     }
 
     public void confirmUser(String code) {
 
         ConfirmationCode confirmationCode = confirmationCodeRepository.findByCode(code);
         if (confirmationCode == null) {
-            throw  new InvalidCodeException("Invalid code");
+            throw new CustomException(
+                    ErrorCode.INVALID_TOKEN,
+                    "Error al verificar la cuenta",
+                    "El enlace no es válido"
+            );
         }
 
         if (Instant.now().isAfter(confirmationCode.getExpirationDate())) {
             confirmationCodeRepository.delete(confirmationCode);
-            throw new InvalidCodeException("Expired code");
+            throw new CustomException(
+                    ErrorCode.INVALID_TOKEN,
+                    "Error al verificar la cuenta",
+                    "El enlace ha caducado"
+            );
         }
 
         User user = confirmationCode.getUser();
 
         if (user.isConfirmed()) {
-            throw new InvalidCodeException("User already verified");
+            throw new CustomException(
+                    ErrorCode.CONFIRMATION_CONFLICT,
+                    "Usuario ya verificado"
+            );
         }
 
         user.setConfirmed(true);
@@ -193,11 +233,13 @@ public class UserService {
     }
 
     public void changePassword(String email) {
-        logger.info("email: {}", email);
         User user = userRepository.findByEmail(email);
 
         if (user == null) {
-            throw new UserNotFoundException("User not found");
+            throw new CustomException(
+                    ErrorCode.USER_NOT_FOUND,
+                    "Usuario no encontrado"
+            );
         }
         ConfirmationCode existingCode = confirmationCodeRepository.findByUser(user);
         if (existingCode != null) {
@@ -211,7 +253,11 @@ public class UserService {
         try {
             sendConfirmationPasswordEmail(user, code.getCode(), validMinutes);
         } catch (Exception e) {
-            throw new EmailNotSentException("Error sending the password modification email");
+            throw new CustomException(
+                    ErrorCode.EMAIL_NOT_SENT,
+                    "Se ha producido un error al enviar el email de modificación de contraseña",
+                    "Inténtelo de nuevo más tarde"
+            );
         }
     }
 
@@ -235,10 +281,18 @@ public class UserService {
     public void confirmPassword(String password, String token) {
         ConfirmationCode passCode = confirmationCodeRepository.findByCode(token);
         if (passCode == null) {
-            throw  new InvalidCodeException("Invalid code");
+            throw new CustomException(
+                    ErrorCode.INVALID_TOKEN,
+                    "Error al cambiar la contraseña",
+                    "El enlace no es válido o ha caducado"
+            );
         } else if (Instant.now().isAfter(passCode.getExpirationDate())) {
             confirmationCodeRepository.delete(passCode);
-            throw new InvalidCodeException("Expired code");
+            throw new CustomException(
+                    ErrorCode.INVALID_TOKEN,
+                    "Error al cambiar la contraseña",
+                    "El enlace no es válido o ha caducado"
+            );
         }
         User user = passCode.getUser();
         user.setPassword(passwordEncoder.encode(password));
@@ -257,22 +311,13 @@ public class UserService {
         return userRepository.findByUsername(user.getUsername());
     }
 
-    public UserSession getActiveSession(Authentication authentication) {
-        User user = (User) authentication.getPrincipal();
-        if (user == null) {
-            throw new UserNotFoundException("User not found");
-        }
-        UserSession activeSession = userSessionRepository.findByUser(user);
-        if (activeSession == null) {
-            throw new InvalidCodeException("Invalid or expired session");
-        }
-        return activeSession;
-    }
-
     public void deleteUser(Long id, String sessionId) {
         Optional<User> user = userRepository.findById(id);
         if (user.isEmpty()) {
-            throw new UserNotFoundException("User not found");
+            throw new CustomException(
+                    ErrorCode.USER_NOT_FOUND,
+                    "Usuario no encontrado"
+            );
         }
 
         UserSession userSession = userSessionRepository.findBySessionId(sessionId);
@@ -290,7 +335,10 @@ public class UserService {
     public void modifyUser(Long id, String sessionId, UserDTO userDTO) {
         Optional<User> user = userRepository.findById(id);
         if (user.isEmpty()) {
-            throw  new UserNotFoundException("User not found");
+            throw new CustomException(
+                    ErrorCode.USER_NOT_FOUND,
+                    "Usuario no encontrado"
+            );
         }
 
         UserSession userSession = userSessionRepository.findBySessionId(sessionId);
@@ -300,7 +348,11 @@ public class UserService {
         if (userDTO.getUsername() != null) {
             User existingUser = userRepository.findByUsername(userDTO.getUsername());
             if (existingUser != null) {
-                throw new UserAlreadyExistsException("Username already taken");
+                throw new CustomException(
+                        ErrorCode.USERNAME_ALREADY_EXISTS,
+                        "Nombre de usuario no disponible",
+                        "Intente con otro nombre de usuario"
+                );
             }
             user.get().setUsername(userDTO.getUsername());
         }
@@ -319,7 +371,11 @@ public class UserService {
         if (isAdmin) {
             if (userDTO.getRole() != null) {
                 if (user.get().getRole().getType().name().equals(userDTO.getRole())) {
-                    throw new SameRoleException("Cannot change to same role");
+                    throw new CustomException(
+                            ErrorCode.INVALID_ROLE,
+                            "El usuario ya tiene este rol",
+                            "Intente con otro rol"
+                    );
                 }
                 ERole roleType = userDTO.getRole().equals("ADMIN") ? ERole.ADMIN : ERole.USER;
                 Role role = roleRepository.findByType(roleType);
@@ -329,7 +385,11 @@ public class UserService {
             if (userDTO.getAccountState() != null) {
                 boolean enabledAccount = userDTO.getAccountState().equals("enabledAccount");
                 if (user.get().isEnabled() && enabledAccount) {
-                    throw new SameAccountStateException("Cannot change to same account state");
+                    throw new CustomException(
+                            ErrorCode.INVALID_ACCOUNT_STATUS,
+                            "No se puede cambiar al mismo estado de cuenta",
+                            "Intente con otro estado"
+                    );
                 }
                 user.get().setEnabled(enabledAccount);
             }

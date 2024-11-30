@@ -24,90 +24,63 @@ public class AuthController {
     private UserSessionService sessionService;
 
     @PostMapping("/register")
-    public ResponseEntity<Map<String, String>> register(@RequestBody UserDTO userDTO) {
-        try {
-            userService.registerUser(userDTO);
-            return ResponseEntity.status(HttpStatus.CREATED).body(Map.of(
-                    "message", "Confirmation Email sent!"
-            ));
-        } catch (UserAlreadyExistsException | EmailAlreadyExistsException e) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of(
-                    "error", e.getMessage()
-            ));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of(
-                    "error", e.getMessage()
-            ));
-        }
+    public ResponseEntity<Map<String, String>> register(
+            @RequestBody UserDTO userDTO
+    ) {
+        userService.registerUser(userDTO);
+        return ResponseEntity.status(HttpStatus.CREATED).body(Map.of(
+                "title", "Email de confirmación enviado",
+                "description", "Por favor, revisa tu bandeja de entrada para confirmar tu cuenta"
+        ));
     }
 
     @PostMapping("/login")
-    public ResponseEntity<Map<String, Object>> login(@RequestBody LoginRequest loginRequest) {
-        try {
-            Map<String, Object> loginResponse = userService.authenticateUser(loginRequest.getUsername(), loginRequest.getPassword());
-            return ResponseEntity.ok(loginResponse);
-        } catch (BadCredentialsException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of(
-                    "error", "Invalid username or password"
-            ));
-        } catch (UsernameNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of(
-                    "error", "User not found"
-            ));
-        } catch (AccountNotConfirmedException | AccountDisabledException e) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of(
-                    "error", e.getMessage()
-            ));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of(
-                    "error", "An unexpected error occurred",
-                    "details", e.getMessage()
-            ));
-        }
+    public ResponseEntity<Map<String, Object>> login(
+            @RequestBody LoginRequest loginRequest
+    ) {
+        Map<String, Object> loginResponse = userService.authenticateUser(loginRequest.getUsername(), loginRequest.getPassword());
+        return ResponseEntity.ok(loginResponse);
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<String> logout(@RequestHeader("Session-Id") String sessionId) {
-        if (sessionService.invalidateSession(sessionId)) {
-            return ResponseEntity.ok("User logged out successfully");
-        } else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Session not found");
-        }
+    public ResponseEntity<Void> logout(
+            @RequestHeader("Session-Id") String sessionId
+    ) {
+        sessionService.invalidateSession(sessionId);
+        return ResponseEntity.noContent().build();
     }
 
     @PostMapping("/confirm-email")
-    public ResponseEntity<String> confirmEmail(@RequestParam("token") String token) {
-        try {
-            userService.confirmUser(token);
-            return ResponseEntity.ok("Account verified successfully");
-        } catch (InvalidCodeException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
-        }
+    public ResponseEntity<Map<String, String>> confirmEmail(
+            @RequestParam("token") String token
+    ) {
+        userService.confirmUser(token);
+        return ResponseEntity.ok(Map.of(
+                "title", "Cuenta confirmada",
+                "description", "Tu cuenta ha sido confirmada correctamente"
+        ));
     }
 
     @PostMapping("/change-password")
-    public ResponseEntity<String> forgotPassword(@RequestBody ChangePasswordRequest changePasswordRequest) {
-        try {
-            userService.changePassword(changePasswordRequest.getEmail());
-            return ResponseEntity.ok("Password modification email sent");
-        } catch (UserNotFoundException e) {
-            return  ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
-        }
+    public ResponseEntity<Map<String, String>> forgotPassword(
+            @RequestBody ChangePasswordRequest changePasswordRequest
+    ) {
+        userService.changePassword(changePasswordRequest.getEmail());
+        return ResponseEntity.ok(Map.of(
+                "title", "Email de recuperación enviado",
+                "description", "Por favor, revisa tu bandeja de entrada para recuperar tu contraseña"
+        ));
     }
 
     @PostMapping("/confirm-password")
-    public ResponseEntity<String> changePassword(@RequestBody ConfirmPasswordRequest confirmPasswordRequest, @RequestParam("token") String token) {
-        try {
-            userService.confirmPassword(confirmPasswordRequest.getPassword(), token);
-            return ResponseEntity.ok("Password changed successfully");
-        } catch (InvalidCodeException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
-        }
+    public ResponseEntity<Map<String, String>> changePassword(
+            @RequestBody ConfirmPasswordRequest confirmPasswordRequest,
+            @RequestParam("token") String token
+    ) {
+        userService.confirmPassword(confirmPasswordRequest.getPassword(), token);
+        return ResponseEntity.ok(Map.of(
+                "title", "Contraseña cambiada",
+                "description", "Tu contraseña ha sido cambiada correctamente"
+        ));
     }
 }

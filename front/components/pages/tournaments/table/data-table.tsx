@@ -3,26 +3,44 @@ import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { ColumnDef, flexRender, getCoreRowModel, useReactTable } from "@tanstack/react-table";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useState } from "react";
+import PlayerSelectionControls from "./player-selection-controls";
+import { Enrollment } from "@/types";
 
-interface DataTableProps<TData, TValue> {
-  columns: ColumnDef<TData, TValue>[];
-  data: TData[];
+type CellValue = string | number | boolean | React.ReactNode | null;
+
+interface DataTableProps {
+  columns: ColumnDef<Enrollment, CellValue>[];
+  data: Enrollment[];
   page: number;
   totalPages: number;
   tournamentId: number;
+  isAdmin: boolean;
 }
 
-export function DataTable<TData, TValue>({
+export function DataTable({
   columns,
   data,
   page,
   totalPages,
   tournamentId,
-}: DataTableProps<TData, TValue>) {
+  isAdmin,
+}: DataTableProps) {
+  const [rowSelection, setRowSelection] = useState({});
+
+  const resetRowSelection = () => {
+    setRowSelection({});
+  }
+
   const table = useReactTable({
+    getRowId: (row) => row.player.id.toString(),
     data,
     columns,
     getCoreRowModel: getCoreRowModel(),
+    onRowSelectionChange: setRowSelection,
+    state: {
+      rowSelection
+    }
   });
 
   const router = useRouter();
@@ -35,7 +53,16 @@ export function DataTable<TData, TValue>({
 
   return (
     <div className="w-full flex flex-col overflow-x-auto">
-      <h2 className="mb-2">Jugadores Inscritos:</h2>
+      <div className="flex flex-wrap items-center py-1 gap-2 justify-between">
+        <h2>Jugadores Inscritos:</h2>
+        {isAdmin && (
+          <PlayerSelectionControls
+            rowSelection={rowSelection}
+            tournamentId={tournamentId}
+            onActionSuccess={resetRowSelection}
+          />
+        )}
+      </div>
       <div className="rounded border">
         <Table>
           <TableHeader>

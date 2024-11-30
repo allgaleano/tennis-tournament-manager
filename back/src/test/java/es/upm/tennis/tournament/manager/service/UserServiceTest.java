@@ -139,12 +139,12 @@ class UserServiceTest {
         void registerUser_ShouldThrowException_WhenEmailExists() {
             when(userRepository.findByEmail(userDTO.getEmail())).thenReturn(user);
 
-            EmailAlreadyExistsException exception = assertThrows(
-                    EmailAlreadyExistsException.class,
+            CustomException exception = assertThrows(
+                    CustomException.class,
                     () -> userService.registerUser(userDTO)
             );
 
-            assertEquals("An account associated to that email already exists", exception.getMessage());
+            assertEquals(ErrorCode.EMAIL_ALREADY_EXISTS, exception.getErrorCode());
             verify(userRepository, never()).save(any(User.class));
         }
     }
@@ -174,12 +174,12 @@ class UserServiceTest {
             confirmationCode.setExpirationDate(Instant.now().minusSeconds(300));
             when(confirmationCodeRepository.findByCode(code)).thenReturn(confirmationCode);
 
-            InvalidCodeException exception = assertThrows(
-                    InvalidCodeException.class,
+            CustomException exception = assertThrows(
+                    CustomException.class,
                     () -> userService.confirmUser(code)
             );
 
-            assertEquals("Expired code", exception.getMessage());
+            assertEquals(ErrorCode.INVALID_TOKEN, exception.getErrorCode());
             verify(userRepository, never()).save(any(User.class));
         }
     }
@@ -204,12 +204,12 @@ class UserServiceTest {
         void changePassword_ShouldThrowException_WhenUserNotFound() {
             when(userRepository.findByEmail(userDTO.getEmail())).thenReturn(null);
 
-            UserNotFoundException exception = assertThrows(
-                    UserNotFoundException.class,
+            CustomException exception = assertThrows(
+                    CustomException.class,
                     () -> userService.changePassword(userDTO.getEmail())
             );
 
-            assertEquals("User not found", exception.getMessage());
+            assertEquals(ErrorCode.USER_NOT_FOUND, exception.getErrorCode());
         }
     }
     @Nested
@@ -257,8 +257,10 @@ class UserServiceTest {
             when(userRepository.findByUsername(userDetails.getUsername())).thenReturn(user);
 
             // Act & Assert
-            assertThrows(AccountNotConfirmedException.class,
+            CustomException ex = assertThrows(CustomException.class,
                     () -> userService.authenticateUser(user.getUsername(), "password"));
+
+            assertEquals(ErrorCode.ACCOUNT_NOT_CONFIRMED, ex.getErrorCode());
         }
 
         @Test
@@ -274,8 +276,10 @@ class UserServiceTest {
             when(userRepository.findByUsername(userDetails.getUsername())).thenReturn(user);
 
             // Act & Assert
-            assertThrows(AccountDisabledException.class,
+            CustomException ex = assertThrows(CustomException.class,
                     () -> userService.authenticateUser(user.getUsername(), "password"));
+
+            assertEquals(ErrorCode.ACCOUNT_DISABLED, ex.getErrorCode());
         }
 
         @Test
@@ -299,7 +303,7 @@ class UserServiceTest {
 
             // Mock session service behaviors
             when(sessionService.findByUser(user)).thenReturn(existingSession);
-            when(sessionService.invalidateSession("existing-session-id")).thenReturn(true);
+            doNothing().when(sessionService).invalidateSession("existing-session-id");
             when(sessionService.createSession(user)).thenReturn(newSession);
 
             // Act
@@ -351,8 +355,10 @@ class UserServiceTest {
             when(userRepository.findById(1L)).thenReturn(Optional.empty());
 
             // Act & Assert
-            assertThrows(UserNotFoundException.class,
+            CustomException ex = assertThrows(CustomException.class,
                     () -> userService.modifyUser(1L, "sessionId", new UserDTO()));
+
+            assertEquals(ErrorCode.USER_NOT_FOUND, ex.getErrorCode());
         }
     }
 
@@ -386,8 +392,10 @@ class UserServiceTest {
             when(userRepository.findById(1L)).thenReturn(Optional.empty());
 
             // Act & Assert
-            assertThrows(UserNotFoundException.class,
+            CustomException ex = assertThrows(CustomException.class,
                     () -> userService.deleteUser(1L, "sessionId"));
+
+            assertEquals(ErrorCode.USER_NOT_FOUND, ex.getErrorCode());
         }
     }
 
@@ -451,8 +459,10 @@ class UserServiceTest {
             doThrow(new MessagingException("Email error")).when(emailService).sendEmail(any(), any(), any());
 
             // Act & Assert
-            assertThrows(EmailNotSentException.class,
+            CustomException ex = assertThrows(CustomException.class,
                     () -> userService.registerUser(userDTO));
+
+            assertEquals(ErrorCode.EMAIL_NOT_SENT, ex.getErrorCode());
         }
     }
 }

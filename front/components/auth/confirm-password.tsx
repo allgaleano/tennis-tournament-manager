@@ -12,6 +12,7 @@ import { Button } from "../ui/button";
 import BarLoader from "react-spinners/BarLoader";
 import { CheckCircledIcon, CrossCircledIcon } from "@radix-ui/react-icons";
 import { useSearchParams } from "next/navigation";
+import { ApiResponse } from "@/types";
 
 const ConfirmPassword = () => {
   const searchParams = useSearchParams();
@@ -42,19 +43,17 @@ const ConfirmPassword = () => {
         body: JSON.stringify(values.password)
       })
 
+      const data: ApiResponse = await response.json();
+
       if (response.ok) {
         setState("success");
-        setTitle("Contraseña cambiada con éxito");
-        setLabel("Vuelve a iniciar sesión con tu nueva contraseña");
-      } else if (response.status === 401) {
-        setState("failed");
-        setTitle("Enlace inválido o expirado");
-        setLabel("Este enlace no es válido vuelve a intentarlo de nuevo");
       } else {
         setState("failed");
-        setTitle("¡Algo ha salido mal!");
-        setLabel("Vuelve a intentarlo más tarde");
-      }
+      } 
+    
+      setTitle(data.title);
+      setLabel(data.description);
+    
     } catch (error) {
       console.error(error);
       setState("failed");

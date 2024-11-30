@@ -13,7 +13,6 @@ import { z } from "zod";
 import { useState } from "react";
 import { extractPhoneDetails } from "@/lib/settings/extractPhoneDetails";
 import { getClientSideCookie } from "@/lib/users/getClientSideCookie";
-import { changePhoneNumber } from "@/lib/settings/changePhoneNumber";
 
 const ChangePhoneDialog = ({ userData } : { userData : UserData }) => {
 
@@ -44,27 +43,22 @@ const ChangePhoneDialog = ({ userData } : { userData : UserData }) => {
       return;
     }
     try {
-      const response = await changePhoneNumber({
-        userId: id,
-        sessionId: sessionId,
-        newPrefix: values.phonePrefix,
-        newPhoneNumber: values.phoneNumber
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URI}/users/${id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type" : "application/json",
+          "Session-Id" : sessionId
+        }, 
+        body: JSON.stringify({ phonePrefix: values.phonePrefix, phoneNumber: values.phoneNumber })  
       });
 
-      if (response.success) {
-        toast({
-          variant: "success",
-          title: "Número de teléfono cambiado con éxito"
-        });
-        setIsLoading(false);
-        return;
-      } else {
-        toast({
-          variant: "destructive",
-          title: "¡Algo ha ido mal!",
-          description: "Inténtalo de nuevo más tarde"
-        }); 
-      }
+      const data = await response.json();
+
+      toast({
+        variant: response.ok ? "success" : "destructive",
+        title: data.title,
+        ...(data.description && { description: data.description })
+      });
     } catch (error) {
       toast({
         variant: "destructive",

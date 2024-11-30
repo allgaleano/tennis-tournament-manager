@@ -3,8 +3,9 @@ import { Tournament } from "@/types";
 import { cookies } from "next/headers";
 import { getTournamentIcon } from "@/components/pages/tournaments/getTournamentIcon";
 import TournamentInfo from "@/components/pages/tournaments/tournament-info";
-import Enrollments from "./enrollments";
+import Enrollments from "./table/enrollments";
 import EnrollAction from "@/components/pages/tournaments/enroll-button/enroll-action";
+import { getServerSideUserData } from "@/lib/users/getServerSideUserData";
 
 async function getTournament(id: string): Promise<{ tournament?: Tournament; error?: string }> {
   try {
@@ -28,7 +29,8 @@ async function getTournament(id: string): Promise<{ tournament?: Tournament; err
       name: data.name,
       registrationDeadline: data.registrationDeadline,
       maxPlayers: data.maxPlayers,
-      status: data.status
+      status: data.status,
+      selectedPlayersCount: data.selectedPlayersCount
     };
 
     return { tournament }
@@ -45,6 +47,7 @@ const TournamentDetails = async ({
   id: string,
   searchParams: { page?: string; size?: string } 
 }) => {
+  const userData = await getServerSideUserData();
   const result = await getTournament(id);
 
   if ("error" in result) {
@@ -70,9 +73,9 @@ const TournamentDetails = async ({
       <div className="flex flex-col w-full max-w-[900px] gap-4 px-4">
         <TournamentInfo tournament={tournament} />
         <div className="self-end">
-          <EnrollAction tournament={tournament} />
+          <EnrollAction tournament={tournament} userData={userData}/>
         </div>
-        <Enrollments tournamentId={tournament.id} searchParams={searchParams}/>
+        <Enrollments tournamentId={tournament.id} searchParams={searchParams} userData={userData}/>
       </div>
     </section>
   )

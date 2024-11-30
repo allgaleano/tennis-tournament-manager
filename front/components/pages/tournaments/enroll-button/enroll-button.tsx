@@ -2,8 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { enrollPlayerToTournament } from "@/lib/tournaments/enrollPlayerToTournament copy";
-import { unenrollPlayerToTournament } from "@/lib/tournaments/unenrollPlayerToTournament";
+import { getClientSideCookie } from "@/lib/users/getClientSideCookie";
 import { useRouter } from "next/navigation";
 
 interface EnrollButtonProps {
@@ -23,7 +22,8 @@ const EnrollButton = ({
   const router = useRouter();
 
   const handleEnrollment = async (type: "enroll" | "unenroll", userId: number, tournamentId: number) => {
-    if (!userId || !tournamentId) {
+    const sessionId = getClientSideCookie("Session-Id");
+    if (!userId || !tournamentId || !sessionId) {
       toast({
         variant: "destructive",
         title: "¡Algo ha ido mal!",
@@ -31,42 +31,24 @@ const EnrollButton = ({
       })
       return;
     }
-    if (type === "enroll") {
-      const response = await enrollPlayerToTournament(userId, tournamentId);
 
-      if (response.success) {
-        toast({
-          variant: "success",
-          title: "Inscripción exitosa",
-          description: "Te has inscrito correctamente en el torneo."
-        });
-        router.refresh();
-      } else {
-        const { error, description } = response;
-        toast({
-          variant: "destructive",
-          title: error || "¡Algo ha ido mal!",
-          description: description || "Intentalo de nuevo más tarde"
-        });
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URI}/tournaments/${tournamentId}/${type}/${userId}`, {
+      method: "POST",
+      headers: {
+        "Session-Id": sessionId
       }
-    } else if (type === "unenroll") {
-      const response = await unenrollPlayerToTournament(userId, tournamentId);
-      if (response.success) {
-        toast({
-          variant: "success",
-          title: "Inscripción anulada",
-          description: "Tu inscripción ha sido anulada correctamente."
-        });
-        router.refresh();
-      }
-      else {
-        const { error, description } = response;
-        toast({
-          variant: "destructive",
-          title: error || "¡Algo ha ido mal!",
-          description: description || "Intentalo de nuevo más tarde"
-        });
-      }
+    });
+
+    const data = await response.json();
+
+    toast({
+      variant: response.ok ? "success" : "destructive",
+      title: data.title,
+      ...(data.description && { description: data.description })
+    });
+
+    if (response.ok) {
+      router.refresh();
     }
   }
   return (
