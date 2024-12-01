@@ -195,21 +195,7 @@ public class TournamentService {
     }
 
     public void selectPlayer(Long tournamentId, PlayerIdsRequest playerIds, String sessionId) {
-        UserSession userSession = userSessionRepository.findBySessionId(sessionId);
-        if (userSession == null || userSession.getExpirationDate().isBefore(Instant.now())) {
-            throw new CustomException(
-                    ErrorCode.INVALID_TOKEN,
-                    "Sesión inválida o expirada"
-            );
-        }
-
-        if (!userSession.getUser().getRole().getType().name().equals("ADMIN")) {
-            throw new CustomException(
-                    ErrorCode.UNAUTHORIZED_ACTION,
-                    "Acción no autorizada",
-                    "Solo los administradores pueden seleccionar jugadores"
-            );
-        }
+        permissionChecker.validateAdminPermission(userSessionRepository.findBySessionId(sessionId));
 
         Tournament tournament = tournamentRepository.findById(tournamentId)
                 .orElseThrow(() -> new CustomException(
@@ -268,21 +254,8 @@ public class TournamentService {
     }
 
     public void deselectPlayer(Long tournamentId, PlayerIdsRequest playerIds, String sessionId) {
-        UserSession userSession = userSessionRepository.findBySessionId(sessionId);
-        if (userSession == null || userSession.getExpirationDate().isBefore(Instant.now())) {
-            throw new CustomException(
-                    ErrorCode.INVALID_TOKEN,
-                    "Sesión inválida o expirada"
-            );
-        }
 
-        if (!userSession.getUser().getRole().getType().name().equals("ADMIN")) {
-            throw new CustomException(
-                    ErrorCode.UNAUTHORIZED_ACTION,
-                    "Acción no autorizada",
-                    "Solo los administradores pueden deseleccionar jugadores"
-            );
-        }
+        permissionChecker.validateAdminPermission(userSessionRepository.findBySessionId(sessionId));
 
         Tournament tournament = tournamentRepository.findById(tournamentId)
                 .orElseThrow(() -> new CustomException(
