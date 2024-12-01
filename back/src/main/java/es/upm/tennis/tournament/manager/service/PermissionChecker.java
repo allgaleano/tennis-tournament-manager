@@ -38,4 +38,22 @@ public class PermissionChecker {
             );
         }
     }
+
+    public void validateAdminPermission (UserSession userSession) {
+        if (userSession == null || userSession.getExpirationDate().isBefore(Instant.now())) {
+            throw new CustomException(
+                    ErrorCode.INVALID_TOKEN,
+                    "Sesión no inválida o expirada"
+            );
+        }
+        boolean isAdmin = userSession.getUser().getRole().getType().name().equals("ADMIN");
+
+        if (!isAdmin) {
+            throw new CustomException(
+                    ErrorCode.UNAUTHORIZED_ACTION,
+                    "Acción no autorizada",
+                    "No tiene permisos para realizar esta acción"
+            );
+        }
+    }
 }
