@@ -331,6 +331,7 @@ public class TournamentService {
         enrollments.forEach(enrollment -> enrollment.setStatus(EnrollmentStatus.PENDING));
         tournamentEnrollmentRepository.saveAll(enrollments);
     }
+
     public void closeEnrollments(Long tournamentId, String sessionId) {
         logger.info("Closing enrollments for tournament {}", tournamentId);
 
@@ -351,6 +352,29 @@ public class TournamentService {
         }
 
         tournament.setStatus(TournamentStatus.ENROLLMENT_CLOSED);
+        tournamentRepository.save(tournament);
+    }
+
+    public void reopenEnrollments(Long tournamentId, String sessionId) {
+        logger.info("Reopening enrollments for tournament {}", tournamentId);
+
+        permissionChecker.validateAdminPermission(userSessionRepository.findBySessionId(sessionId));
+
+        Tournament tournament = tournamentRepository.findById(tournamentId)
+                .orElseThrow(() -> new CustomException(
+                        ErrorCode.TOURNAMENT_NOT_FOUND,
+                        "Torneo no encontrado"
+                ));
+
+        if (!tournament.getStatus().equals(TournamentStatus.ENROLLMENT_CLOSED)) {
+            throw new CustomException(
+                    ErrorCode.INVALID_TOURNAMENT_STATUS,
+                    "Estado incorrecto del torneo",
+                    "Las inscripciones deben estar previamente cerradas para poder reabrirlas"
+            );
+        }
+
+        tournament.setStatus(TournamentStatus.ENROLLMENT_OPEN);
         tournamentRepository.save(tournament);
     }
 }

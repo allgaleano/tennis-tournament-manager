@@ -124,4 +124,15 @@ public class TournamentController {
                 "title", "Inscripciones cerradas con éxito"
         ));
     }
+
+    @PutMapping("/{tournamentId}/reopenEnrollments")
+    public ResponseEntity<Map<String, String>> reopenEnrollments(
+            @PathVariable Long tournamentId,
+            @RequestHeader("Session-Id") String sessionId
+    ) {
+        tournamentService.reopenEnrollments(tournamentId, sessionId);
+        return ResponseEntity.ok(Map.of(
+                "title", "Inscripciones reabiertas con éxito"
+        ));
+    }
 }
