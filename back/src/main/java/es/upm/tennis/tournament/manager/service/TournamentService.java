@@ -331,4 +331,26 @@ public class TournamentService {
         enrollments.forEach(enrollment -> enrollment.setStatus(EnrollmentStatus.PENDING));
         tournamentEnrollmentRepository.saveAll(enrollments);
     }
+    public void closeEnrollments(Long tournamentId, String sessionId) {
+        logger.info("Closing enrollments for tournament {}", tournamentId);
+
+        permissionChecker.validateAdminPermission(userSessionRepository.findBySessionId(sessionId));
+
+        Tournament tournament = tournamentRepository.findById(tournamentId)
+                .orElseThrow(() -> new CustomException(
+                        ErrorCode.TOURNAMENT_NOT_FOUND,
+                        "Torneo no encontrado"
+                ));
+
+        if (!tournament.getStatus().equals(TournamentStatus.ENROLLMENT_OPEN)) {
+            throw new CustomException(
+                    ErrorCode.INVALID_TOURNAMENT_STATUS,
+                    "Estado incorrecto del torneo",
+                    "Las inscripciones deben estar previamente abiertas para poder cerrarlas"
+            );
+        }
+
+        tournament.setStatus(TournamentStatus.ENROLLMENT_CLOSED);
+        tournamentRepository.save(tournament);
+    }
 }
