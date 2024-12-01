@@ -1,15 +1,10 @@
 package es.upm.tennis.tournament.manager.service;
 
-import es.upm.tennis.tournament.manager.DTO.PlayerIdsRequest;
-import es.upm.tennis.tournament.manager.DTO.TournamentDTO;
-import es.upm.tennis.tournament.manager.DTO.TournamentEnrollmentDTO;
-import es.upm.tennis.tournament.manager.DTO.UserEnrolledDTO;
+import es.upm.tennis.tournament.manager.DTO.*;
 import es.upm.tennis.tournament.manager.exceptions.*;
 import es.upm.tennis.tournament.manager.model.*;
 import es.upm.tennis.tournament.manager.repo.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -20,27 +15,36 @@ import java.util.stream.Collectors;
 
 
 @Service
+@Slf4j
 public class TournamentService {
 
-    private static final Logger logger = LoggerFactory.getLogger(TournamentService.class);
+    private final TournamentRepository tournamentRepository;
+    private final PermissionChecker permissionChecker;
+    private final UserRepository userRepository;
+    private final UserSessionRepository userSessionRepository;
+    private final PlayerTournamentRepository playerTournamentRepository;
+    private final TournamentEnrollmentRepository tournamentEnrollmentRepository;
+    private final MatchRepository matchRepository;
+    private final MatchmakingService matchmakingService;
 
-    @Autowired
-    TournamentRepository tournamentRepository;
-
-    @Autowired
-    PermissionChecker permissionChecker;
-
-    @Autowired
-    UserRepository userRepository;
-
-    @Autowired
-    UserSessionRepository userSessionRepository;
-
-    @Autowired
-    PlayerTournamentRepository playerTournamentRepository;
-
-    @Autowired
-    TournamentEnrollmentRepository tournamentEnrollmentRepository;
+    public TournamentService(
+            TournamentRepository tournamentRepository,
+            PermissionChecker permissionChecker,
+            UserRepository userRepository,
+            UserSessionRepository userSessionRepository,
+            PlayerTournamentRepository playerTournamentRepository,
+            TournamentEnrollmentRepository tournamentEnrollmentRepository,
+            MatchRepository matchRepository,
+            MatchmakingService matchmakingService) {
+        this.tournamentRepository = tournamentRepository;
+        this.permissionChecker = permissionChecker;
+        this.userRepository = userRepository;
+        this.userSessionRepository = userSessionRepository;
+        this.playerTournamentRepository = playerTournamentRepository;
+        this.tournamentEnrollmentRepository = tournamentEnrollmentRepository;
+        this.matchRepository = matchRepository;
+        this.matchmakingService = matchmakingService;
+    }
 
 
     public Page<Tournament> getAllTournaments(Pageable pageable) {
@@ -48,7 +52,7 @@ public class TournamentService {
     }
 
     public void enrollPlayerToTournament(Long tournamentId, Long playerId, String sessionId) {
-        logger.info("Enrolling player {} to tournament {}", playerId, tournamentId);
+        log.info("Enrolling player {} to tournament {}", playerId, tournamentId);
         Tournament tournament = tournamentRepository.findById(tournamentId)
                 .orElseThrow(
                         () -> new CustomException(
@@ -126,7 +130,7 @@ public class TournamentService {
     }
 
     public void unenrollPlayerFromTournament(Long tournamentId, Long playerId, String sessionId) {
-        logger.info("Unenrolling player {} from tournament {}", playerId, tournamentId);
+        log.info("Unenrolling player {} from tournament {}", playerId, tournamentId);
         Tournament tournament = tournamentRepository.findById(tournamentId)
                 .orElseThrow(
                         () -> new CustomException(
@@ -306,7 +310,7 @@ public class TournamentService {
     }
 
     public void closeEnrollments(Long tournamentId, String sessionId) {
-        logger.info("Closing enrollments for tournament {}", tournamentId);
+        log.info("Closing enrollments for tournament {}", tournamentId);
 
         permissionChecker.validateAdminPermission(userSessionRepository.findBySessionId(sessionId));
 
@@ -328,8 +332,8 @@ public class TournamentService {
         tournamentRepository.save(tournament);
     }
 
-    public void reopenEnrollments(Long tournamentId, String sessionId) {
-        logger.info("Reopening enrollments for tournament {}", tournamentId);
+    public void openEnrollments(Long tournamentId, String sessionId) {
+        log.info("Reopening enrollments for tournament {}", tournamentId);
 
         permissionChecker.validateAdminPermission(userSessionRepository.findBySessionId(sessionId));
 
@@ -349,5 +353,96 @@ public class TournamentService {
 
         tournament.setStatus(TournamentStatus.ENROLLMENT_OPEN);
         tournamentRepository.save(tournament);
+    }
+
+    public void startTournament(Long tournamentId, String sessionId) {
+        log.info("Starting tournament {}", tournamentId);
+
+        permissionChecker.validateAdminPermission(userSessionRepository.findBySessionId(sessionId));
+
+        Tournament tournament = tournamentRepository.findById(tournamentId)
+                .orElseThrow(() -> new CustomException(
+                        ErrorCode.TOURNAMENT_NOT_FOUND,
+                        "Torneo no encontrado"
+                ));
+
+        if (!tournament.getStatus().equals(TournamentStatus.ENROLLMENT_CLOSED)) {
+            throw new CustomException(
+                    ErrorCode.INVALID_TOURNAMENT_STATUS,
+                    "Estado incorrecto del torneo",
+                    "Las inscripciones deben estar cerradas para poder iniciar el torneo"
+            );
+        }
+
+        long selectedPlayersCount = tournamentEnrollmentRepository.countByTournamentIdAndStatus(tournamentId, EnrollmentStatus.SELECTED);
+
+        if (selectedPlayersCount < tournament.getMinPlayers()) {
+            throw new CustomException(
+                    ErrorCode.MIN_PLAYERS_NOT_REACHED,
+                    "Número insuficiente de jugadores seleccionados",
+                    String.format(
+                            "Se necesitan al menos %d jugadores seleccionados para iniciar el torneo",
+                            tournament.getMinPlayers()
+                    )
+            );
+        } else if (selectedPlayersCount > tournament.getMaxPlayers()) {
+            throw new CustomException(
+                    ErrorCode.MAX_PLAYERS_EXCEEDED,
+                    "Número excesivo de jugadores seleccionados",
+                    String.format(
+                            "Se han seleccionado %d jugadores, pero el máximo permitido es %d",
+                            selectedPlayersCount,
+                            tournament.getMaxPlayers()
+                    )
+            );
+        }
+
+        List<TournamentEnrollment> enrollments = tournamentEnrollmentRepository.findByTournamentIdAndStatus(tournamentId, EnrollmentStatus.SELECTED);
+
+        List<PlayerTournament> playerTournaments = enrollments.stream()
+                .map(enrollment -> {
+                    PlayerTournament playerTournament = new PlayerTournament();
+                    playerTournament.setPlayer(enrollment.getPlayer());
+                    playerTournament.setTournament(tournament);
+                    return playerTournament;
+                })
+                .toList();
+
+        playerTournamentRepository.saveAll(playerTournaments);
+
+        FirstRoundMatchmakingResult result = matchmakingService.createFirstRoundMatches(tournament, playerTournaments);
+
+        if (result.playerWithBye() != null) {
+            Match nextRoundMatch = new Match();
+            nextRoundMatch.setTournament(tournament);
+            nextRoundMatch.setRound(result.nextRound());
+            nextRoundMatch.setPlayer1(result.playerWithBye());
+            matchRepository.save(nextRoundMatch);
+        }
+
+        tournament.setStatus(TournamentStatus.IN_PROGRESS);
+        tournamentRepository.save(tournament);
+    }
+
+    public List<Match> getTournamentMatches(Long tournamentId, String sessionId) {
+        log.info("Getting matches for tournament {}", tournamentId);
+
+        permissionChecker.validateSession(userSessionRepository.findBySessionId(sessionId));
+
+        Tournament tournament = tournamentRepository.findById(tournamentId)
+                .orElseThrow(() -> new CustomException(
+                        ErrorCode.TOURNAMENT_NOT_FOUND,
+                        "Torneo no encontrado"
+                ));
+
+        if (!tournament.getStatus().equals(TournamentStatus.IN_PROGRESS) && !tournament.getStatus().equals(TournamentStatus.FINISHED)) {
+            throw new CustomException(
+                    ErrorCode.INVALID_TOURNAMENT_STATUS,
+                    "Estado incorrecto del torneo",
+                    "El torneo aún no ha comenzado"
+            );
+        }
+
+        return matchRepository.findByTournamentIdOrderByRoundDesc(tournamentId);
     }
 }
