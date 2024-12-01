@@ -11,13 +11,18 @@ import java.time.Instant;
 @Service
 public class PermissionChecker {
 
-    public void validateUserPermission (User user, UserSession userSession) {
+    public void validateSession (UserSession userSession) {
         if (userSession == null || userSession.getExpirationDate().isBefore(Instant.now())) {
             throw new CustomException(
                     ErrorCode.INVALID_TOKEN,
                     "Sesión no inválida o expirada"
             );
         }
+    }
+
+    public void validateUserPermission (User user, UserSession userSession) {
+        validateSession(userSession);
+
         boolean isAdmin = userSession.getUser().getRole().getType().name().equals("ADMIN");
 
         if (isAdmin) return;
@@ -40,12 +45,7 @@ public class PermissionChecker {
     }
 
     public void validateAdminPermission (UserSession userSession) {
-        if (userSession == null || userSession.getExpirationDate().isBefore(Instant.now())) {
-            throw new CustomException(
-                    ErrorCode.INVALID_TOKEN,
-                    "Sesión no inválida o expirada"
-            );
-        }
+        validateSession(userSession);
         boolean isAdmin = userSession.getUser().getRole().getType().name().equals("ADMIN");
 
         if (!isAdmin) {
