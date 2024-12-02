@@ -11,13 +11,18 @@ import java.time.Instant;
 @Service
 public class PermissionChecker {
 
-    public void validateUserPermission (User user, UserSession userSession) {
+    public void validateSession (UserSession userSession) {
         if (userSession == null || userSession.getExpirationDate().isBefore(Instant.now())) {
             throw new CustomException(
                     ErrorCode.INVALID_TOKEN,
                     "Sesión no inválida o expirada"
             );
         }
+    }
+
+    public void validateUserPermission (User user, UserSession userSession) {
+        validateSession(userSession);
+
         boolean isAdmin = userSession.getUser().getRole().getType().name().equals("ADMIN");
 
         if (isAdmin) return;
@@ -31,6 +36,19 @@ public class PermissionChecker {
         }
 
         if (!user.getId().equals(userSession.getUser().getId())) {
+            throw new CustomException(
+                    ErrorCode.UNAUTHORIZED_ACTION,
+                    "Acción no autorizada",
+                    "No tiene permisos para realizar esta acción"
+            );
+        }
+    }
+
+    public void validateAdminPermission (UserSession userSession) {
+        validateSession(userSession);
+        boolean isAdmin = userSession.getUser().getRole().getType().name().equals("ADMIN");
+
+        if (!isAdmin) {
             throw new CustomException(
                     ErrorCode.UNAUTHORIZED_ACTION,
                     "Acción no autorizada",
