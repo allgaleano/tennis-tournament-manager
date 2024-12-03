@@ -397,9 +397,15 @@ public class TournamentService {
             );
         }
 
-        List<TournamentEnrollment> enrollments = tournamentEnrollmentRepository.findByTournamentIdAndStatus(tournamentId, EnrollmentStatus.SELECTED);
+        List<TournamentEnrollment> pendingEnrollments = tournamentEnrollmentRepository
+                .findByTournamentIdAndStatus(tournamentId, EnrollmentStatus.PENDING);
+        pendingEnrollments.forEach(enrollment -> enrollment.setStatus(EnrollmentStatus.DECLINED));
+        tournamentEnrollmentRepository.saveAll(pendingEnrollments);
 
-        List<PlayerTournament> playerTournaments = enrollments.stream()
+        List<TournamentEnrollment> selectedEnrollments = tournamentEnrollmentRepository.findByTournamentIdAndStatus(tournamentId, EnrollmentStatus.SELECTED);
+
+
+        List<PlayerTournament> playerTournaments = selectedEnrollments.stream()
                 .map(enrollment -> {
                     PlayerTournament playerTournament = new PlayerTournament();
                     playerTournament.setPlayer(enrollment.getPlayer());
