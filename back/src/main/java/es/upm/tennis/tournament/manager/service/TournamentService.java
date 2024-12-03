@@ -48,7 +48,7 @@ public class TournamentService {
 
 
     public Page<Tournament> getAllTournaments(Pageable pageable) {
-        return tournamentRepository.findAll(pageable);
+        return tournamentRepository.findAllByOrderByRegistrationDeadlineAsc(pageable);
     }
 
     public void enrollPlayerToTournament(Long tournamentId, Long playerId, String sessionId) {
