@@ -153,14 +153,11 @@ public class TournamentService {
 
         boolean isAdmin = user.getRole().getType().name().equals("ADMIN");
 
-        if (
-                !isAdmin
-                && tournament.getRegistrationDeadline() != null
-                && tournament.getRegistrationDeadline().isBefore(Instant.now())
-        ) {
+        if (tournament.getStatus().equals(TournamentStatus.IN_PROGRESS) || tournament.getStatus().equals(TournamentStatus.FINISHED)) {
             throw new CustomException(
                     ErrorCode.INVALID_TOURNAMENT_STATUS,
-                    "La fecha límite de inscripción ha pasado"
+                    "El torneo ya ha comenzado o ha finalizado",
+                    "No se pueden realizar cambios en las inscripciones"
             );
         }
 
