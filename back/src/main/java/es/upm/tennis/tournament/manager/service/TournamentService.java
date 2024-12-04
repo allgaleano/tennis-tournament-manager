@@ -48,7 +48,7 @@ public class TournamentService {
 
 
     public Page<Tournament> getAllTournaments(Pageable pageable) {
-        return tournamentRepository.findAll(pageable);
+        return tournamentRepository.findAllByOrderByRegistrationDeadlineAsc(pageable);
     }
 
     public void enrollPlayerToTournament(Long tournamentId, Long playerId, String sessionId) {
@@ -115,14 +115,14 @@ public class TournamentService {
 
         return enrollments.map(enrollment -> {
             TournamentEnrollmentDTO tournamentEnrollmentDTO = new TournamentEnrollmentDTO();
-            UserEnrolledDTO userEnrolledDTO = new UserEnrolledDTO();
-            userEnrolledDTO.setId(enrollment.getPlayer().getId());
-            userEnrolledDTO.setName(enrollment.getPlayer().getName());
-            userEnrolledDTO.setSurname(enrollment.getPlayer().getSurname());
-            userEnrolledDTO.setUsername(enrollment.getPlayer().getUsername());
-            userEnrolledDTO.setEmail(enrollment.getPlayer().getEmail());
+            UserPublicDTO userPublicDTO = new UserPublicDTO();
+            userPublicDTO.setId(enrollment.getPlayer().getId());
+            userPublicDTO.setName(enrollment.getPlayer().getName());
+            userPublicDTO.setSurname(enrollment.getPlayer().getSurname());
+            userPublicDTO.setUsername(enrollment.getPlayer().getUsername());
+            userPublicDTO.setEmail(enrollment.getPlayer().getEmail());
             tournamentEnrollmentDTO.setId(enrollment.getId());
-            tournamentEnrollmentDTO.setPlayer(userEnrolledDTO);
+            tournamentEnrollmentDTO.setPlayer(userPublicDTO);
             tournamentEnrollmentDTO.setStatus(enrollment.getStatus());
 
             return tournamentEnrollmentDTO;
@@ -397,9 +397,15 @@ public class TournamentService {
             );
         }
 
-        List<TournamentEnrollment> enrollments = tournamentEnrollmentRepository.findByTournamentIdAndStatus(tournamentId, EnrollmentStatus.SELECTED);
+        List<TournamentEnrollment> pendingEnrollments = tournamentEnrollmentRepository
+                .findByTournamentIdAndStatus(tournamentId, EnrollmentStatus.PENDING);
+        pendingEnrollments.forEach(enrollment -> enrollment.setStatus(EnrollmentStatus.DECLINED));
+        tournamentEnrollmentRepository.saveAll(pendingEnrollments);
 
-        List<PlayerTournament> playerTournaments = enrollments.stream()
+        List<TournamentEnrollment> selectedEnrollments = tournamentEnrollmentRepository.findByTournamentIdAndStatus(tournamentId, EnrollmentStatus.SELECTED);
+
+
+        List<PlayerTournament> playerTournaments = selectedEnrollments.stream()
                 .map(enrollment -> {
                     PlayerTournament playerTournament = new PlayerTournament();
                     playerTournament.setPlayer(enrollment.getPlayer());
@@ -410,15 +416,7 @@ public class TournamentService {
 
         playerTournamentRepository.saveAll(playerTournaments);
 
-        FirstRoundMatchmakingResult result = matchmakingService.createFirstRoundMatches(tournament, playerTournaments);
-
-        if (result.playerWithBye() != null) {
-            Match nextRoundMatch = new Match();
-            nextRoundMatch.setTournament(tournament);
-            nextRoundMatch.setRound(result.nextRound());
-            nextRoundMatch.setPlayer1(result.playerWithBye());
-            matchRepository.save(nextRoundMatch);
-        }
+        matchmakingService.createRoundMatches(tournament, playerTournaments);
 
         tournament.setStatus(TournamentStatus.IN_PROGRESS);
         tournamentRepository.save(tournament);

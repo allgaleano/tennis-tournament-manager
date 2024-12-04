@@ -5,7 +5,7 @@ import { ColumnDef, flexRender, getCoreRowModel, useReactTable } from "@tanstack
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import PlayerSelectionControls from "./player-selection-controls";
-import { Enrollment } from "@/types";
+import { Enrollment, Tournament } from "@/types";
 
 type CellValue = string | number | boolean | React.ReactNode | null;
 
@@ -14,7 +14,7 @@ interface DataTableProps {
   data: Enrollment[];
   page: number;
   totalPages: number;
-  tournamentId: number;
+  tournament: Tournament;
   isAdmin: boolean;
 }
 
@@ -23,7 +23,7 @@ export function DataTable({
   data,
   page,
   totalPages,
-  tournamentId,
+  tournament,
   isAdmin,
 }: DataTableProps) {
   const [rowSelection, setRowSelection] = useState({});
@@ -48,17 +48,17 @@ export function DataTable({
 
   const handleNavigation = (newPage: number) => {
     const size = searchParams.get("size") || "20";
-    router.push(`/tournaments/${tournamentId}?page=${newPage}&size=${size}`);
+    router.push(`/tournaments/${tournament.id}?page=${newPage}&size=${size}`);
   };
 
   return (
     <div className="w-full flex flex-col overflow-x-auto">
-      <div className="flex flex-wrap items-center py-1 gap-2 justify-between">
+      <div className="flex flex-wrap items-center py-1 gap-2 justify-between h-12">
         <h2>Jugadores Inscritos:</h2>
         {isAdmin && (
           <PlayerSelectionControls
             rowSelection={rowSelection}
-            tournamentId={tournamentId}
+            tournament={tournament}
             onActionSuccess={resetRowSelection}
           />
         )}

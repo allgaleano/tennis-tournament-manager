@@ -18,7 +18,7 @@ public class Match {
     private Tournament tournament;
 
     @ManyToOne
-    @JoinColumn(name = "player1_id", nullable = false)
+    @JoinColumn(name = "player1_id")
     private User player1;
 
     @ManyToOne

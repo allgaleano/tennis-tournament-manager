@@ -1,16 +1,17 @@
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { getClientSideCookie } from "@/lib/users/getClientSideCookie";
+import { Tournament } from "@/types";
 import { useRouter } from "next/navigation";
 
 interface PlayerSelectionControlsProps {
   rowSelection: Record<string, boolean>;
-  tournamentId: number;
+  tournament: Tournament;
   onActionSuccess: () => void;
 }
 const PlayerSelectionControls = ({
   rowSelection,
-  tournamentId,
+  tournament,
   onActionSuccess,
 }: PlayerSelectionControlsProps) => {
   const { toast } = useToast();
@@ -34,7 +35,7 @@ const PlayerSelectionControls = ({
       return;
     }
     
-    const apiUri = `${process.env.NEXT_PUBLIC_API_URI}/tournaments/${tournamentId}/${
+    const apiUri = `${process.env.NEXT_PUBLIC_API_URI}/tournaments/${tournament.id}/${
       action === "select" ? "selectPlayers" : "deselectPlayers"
     }`;
 
@@ -80,6 +81,10 @@ const PlayerSelectionControls = ({
     }
   }
 
+  if (tournament.status !== "ENROLLMENT_CLOSED") {
+    return null;
+  }
+
   return (
     <div className="flex space-x-2">
       <Button
@@ -87,16 +92,18 @@ const PlayerSelectionControls = ({
         size="sm"
         onClick={() => handleAction("select")}
         disabled={!hasSelectedRows}
+        className={`${!hasSelectedRows && "hidden"}`}
       >
-        Seleccionar Jugadores
+        Seleccionar
       </Button>
       <Button
         variant="outline"
         size="sm"
         onClick={() => handleAction("deselect")}
         disabled={!hasSelectedRows}
+        className={`${!hasSelectedRows && "hidden"}`}
       >
-        Deseleccionar Jugadores
+        Deseleccionar
       </Button>
     </div>
   )
