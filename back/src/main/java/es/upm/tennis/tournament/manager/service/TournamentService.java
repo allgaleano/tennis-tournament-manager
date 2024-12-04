@@ -416,15 +416,7 @@ public class TournamentService {
 
         playerTournamentRepository.saveAll(playerTournaments);
 
-        FirstRoundMatchmakingResult result = matchmakingService.createFirstRoundMatches(tournament, playerTournaments);
-
-        if (result.playerWithBye() != null) {
-            Match nextRoundMatch = new Match();
-            nextRoundMatch.setTournament(tournament);
-            nextRoundMatch.setRound(result.nextRound());
-            nextRoundMatch.setPlayer1(result.playerWithBye());
-            matchRepository.save(nextRoundMatch);
-        }
+        matchmakingService.createRoundMatches(tournament, playerTournaments);
 
         tournament.setStatus(TournamentStatus.IN_PROGRESS);
         tournamentRepository.save(tournament);
