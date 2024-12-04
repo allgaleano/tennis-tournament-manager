@@ -436,6 +436,6 @@ public class TournamentService {
             );
         }
 
-        return matchRepository.findByTournamentIdOrderByRoundDesc(tournamentId);
+        return matchRepository.findByTournamentIdOrderedByRoundAndPlayers(tournamentId);
     }
 }
