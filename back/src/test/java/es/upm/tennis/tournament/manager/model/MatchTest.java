@@ -25,13 +25,13 @@ class MatchTest {
             match.setTournament(tournament);
             match.setPlayer1(player1);
             match.setPlayer2(player2);
-            match.setRound(4);
+            match.setRound(TournamentRound.fromRoundNumber(4));
 
             // Assert
             assertNotNull(match.getTournament());
             assertNotNull(match.getPlayer1());
             assertNotNull(match.getPlayer2());
-            assertEquals(4, match.getRound());
+            assertEquals(TournamentRound.ROUND_16, match.getRound());
         }
     }
 
@@ -100,13 +100,13 @@ class MatchTest {
         void shouldGetAndSetRound() {
             // Arrange
             Match match = new Match();
-            int round = 3;
+            TournamentRound round = TournamentRound.QUARTER_FINALS;
 
             // Act
             match.setRound(round);
 
             // Assert
-            assertEquals(round, match.getRound());
+            assertEquals(TournamentRound.QUARTER_FINALS, match.getRound());
         }
 
         @Test
@@ -114,13 +114,13 @@ class MatchTest {
         void shouldGetAndSetWinnerId() {
             // Arrange
             Match match = new Match();
-            Long winnerId = 2L;
+            User winner = new User();
 
             // Act
-            match.setWinnerId(winnerId);
+            match.setWinner(winner);
 
             // Assert
-            assertEquals(winnerId, match.getWinnerId());
+            assertEquals(winner, match.getWinner());
         }
     }
 }
