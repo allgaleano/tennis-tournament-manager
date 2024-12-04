@@ -115,14 +115,14 @@ public class TournamentService {
 
         return enrollments.map(enrollment -> {
             TournamentEnrollmentDTO tournamentEnrollmentDTO = new TournamentEnrollmentDTO();
-            UserEnrolledDTO userEnrolledDTO = new UserEnrolledDTO();
-            userEnrolledDTO.setId(enrollment.getPlayer().getId());
-            userEnrolledDTO.setName(enrollment.getPlayer().getName());
-            userEnrolledDTO.setSurname(enrollment.getPlayer().getSurname());
-            userEnrolledDTO.setUsername(enrollment.getPlayer().getUsername());
-            userEnrolledDTO.setEmail(enrollment.getPlayer().getEmail());
+            UserPublicDTO userPublicDTO = new UserPublicDTO();
+            userPublicDTO.setId(enrollment.getPlayer().getId());
+            userPublicDTO.setName(enrollment.getPlayer().getName());
+            userPublicDTO.setSurname(enrollment.getPlayer().getSurname());
+            userPublicDTO.setUsername(enrollment.getPlayer().getUsername());
+            userPublicDTO.setEmail(enrollment.getPlayer().getEmail());
             tournamentEnrollmentDTO.setId(enrollment.getId());
-            tournamentEnrollmentDTO.setPlayer(userEnrolledDTO);
+            tournamentEnrollmentDTO.setPlayer(userPublicDTO);
             tournamentEnrollmentDTO.setStatus(enrollment.getStatus());
 
             return tournamentEnrollmentDTO;
