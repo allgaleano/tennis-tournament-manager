@@ -72,7 +72,7 @@ const StartTournamentButton = ({
       onClick={startTournamet}
       variant="outline"
     >
-      Start Tournament 
+      Empezar torneo
     </Button>
   )
 }

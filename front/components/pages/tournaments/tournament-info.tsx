@@ -1,3 +1,4 @@
+
 import { Tournament } from "@/types"
 import { getTournamentStatus } from "@/components/pages/tournaments/getTournamentStatus"
 import { formateDateToSpanish } from "@/lib/common/formatDateToSpanish"
@@ -7,6 +8,7 @@ const TournamentInfo = ({
 } : { 
   tournament: Tournament
 }) => {
+
   return (
     <div className="w-full space-y-4 flex flex-col">
       <div className="flex justify-between border-b">

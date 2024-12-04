@@ -51,24 +51,27 @@ const EnrollButton = ({
       router.refresh();
     }
   }
+
+  if (!tournamentIsOpen) {
+    return null;
+  }
+  
   return (
-    <div>
-      {tournamentIsOpen && (
-        enrolled ? (
-          <Button
-            variant="destructive"
-            onClick={() => handleEnrollment("unenroll", userId, tournamentId)}
-          >
-            Anular inscripción
-          </Button>
-        ) : (
-          <Button
-            variant="outline"
-            onClick={() => handleEnrollment("enroll", userId, tournamentId)}
-          >
-            Inscribirse
-          </Button>
-        )
+    <div className="ml-4">
+      {enrolled ? (
+        <Button
+          variant="destructive"
+          onClick={() => handleEnrollment("unenroll", userId, tournamentId)}
+        >
+          Anular inscripción
+        </Button>
+      ) : (
+        <Button
+          variant="outline"
+          onClick={() => handleEnrollment("enroll", userId, tournamentId)}
+        >
+          Inscribirse
+        </Button>
       )}
     </div>
   )
