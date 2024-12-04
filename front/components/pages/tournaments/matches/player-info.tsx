@@ -21,13 +21,13 @@ const PlayerInfo = ({ player, match, className }: PlayerInfoProps) => {
   return (
     <TooltipProvider>
       <Tooltip>
-        <TooltipTrigger className={`${isPlayerWinner(match.player2?.id) ? 'bg-success/10' : ''} w-full flex justify-center py-1 ${className}`}>
-          {player.username}
+        <TooltipTrigger className={`${isPlayerWinner(player?.id) ? 'text-success bg-success/10 border-success font-semibold' : ''} w-full flex justify-center py-1 ${className}`}>
+          {player.name} {player.surname}
         </TooltipTrigger>
         <TooltipContent>
           <div className="space-y-1">
-            <p>Nombre: {player.name} {player.surname}</p>
-            <p>Email: {player.email}</p>
+            <p className="font-semibold">{player.username}</p>
+            <p>{player.email}</p>
           </div>
         </TooltipContent>
       </Tooltip>
