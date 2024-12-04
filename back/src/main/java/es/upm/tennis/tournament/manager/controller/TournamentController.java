@@ -1,10 +1,13 @@
 package es.upm.tennis.tournament.manager.controller;
 
+import es.upm.tennis.tournament.manager.DTO.MatchDTO;
 import es.upm.tennis.tournament.manager.DTO.PlayerIdsRequest;
 import es.upm.tennis.tournament.manager.DTO.TournamentDTO;
 import es.upm.tennis.tournament.manager.DTO.TournamentEnrollmentDTO;
+import es.upm.tennis.tournament.manager.model.Match;
 import es.upm.tennis.tournament.manager.model.Tournament;
 import es.upm.tennis.tournament.manager.service.TournamentService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -14,10 +17,12 @@ import org.springframework.hateoas.PagedModel;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
 
 @RestController
 @RequestMapping("/tournaments")
+@Slf4j
 public class TournamentController {
 
     @Autowired
@@ -114,4 +119,45 @@ public class TournamentController {
         ));
     }
 
+    @PutMapping("/{tournamentId}/closeEnrollments")
+    public ResponseEntity<Map<String, String>> closeEnrollments(
+            @PathVariable Long tournamentId,
+            @RequestHeader("Session-Id") String sessionId
+    ) {
+        tournamentService.closeEnrollments(tournamentId, sessionId);
+        return ResponseEntity.ok(Map.of(
+                "title", "Inscripciones cerradas con éxito"
+        ));
+    }
+
+    @PutMapping("/{tournamentId}/openEnrollments")
+    public ResponseEntity<Map<String, String>> reopenEnrollments(
+            @PathVariable Long tournamentId,
+            @RequestHeader("Session-Id") String sessionId
+    ) {
+        tournamentService.openEnrollments(tournamentId, sessionId);
+        return ResponseEntity.ok(Map.of(
+                "title", "Inscripciones abiertas con éxito"
+        ));
+    }
+
+    @PostMapping("/{tournamentId}/start")
+    public ResponseEntity<Map<String, String>> startTournament(
+            @PathVariable Long tournamentId,
+            @RequestHeader("Session-Id") String sessionId
+    ) {
+        tournamentService.startTournament(tournamentId, sessionId);
+        return ResponseEntity.ok(Map.of(
+                "title", "Torneo iniciado con éxito"
+        ));
+    }
+
+    @GetMapping("/{tournamentId}/matches")
+    public ResponseEntity<List<MatchDTO>> getTournamentMatches(
+            @PathVariable Long tournamentId,
+            @RequestHeader("Session-Id") String sessionId) {
+        List<Match> matches = tournamentService.getTournamentMatches(tournamentId, sessionId);
+        List<MatchDTO> matchDTOS = matches.stream().map(MatchDTO::fromEntity).toList();
+        return ResponseEntity.ok(matchDTOS);
+    }
 }

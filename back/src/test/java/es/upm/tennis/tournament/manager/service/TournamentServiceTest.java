@@ -89,6 +89,7 @@ class TournamentServiceTest {
         tournamentEnrollment.setPlayer(user);
         tournamentEnrollment.setTournament(tournament);
         tournamentEnrollment.setStatus(EnrollmentStatus.PENDING);
+        tournamentRepository.save(tournament);
     }
 
     @Nested
@@ -101,7 +102,7 @@ class TournamentServiceTest {
             // Arrange
             Pageable pageable = PageRequest.of(0, 10);
             Page<Tournament> expectedPage = new PageImpl<>(Collections.singletonList(tournament));
-            when(tournamentRepository.findAll(pageable)).thenReturn(expectedPage);
+            when(tournamentRepository.findAllByOrderByRegistrationDeadlineAsc(pageable)).thenReturn(expectedPage);
 
             // Act
             Page<Tournament> result = tournamentService.getAllTournaments(pageable);
@@ -109,8 +110,8 @@ class TournamentServiceTest {
             // Assert
             assertNotNull(result);
             assertEquals(1, result.getContent().size());
-            assertEquals(tournament.getName(), result.getContent().getFirst().getName());
-            verify(tournamentRepository).findAll(pageable);
+            assertEquals(tournament.getName(), result.getContent().get(0).getName());
+            verify(tournamentRepository).findAllByOrderByRegistrationDeadlineAsc(pageable);
         }
 
         @Test

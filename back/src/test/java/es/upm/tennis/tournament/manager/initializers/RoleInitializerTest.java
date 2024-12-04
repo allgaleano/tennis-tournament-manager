@@ -3,6 +3,7 @@ package es.upm.tennis.tournament.manager.initializers;
 import es.upm.tennis.tournament.manager.model.ERole;
 import es.upm.tennis.tournament.manager.model.Role;
 import es.upm.tennis.tournament.manager.repo.RoleRepository;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +15,17 @@ import java.util.List;
 @SpringBootTest
 @ActiveProfiles("test")
 class RoleInitializerTest {
+
+	@BeforeEach
+	void beforeEach() {
+		roleRepository.deleteAll();
+		Role user = new Role();
+		Role admin = new Role();
+		user.setType(ERole.USER);
+		admin.setType(ERole.ADMIN);
+		roleRepository.save(user);
+		roleRepository.save(admin);
+	}
 
 	@Autowired
 	private RoleRepository roleRepository;

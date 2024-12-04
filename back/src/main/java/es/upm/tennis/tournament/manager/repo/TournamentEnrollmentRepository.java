@@ -27,4 +27,6 @@ public interface TournamentEnrollmentRepository extends JpaRepository<Tournament
     Optional<TournamentEnrollment> findByTournamentIdAndPlayerId(Long tournamentId, Long playerId);
     long countByTournamentIdAndStatus(Long tournamentId, EnrollmentStatus status);
     List<TournamentEnrollment> findByTournamentIdAndPlayerIdIn(Long tournamentId, List<Long> playerIds);
+
+    List<TournamentEnrollment> findByTournamentIdAndStatus(Long tournamentId, EnrollmentStatus enrollmentStatus);
 }
