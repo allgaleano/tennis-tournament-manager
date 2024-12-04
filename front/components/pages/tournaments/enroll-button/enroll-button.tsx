@@ -33,7 +33,7 @@ const EnrollButton = ({
     }
 
     const response = await fetch(`${process.env.NEXT_PUBLIC_API_URI}/tournaments/${tournamentId}/${type}/${userId}`, {
-      method: "POST",
+      method: type === "enroll" ? "POST" : "DELETE",
       headers: {
         "Session-Id": sessionId
       }
