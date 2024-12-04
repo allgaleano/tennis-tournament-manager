@@ -1,5 +1,5 @@
 import PlayerInfo from "./player-info";
-import { Match, Player } from "@/types";
+import { Match } from "@/types";
 
 
 const MatchCard = ({ match }: { match: Match }) => {

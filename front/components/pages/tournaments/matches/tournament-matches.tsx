@@ -1,6 +1,5 @@
 "use client";
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useTournamentMatches } from '@/hooks/useTournamentMatches';
 import { Match } from '@/types';
 import MatchCard from './match-card';
