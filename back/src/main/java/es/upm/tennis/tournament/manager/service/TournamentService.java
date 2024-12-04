@@ -151,8 +151,6 @@ public class TournamentService {
 
         permissionChecker.validateUserPermission(user, userSession);
 
-        boolean isAdmin = user.getRole().getType().name().equals("ADMIN");
-
         if (tournament.getStatus().equals(TournamentStatus.IN_PROGRESS) || tournament.getStatus().equals(TournamentStatus.FINISHED)) {
             throw new CustomException(
                     ErrorCode.INVALID_TOURNAMENT_STATUS,
