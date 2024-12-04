@@ -1,11 +1,13 @@
 package es.upm.tennis.tournament.manager.controller;
 
+import es.upm.tennis.tournament.manager.DTO.MatchDTO;
 import es.upm.tennis.tournament.manager.DTO.PlayerIdsRequest;
 import es.upm.tennis.tournament.manager.DTO.TournamentDTO;
 import es.upm.tennis.tournament.manager.DTO.TournamentEnrollmentDTO;
 import es.upm.tennis.tournament.manager.model.Match;
 import es.upm.tennis.tournament.manager.model.Tournament;
 import es.upm.tennis.tournament.manager.service.TournamentService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -20,6 +22,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/tournaments")
+@Slf4j
 public class TournamentController {
 
     @Autowired
@@ -150,9 +153,11 @@ public class TournamentController {
     }
 
     @GetMapping("/{tournamentId}/matches")
-    public ResponseEntity<List<Match>> getTournamentMatches(
+    public ResponseEntity<List<MatchDTO>> getTournamentMatches(
             @PathVariable Long tournamentId,
             @RequestHeader("Session-Id") String sessionId) {
-        return ResponseEntity.ok(tournamentService.getTournamentMatches(tournamentId, sessionId));
+        List<Match> matches = tournamentService.getTournamentMatches(tournamentId, sessionId);
+        List<MatchDTO> matchDTOS = matches.stream().map(MatchDTO::fromEntity).toList();
+        return ResponseEntity.ok(matchDTOS);
     }
 }
