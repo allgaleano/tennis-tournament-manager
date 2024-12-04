@@ -71,3 +71,20 @@ export interface EnrollmentDisplayList {
     number: number;
   };
 }
+
+export interface Match {
+  id: number;
+  player1: Player | null;
+  player2: Player | null;
+  round: string;
+  winner: Player | null;
+  completed: boolean;
+}
+
+export interface Player {
+  id: number;
+  name: string;
+  surname: string;
+  email: string;
+  username: string;
+}

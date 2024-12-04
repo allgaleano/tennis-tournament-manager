@@ -6,6 +6,9 @@ import TournamentInfo from "@/components/pages/tournaments/tournament-info";
 import Enrollments from "./table/enrollments";
 import EnrollAction from "@/components/pages/tournaments/enroll-button/enroll-action";
 import { getServerSideUserData } from "@/lib/users/getServerSideUserData";
+import TournamentMatches from "./matches/tournament-matches";
+import StartTournamentButton from "./start-tournament-button";
+import ChangeTournamentStatusButton from "./change-tournament-status-button";
 
 async function getTournament(id: string): Promise<{ tournament?: Tournament; error?: string }> {
   try {
@@ -70,12 +73,17 @@ const TournamentDetails = async ({
   return (
     <section className="w-full m-10 mx-auto flex flex-col justify-start items-center space-y-8">
       <SectionHeader title={tournament.name} Icon={getTournamentIcon(tournament.name)} />
-      <div className="flex flex-col w-full max-w-[900px] gap-4 px-4">
+      <div className="flex flex-col w-full max-w-[1400px] gap-4 px-4">
         <TournamentInfo tournament={tournament} />
-        <div className="self-end">
+        {tournament.status === 'IN_PROGRESS' || tournament.status === 'FINISHED' ? (
+          <TournamentMatches tournamentId={tournament.id} />
+        ) : null}
+        <div className="flex flex-wrap items-center justify-end gap-4 sm:gap-0">
+          <StartTournamentButton tournament={tournament} isAdmin={userData.role === "ADMIN"}/>
+          <ChangeTournamentStatusButton tournament={tournament} isAdmin={userData.role === "ADMIN"} />
           <EnrollAction tournament={tournament} userData={userData}/>
         </div>
-        <Enrollments tournamentId={tournament.id} searchParams={searchParams} userData={userData}/>
+        <Enrollments tournament={tournament} searchParams={searchParams} userData={userData}/>
       </div>
     </section>
   )

@@ -8,6 +8,6 @@ import lombok.Setter;
 @Setter
 public class TournamentEnrollmentDTO {
     private Long id;
-    private UserEnrolledDTO player;
+    private UserPublicDTO player;
     private EnrollmentStatus status;
 }

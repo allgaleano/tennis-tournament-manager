@@ -4,9 +4,6 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.util.ArrayList;
-import java.util.List;
-
 @Entity
 @Getter
 @Setter
@@ -21,14 +18,21 @@ public class Match {
     private Tournament tournament;
 
     @ManyToOne
-    @JoinColumn(name = "player1_id", nullable = false)
+    @JoinColumn(name = "player1_id")
     private User player1;
 
     @ManyToOne
-    @JoinColumn(name = "player2_id", nullable = false)
+    @JoinColumn(name = "player2_id")
     private User player2;
 
-    private Integer round; // Ex. 4. round of 16, 3. quarter-finals, 2. semifinal, 1. final
+    @Enumerated(EnumType.STRING)
+    @Column(name = "round", nullable = false)
+    private TournamentRound round;
 
-    private Long winnerId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "winner_id")
+    private User winner;
+
+    @Column(name = "completed", nullable = false)
+    private boolean completed = false;
 }
