@@ -7,15 +7,15 @@ import lombok.Setter;
 @Entity
 @Getter
 @Setter
-@Table(name = "player_tournament")
-public class PlayerTournament {
+@Table(name = "tournament_participations")
+public class TournamentParticipation {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne
     @JoinColumn(name = "player_id", nullable = false)
-    private User player;
+    private PlayerStats playerStats;
 
     @ManyToOne
     @JoinColumn(name = "tournament_id", nullable = false)

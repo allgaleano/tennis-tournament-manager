@@ -4,6 +4,7 @@ import es.upm.tennis.tournament.manager.model.*;
 import es.upm.tennis.tournament.manager.repo.MatchRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -11,6 +12,7 @@ import java.util.List;
 
 @Service
 @Slf4j
+@Transactional
 public class MatchmakingService {
 
     private final MatchRepository matchRepository;
@@ -19,11 +21,13 @@ public class MatchmakingService {
         this.matchRepository = matchRepository;
     }
 
-    public void createRoundMatches(Tournament tournament, List<PlayerTournament> players) {
+    public void createRoundMatches(Tournament tournament, List<TournamentParticipation> players) {
         List<User> shuffledPlayers = new ArrayList<>(players.stream()
-                .map(PlayerTournament::getPlayer)
+                .map(participant -> participant.getPlayerStats().getPlayer())
                 .toList());
         Collections.shuffle(shuffledPlayers);
+
+        log.info("Creating matches for tournament {} with {} players", tournament.getId(), shuffledPlayers.size());
 
         TournamentRound firstRound = determineFirstRound(shuffledPlayers.size());
 

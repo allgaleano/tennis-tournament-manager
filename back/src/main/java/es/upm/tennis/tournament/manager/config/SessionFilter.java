@@ -54,7 +54,7 @@ public class SessionFilter extends OncePerRequestFilter {
         String sessionId = request.getHeader("Session-Id");
 
         if (sessionId != null && sessionService.validateSession(sessionId)) {
-            UserSession session = sessionService.findBySessionId(sessionId);
+            UserSession session = sessionService.getUserSession(sessionId);
             User user = session.getUser();
 
 
