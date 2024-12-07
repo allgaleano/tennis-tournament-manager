@@ -1,8 +1,12 @@
 package es.upm.tennis.tournament.manager.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Getter
@@ -36,28 +40,7 @@ public class Match {
     @Column(name = "completed", nullable = false)
     private boolean completed = false;
 
-    private Integer set1Player1Games;
-    private Integer set1Player2Games;
-    private Integer set1Player1TieBreakGames;
-    private Integer set1Player2TieBreakGames;
-
-    private Integer set2Player1Games;
-    private Integer set2Player2Games;
-    private Integer set2Player1TieBreakGames;
-    private Integer set2Player2TieBreakGames;
-
-    private Integer set3Player1Games;
-    private Integer set3Player2Games;
-    private Integer set3Player1TieBreakGames;
-    private Integer set3Player2TieBreakGames;
-
-    private Integer set4Player1Games;
-    private Integer set4Player2Games;
-    private Integer set4Player1TieBreakGames;
-    private Integer set4Player2TieBreakGames;
-
-    private Integer set5Player1Games;
-    private Integer set5Player2Games;
-    private Integer set5Player1TieBreakGames;
-    private Integer set5Player2TieBreakGames;
+    @OneToMany(mappedBy = "match", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @OrderBy("setNumber ASC")
+    private List<Set> sets = new ArrayList<>();
 }

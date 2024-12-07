@@ -25,16 +25,19 @@ import java.util.Map;
 @Slf4j
 public class TournamentController {
 
-    @Autowired
-    private TournamentService tournamentService;
+    private final TournamentService tournamentService;
+
+    public TournamentController(TournamentService tournamentService) {
+        this.tournamentService = tournamentService;
+    }
 
     @GetMapping
     public ResponseEntity<PagedModel<EntityModel<Tournament>>> getAllTournaments(
             Pageable pageable,
             PagedResourcesAssembler<Tournament> pagedResourcesAssembler
     ) {
+        log.info("Getting all tournaments");
         Page<Tournament> tournaments = tournamentService.getAllTournaments(pageable);
-
         PagedModel<EntityModel<Tournament>> pagedModel = pagedResourcesAssembler.toModel(tournaments, EntityModel::of);
         return ResponseEntity.ok(pagedModel);
     }
