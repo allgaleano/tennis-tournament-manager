@@ -3,10 +3,12 @@ package es.upm.tennis.tournament.manager.model;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 
 @Getter
 @Setter
 @Entity
+@ToString
 @Table(name = "sets")
 public class Set {
     @Id
@@ -47,9 +49,9 @@ public class Set {
             }
 
             if (player1Games == 7) {
-                return player1TiebreakGames == 7 && player2TiebreakGames < 7;
+                return !(player1TiebreakGames == 7 && player2TiebreakGames < 7);
             } else { // player2Games == 7
-                return player1TiebreakGames > 7 && player2TiebreakGames == 7;
+                return !(player1TiebreakGames < 7 && player2TiebreakGames == 7);
             }
         }
 
