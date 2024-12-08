@@ -154,13 +154,4 @@ public class TournamentController {
                 "title", "Torneo iniciado con éxito"
         ));
     }
-
-    @GetMapping("/{tournamentId}/matches")
-    public ResponseEntity<List<MatchDTO>> getTournamentMatches(
-            @PathVariable Long tournamentId,
-            @RequestHeader("Session-Id") String sessionId) {
-        List<Match> matches = tournamentService.getTournamentMatches(tournamentId, sessionId);
-        List<MatchDTO> matchDTOS = matches.stream().map(MatchDTO::fromEntity).toList();
-        return ResponseEntity.ok(matchDTOS);
-    }
 }

@@ -1,6 +1,5 @@
 package es.upm.tennis.tournament.manager.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -39,6 +38,12 @@ public class Match {
 
     @Column(name = "completed", nullable = false)
     private boolean completed = false;
+
+    @Column(name = "player1_sets")
+    private Integer player1SetsWon;
+
+    @Column(name = "player2_sets")
+    private Integer player2SetsWon;
 
     @OneToMany(mappedBy = "match", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @OrderBy("setNumber ASC")

@@ -8,7 +8,6 @@ import es.upm.tennis.tournament.manager.model.Match;
 import es.upm.tennis.tournament.manager.model.Set;
 import es.upm.tennis.tournament.manager.model.User;
 import es.upm.tennis.tournament.manager.repo.MatchRepository;
-import es.upm.tennis.tournament.manager.repo.SetRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -19,23 +18,20 @@ import java.util.stream.Collectors;
 
 @Service
 @Slf4j
-public class SetService {
+public class MatchScoreService {
 
     private final PermissionChecker permissionChecker;
     private final MatchRepository matchRepository;
-    private final SetRepository setRepository;
 
-    public SetService(
+    public MatchScoreService(
             PermissionChecker permissionChecker,
-            MatchRepository matchRepository,
-            SetRepository setRepository
+            MatchRepository matchRepository
     ) {
         this.permissionChecker = permissionChecker;
         this.matchRepository = matchRepository;
-        this.setRepository = setRepository;
     }
 
-    public void setMatchScore(Long tournamentId, Long matchId, String sessionId, MatchScoreDTO matchScoreDTO) {
+    public void set(Long tournamentId, Long matchId, String sessionId, MatchScoreDTO matchScoreDTO) {
 
         permissionChecker.validateAdminPermission(sessionId);
 
@@ -65,6 +61,9 @@ public class SetService {
 
         match.getSets().clear();
 
+        match.setPlayer1SetsWon(0);
+        match.setPlayer2SetsWon(0);
+
         matchScoreDTO.getSets().stream()
                 .sorted(Comparator.comparingInt(SetDTO::getSetNumber))
                 .forEach(setDTO -> {
@@ -72,6 +71,7 @@ public class SetService {
                     set.setMatch(match);
                     validateSetScore(set);
                     match.getSets().add(set);
+                    updateSetsWonCount(match, set);
                 });
 
         validateMatchScore(match);
@@ -118,16 +118,16 @@ public class SetService {
         set.setPlayer2Games(setDTO.getPlayer2Games());
 
         if (setDTO.isTiebreak()) {
-            if (setDTO.getPlayer1TiebreakPoints() == null || setDTO.getPlayer2TiebreakPoints() == null) {
+            if (setDTO.getPlayer1TiebreakGames() == null || setDTO.getPlayer2TiebreakGames() == null) {
                 throw new CustomException(
                         ErrorCode.INVALID_SCORE,
-                        "Puntos de tiebreak requeridos",
-                        "Los puntos de tiebreak son requeridos para el set" + setDTO.getSetNumber()
+                        "Juegos de tiebreak requeridos",
+                        "Los juegos de tiebreak son requeridos para el set" + setDTO.getSetNumber()
                 );
             }
             set.setTiebreak(true);
-            set.setPlayer1TiebreakPoints(setDTO.getPlayer1TiebreakPoints());
-            set.setPlayer2TiebreakPoints(setDTO.getPlayer2TiebreakPoints());
+            set.setPlayer1TiebreakGames(setDTO.getPlayer1TiebreakGames());
+            set.setPlayer2TiebreakGames(setDTO.getPlayer2TiebreakGames());
         }
         return set;
     }
@@ -167,10 +167,21 @@ public class SetService {
                 .collect(Collectors.groupingBy(winner -> winner, Collectors.counting()));
 
         setsWon.forEach((player, wins) -> {
-           if (wins >= 3) {
-               match.setWinner(player);
-               match.setCompleted(true);
-           }
+            if (wins >= 3) {
+                match.setWinner(player);
+                match.setCompleted(true);
+            }
         });
+    }
+
+    private void updateSetsWonCount(Match match, Set set) {
+        User setWinner = set.getSetWinner();
+        if (setWinner != null) {
+            if (setWinner.equals(match.getPlayer1())) {
+                match.setPlayer1SetsWon(match.getPlayer1SetsWon() + 1);
+            } else if (setWinner.equals(match.getPlayer2())) {
+                match.setPlayer2SetsWon(match.getPlayer2SetsWon() + 1);
+            }
+        }
     }
 }
