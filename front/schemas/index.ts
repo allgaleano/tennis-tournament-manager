@@ -67,3 +67,50 @@ export const ChangePhoneNumberSchema = z.object({
     .max(15, { message: "Número demasiado largo" }) // Maximum 15 digits for international numbers
     .regex(/^\d+$/, { message: "El número de teléfono solo puede contener números" }), // Ensure it's numeric
 })
+
+const setSchema = z.object({
+  setNumber: z.number().int({
+    message: "El número de set debe de ser un número entero"
+  }).positive({
+    message: "El número de set debe de ser positivo"
+  }),
+  player1Games: z.number().int({
+    message: "El número de juegos del jugador 1 debe de ser un número entero"
+  }).min(0, {
+    message: "El número de juegos del jugador 1 no puede ser negativo"
+  }).max(7, {
+    message: "El número de juegos del jugador 1 no puede ser mayor a 7"
+  }),
+  player2Games: z.number().int({
+    message: "El número de juegos del jugador 2 debe de ser un número entero"
+  }).min(0, {
+    message: "El número de juegos del jugador 2 no puede ser negativo"
+  }).max(7, {
+    message: "El número de juegos del jugador 2 no puede ser mayor a 7"
+  }),
+  tiebreak: z.boolean().optional(),
+  player1TiebreakGames: z.number().int({
+    message: "El número de juegos de desempate del jugador 1 debe de ser un número entero"
+  }).min(0, {
+    message: "El número de juegos de desempate del jugador 1 no puede ser negativo"
+  }).max(7, {
+    message: "El número de juegos de desempate del jugador 1 no puede ser mayor a 7"
+  }).optional(),
+  player2TiebreakGames: z.number().int({
+    message: "El número de juegos de desempate del jugador 2 debe de ser un número entero"
+  }).min(0, {
+    message: "El número de juegos de desempate del jugador 2 no puede ser negativo"
+  }).max(7, {
+    message: "El número de juegos de desempate del jugador 2 no puede ser mayor a 7"
+  }).optional()
+});
+
+export const matchScoreSchema = z.object({
+  sets: z.array(setSchema)
+    .min(1, {
+      message: "Debes de introducir al menos un set"
+    })
+    .max(5, {
+      message: "No puedes introducir más de 5 sets"
+    })
+});

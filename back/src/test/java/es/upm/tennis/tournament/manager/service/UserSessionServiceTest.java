@@ -232,7 +232,7 @@ class UserSessionServiceTest {
             when(userSessionRepository.findBySessionId(testSession.getSessionId())).thenReturn(testSession);
 
             // Act
-            UserSession result = userSessionService.findBySessionId(testSession.getSessionId());
+            UserSession result = userSessionService.getUserSession(testSession.getSessionId());
 
             // Assert
             assertNotNull(result);

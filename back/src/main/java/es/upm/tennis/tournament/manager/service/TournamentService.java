@@ -8,6 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.*;
@@ -16,34 +17,36 @@ import java.util.stream.Collectors;
 
 @Service
 @Slf4j
+@Transactional
 public class TournamentService {
 
     private final TournamentRepository tournamentRepository;
     private final PermissionChecker permissionChecker;
     private final UserRepository userRepository;
     private final UserSessionRepository userSessionRepository;
-    private final PlayerTournamentRepository playerTournamentRepository;
+    private final TournamentParticipationRepository tournamentParticipationRepository;
     private final TournamentEnrollmentRepository tournamentEnrollmentRepository;
-    private final MatchRepository matchRepository;
     private final MatchmakingService matchmakingService;
+    private final PlayerStatsRepository playerStatsRepository;
 
     public TournamentService(
             TournamentRepository tournamentRepository,
             PermissionChecker permissionChecker,
             UserRepository userRepository,
             UserSessionRepository userSessionRepository,
-            PlayerTournamentRepository playerTournamentRepository,
+            TournamentParticipationRepository tournamentParticipationRepository,
             TournamentEnrollmentRepository tournamentEnrollmentRepository,
-            MatchRepository matchRepository,
-            MatchmakingService matchmakingService) {
+            MatchmakingService matchmakingService,
+            PlayerStatsRepository playerStatsRepository
+    ) {
         this.tournamentRepository = tournamentRepository;
         this.permissionChecker = permissionChecker;
         this.userRepository = userRepository;
         this.userSessionRepository = userSessionRepository;
-        this.playerTournamentRepository = playerTournamentRepository;
+        this.tournamentParticipationRepository = tournamentParticipationRepository;
         this.tournamentEnrollmentRepository = tournamentEnrollmentRepository;
-        this.matchRepository = matchRepository;
         this.matchmakingService = matchmakingService;
+        this.playerStatsRepository = playerStatsRepository;
     }
 
 
@@ -69,9 +72,7 @@ public class TournamentService {
                         )
                 );
 
-        UserSession userSession = userSessionRepository.findBySessionId(sessionId);
-
-        permissionChecker.validateUserPermission(user, userSession);
+        permissionChecker.validateUserPermission(user, sessionId);
 
         boolean isAdmin = user.getRole().getType().name().equals("ADMIN");
 
@@ -149,7 +150,7 @@ public class TournamentService {
 
         UserSession userSession = userSessionRepository.findBySessionId(sessionId);
 
-        permissionChecker.validateUserPermission(user, userSession);
+        permissionChecker.validateUserPermission(user, sessionId);
 
         if (tournament.getStatus().equals(TournamentStatus.IN_PROGRESS) || tournament.getStatus().equals(TournamentStatus.FINISHED)) {
             throw new CustomException(
@@ -194,7 +195,7 @@ public class TournamentService {
     }
 
     public void selectPlayer(Long tournamentId, PlayerIdsRequest playerIds, String sessionId) {
-        permissionChecker.validateAdminPermission(userSessionRepository.findBySessionId(sessionId));
+        permissionChecker.validateAdminPermission(sessionId);
 
         Tournament tournament = tournamentRepository.findById(tournamentId)
                 .orElseThrow(() -> new CustomException(
@@ -254,7 +255,7 @@ public class TournamentService {
 
     public void deselectPlayer(Long tournamentId, PlayerIdsRequest playerIds, String sessionId) {
 
-        permissionChecker.validateAdminPermission(userSessionRepository.findBySessionId(sessionId));
+        permissionChecker.validateAdminPermission(sessionId);
 
         Tournament tournament = tournamentRepository.findById(tournamentId)
                 .orElseThrow(() -> new CustomException(
@@ -307,7 +308,7 @@ public class TournamentService {
     public void closeEnrollments(Long tournamentId, String sessionId) {
         log.info("Closing enrollments for tournament {}", tournamentId);
 
-        permissionChecker.validateAdminPermission(userSessionRepository.findBySessionId(sessionId));
+        permissionChecker.validateAdminPermission(sessionId);
 
         Tournament tournament = tournamentRepository.findById(tournamentId)
                 .orElseThrow(() -> new CustomException(
@@ -330,7 +331,7 @@ public class TournamentService {
     public void openEnrollments(Long tournamentId, String sessionId) {
         log.info("Reopening enrollments for tournament {}", tournamentId);
 
-        permissionChecker.validateAdminPermission(userSessionRepository.findBySessionId(sessionId));
+        permissionChecker.validateAdminPermission(sessionId);
 
         Tournament tournament = tournamentRepository.findById(tournamentId)
                 .orElseThrow(() -> new CustomException(
@@ -353,7 +354,7 @@ public class TournamentService {
     public void startTournament(Long tournamentId, String sessionId) {
         log.info("Starting tournament {}", tournamentId);
 
-        permissionChecker.validateAdminPermission(userSessionRepository.findBySessionId(sessionId));
+        permissionChecker.validateAdminPermission(sessionId);
 
         Tournament tournament = tournamentRepository.findById(tournamentId)
                 .orElseThrow(() -> new CustomException(
@@ -400,42 +401,27 @@ public class TournamentService {
         List<TournamentEnrollment> selectedEnrollments = tournamentEnrollmentRepository.findByTournamentIdAndStatus(tournamentId, EnrollmentStatus.SELECTED);
 
 
-        List<PlayerTournament> playerTournaments = selectedEnrollments.stream()
+        List<TournamentParticipation> tournamentParticipants = selectedEnrollments.stream()
                 .map(enrollment -> {
-                    PlayerTournament playerTournament = new PlayerTournament();
-                    playerTournament.setPlayer(enrollment.getPlayer());
-                    playerTournament.setTournament(tournament);
-                    return playerTournament;
+                    TournamentParticipation tournamentParticipation = new TournamentParticipation();
+                    PlayerStats playerStats = playerStatsRepository.findByPlayer(enrollment.getPlayer())
+                            .orElseGet(() -> {
+                                PlayerStats newPlayerStats = new PlayerStats();
+                                newPlayerStats.setPlayer(enrollment.getPlayer());
+                                return playerStatsRepository.save(newPlayerStats);
+                            });
+
+                    tournamentParticipation.setPlayerStats(playerStats);
+                    tournamentParticipation.setTournament(tournament);
+                    return tournamentParticipation;
                 })
                 .toList();
 
-        playerTournamentRepository.saveAll(playerTournaments);
+        tournamentParticipationRepository.saveAll(tournamentParticipants);
 
-        matchmakingService.createRoundMatches(tournament, playerTournaments);
+        matchmakingService.createRoundMatches(tournament, tournamentParticipants);
 
         tournament.setStatus(TournamentStatus.IN_PROGRESS);
         tournamentRepository.save(tournament);
-    }
-
-    public List<Match> getTournamentMatches(Long tournamentId, String sessionId) {
-        log.info("Getting matches for tournament {}", tournamentId);
-
-        permissionChecker.validateSession(userSessionRepository.findBySessionId(sessionId));
-
-        Tournament tournament = tournamentRepository.findById(tournamentId)
-                .orElseThrow(() -> new CustomException(
-                        ErrorCode.TOURNAMENT_NOT_FOUND,
-                        "Torneo no encontrado"
-                ));
-
-        if (!tournament.getStatus().equals(TournamentStatus.IN_PROGRESS) && !tournament.getStatus().equals(TournamentStatus.FINISHED)) {
-            throw new CustomException(
-                    ErrorCode.INVALID_TOURNAMENT_STATUS,
-                    "Estado incorrecto del torneo",
-                    "El torneo aún no ha comenzado"
-            );
-        }
-
-        return matchRepository.findByTournamentIdOrderedByRoundAndPlayers(tournamentId);
     }
 }
