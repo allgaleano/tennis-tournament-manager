@@ -10,6 +10,7 @@ import es.upm.tennis.tournament.manager.model.User;
 import es.upm.tennis.tournament.manager.repo.MatchRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Comparator;
 import java.util.List;
@@ -18,6 +19,7 @@ import java.util.stream.Collectors;
 
 @Service
 @Slf4j
+@Transactional
 public class MatchScoreService {
 
     private final PermissionChecker permissionChecker;
@@ -133,6 +135,7 @@ public class MatchScoreService {
     }
 
     private void validateSetScore(Set set) {
+        log.info("Validating set score for set {}", set.toString());
         if (set.isInvalidScore()) {
             throw new CustomException(
                     ErrorCode.INVALID_SCORE,
@@ -151,6 +154,14 @@ public class MatchScoreService {
                 .mapToLong(Long::longValue)
                 .max()
                 .orElse(0);
+
+        if (maxSetsWon < 3) {
+            throw new CustomException(
+                    ErrorCode.INVALID_MATCH_STATUS,
+                    "Sets insuficientes",
+                    "Al menos un jugador debe ganar 3 sets para completar el partido"
+            );
+        }
 
         if (maxSetsWon == 3 && match.getSets().size() > 5) {
             throw new CustomException(
