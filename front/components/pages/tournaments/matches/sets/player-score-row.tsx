@@ -30,6 +30,7 @@ const PlayerScoreRow = ({
       isPlayer1={isPlayer1}
       isLast={true}
       score={setsWon}
+      isMatchWinner={isMatchWinner}
     />
   </div>
 );
