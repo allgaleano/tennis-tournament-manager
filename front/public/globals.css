@@ -86,6 +86,32 @@ body {
   
   
 @layer base {
+  /* Selection color */
+  ::selection {
+    background-color: hsl(var(--primary));
+    color: white;
+  }
+  
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  
+  ::-webkit-scrollbar-track {
+    background: var(--background);
+  }
+  
+  
+  ::-webkit-scrollbar-thumb {
+    background: var(--foreground);
+    border-radius: 12px;
+    border: var(--background) 2px solid;
+  }
+  
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--foreground);
+  }
+  
   * {
     @apply border-border;
   }
