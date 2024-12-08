@@ -6,10 +6,12 @@ import MatchResultsDialog from "./sets/match-result-sheet";
 interface MatchCardProps {
   match: Match;
   tournamentId: number;
+  isAdmin: boolean;
 }
 const MatchCard = ({ 
   match,
-  tournamentId
+  tournamentId,
+  isAdmin
 }: MatchCardProps) => {
 
   return (
@@ -20,7 +22,7 @@ const MatchCard = ({
           {match.completed ? (
             <Sets match={match} />
           ) : (
-            (match.player1 && match.player2) ? (
+            (match.player1 && match.player2 && isAdmin) ? (
               <MatchResultsDialog match={match} tournamentId={tournamentId}/>
             ) : (
               <div className="flex justify-center items-center h-20 text-muted-foreground">vs</div>
