@@ -26,7 +26,6 @@ public class TournamentService {
     private final UserSessionRepository userSessionRepository;
     private final TournamentParticipationRepository tournamentParticipationRepository;
     private final TournamentEnrollmentRepository tournamentEnrollmentRepository;
-    private final MatchRepository matchRepository;
     private final MatchmakingService matchmakingService;
     private final PlayerStatsRepository playerStatsRepository;
 
@@ -37,7 +36,6 @@ public class TournamentService {
             UserSessionRepository userSessionRepository,
             TournamentParticipationRepository tournamentParticipationRepository,
             TournamentEnrollmentRepository tournamentEnrollmentRepository,
-            MatchRepository matchRepository,
             MatchmakingService matchmakingService,
             PlayerStatsRepository playerStatsRepository
     ) {
@@ -47,7 +45,6 @@ public class TournamentService {
         this.userSessionRepository = userSessionRepository;
         this.tournamentParticipationRepository = tournamentParticipationRepository;
         this.tournamentEnrollmentRepository = tournamentEnrollmentRepository;
-        this.matchRepository = matchRepository;
         this.matchmakingService = matchmakingService;
         this.playerStatsRepository = playerStatsRepository;
     }
@@ -426,27 +423,5 @@ public class TournamentService {
 
         tournament.setStatus(TournamentStatus.IN_PROGRESS);
         tournamentRepository.save(tournament);
-    }
-
-    public List<Match> getTournamentMatches(Long tournamentId, String sessionId) {
-        log.info("Getting matches for tournament {}", tournamentId);
-
-        permissionChecker.validateSession(sessionId);
-
-        Tournament tournament = tournamentRepository.findById(tournamentId)
-                .orElseThrow(() -> new CustomException(
-                        ErrorCode.TOURNAMENT_NOT_FOUND,
-                        "Torneo no encontrado"
-                ));
-
-        if (!tournament.getStatus().equals(TournamentStatus.IN_PROGRESS) && !tournament.getStatus().equals(TournamentStatus.FINISHED)) {
-            throw new CustomException(
-                    ErrorCode.INVALID_TOURNAMENT_STATUS,
-                    "Estado incorrecto del torneo",
-                    "El torneo aún no ha comenzado"
-            );
-        }
-
-        return matchRepository.findByTournamentIdOrderedByRoundAndPlayers(tournamentId);
     }
 }
