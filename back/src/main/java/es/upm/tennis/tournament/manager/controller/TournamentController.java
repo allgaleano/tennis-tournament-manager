@@ -25,16 +25,19 @@ import java.util.Map;
 @Slf4j
 public class TournamentController {
 
-    @Autowired
-    private TournamentService tournamentService;
+    private final TournamentService tournamentService;
+
+    public TournamentController(TournamentService tournamentService) {
+        this.tournamentService = tournamentService;
+    }
 
     @GetMapping
     public ResponseEntity<PagedModel<EntityModel<Tournament>>> getAllTournaments(
             Pageable pageable,
             PagedResourcesAssembler<Tournament> pagedResourcesAssembler
     ) {
+        log.info("Getting all tournaments");
         Page<Tournament> tournaments = tournamentService.getAllTournaments(pageable);
-
         PagedModel<EntityModel<Tournament>> pagedModel = pagedResourcesAssembler.toModel(tournaments, EntityModel::of);
         return ResponseEntity.ok(pagedModel);
     }
@@ -150,14 +153,5 @@ public class TournamentController {
         return ResponseEntity.ok(Map.of(
                 "title", "Torneo iniciado con éxito"
         ));
-    }
-
-    @GetMapping("/{tournamentId}/matches")
-    public ResponseEntity<List<MatchDTO>> getTournamentMatches(
-            @PathVariable Long tournamentId,
-            @RequestHeader("Session-Id") String sessionId) {
-        List<Match> matches = tournamentService.getTournamentMatches(tournamentId, sessionId);
-        List<MatchDTO> matchDTOS = matches.stream().map(MatchDTO::fromEntity).toList();
-        return ResponseEntity.ok(matchDTOS);
     }
 }

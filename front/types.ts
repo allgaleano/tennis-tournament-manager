@@ -79,6 +79,18 @@ export interface Match {
   round: string;
   winner: Player | null;
   completed: boolean;
+  player1SetsWon: number | null;
+  player2SetsWon: number | null;
+  sets: Set[];
+}
+
+export interface Set {
+  setNumber: number;
+  player1Games: number;
+  player2Games: number;
+  tiebreak: boolean;
+  player1TiebreakGames: number | null;
+  player2TiebreakGames: number | null;
 }
 
 export interface Player {

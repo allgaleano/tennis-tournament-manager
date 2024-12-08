@@ -5,8 +5,6 @@ import es.upm.tennis.tournament.manager.exceptions.ErrorCode;
 import es.upm.tennis.tournament.manager.model.User;
 import es.upm.tennis.tournament.manager.model.UserSession;
 import es.upm.tennis.tournament.manager.repo.UserSessionRepository;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
@@ -16,8 +14,6 @@ import java.util.UUID;
 
 @Service
 public class UserSessionService {
-
-    private static final Logger logger = LoggerFactory.getLogger(UserSessionService.class);
 
     @Autowired
     private UserSessionRepository userSessionRepository;
@@ -52,7 +48,7 @@ public class UserSessionService {
     }
 
     public void invalidateSession(String sessionId) {
-        UserSession session = findBySessionId(sessionId);
+        UserSession session = getUserSession(sessionId);
         if (session == null) {
             throw new CustomException(
                     ErrorCode.INVALID_TOKEN,
@@ -62,11 +58,11 @@ public class UserSessionService {
         userSessionRepository.delete(session);
     }
 
-    public UserSession findBySessionId(String sessionId) {
+    public UserSession getUserSession(String sessionId) {
         return userSessionRepository.findBySessionId(sessionId);
     }
 
-    public UserSession findByUser(User user) { return userSessionRepository.findByUser(user); }
+    public UserSession getUserSession(User user) { return userSessionRepository.findByUser(user); }
 
     public UserSession getActiveSession(Authentication authentication) {
         User user = (User) authentication.getPrincipal();

@@ -179,7 +179,7 @@ public class UserService {
                 );
             }
 
-            UserSession session = sessionService.findByUser(user);
+            UserSession session = sessionService.getUserSession(user);
             if (session != null) {
                 sessionService.invalidateSession(session.getSessionId());
             }
@@ -320,9 +320,7 @@ public class UserService {
             );
         }
 
-        UserSession userSession = userSessionRepository.findBySessionId(sessionId);
-
-        permissionChecker.validateUserPermission(user.get(), userSession);
+        UserSession userSession = permissionChecker.validateUserPermission(user.get(), sessionId);
 
         userSessionRepository.delete(userSession);
         ConfirmationCode code = confirmationCodeRepository.findByUser(user.get());
@@ -341,9 +339,7 @@ public class UserService {
             );
         }
 
-        UserSession userSession = userSessionRepository.findBySessionId(sessionId);
-
-        permissionChecker.validateUserPermission(user.get(), userSession);
+        UserSession userSession = permissionChecker.validateUserPermission(user.get(), sessionId);
 
         if (userDTO.getUsername() != null) {
             User existingUser = userRepository.findByUsername(userDTO.getUsername());

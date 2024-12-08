@@ -11,12 +11,12 @@ interface TournamentBracketProps {
 const TournamentMatches = ({ tournamentId }: TournamentBracketProps) => {
   const { matches, loading, error } = useTournamentMatches(tournamentId);
   
-  if (loading) return <div>Cargando...</div>;
+  if (loading) return <div>Cargando partidos..</div>;
   if (error) return <div className="text-destructive">{error}</div>;
 
   const getRoundDisplayName = (round: string) => {
     const roundNames = {
-      'ROUND_16': 'Dieciseisavos de final',
+      'ROUND_16': 'Octavos de final',
       'QUARTER_FINALS': 'Cuartos de final',
       'SEMIFINAL': 'Semifinal',
       'FINAL': 'Final'
@@ -48,7 +48,7 @@ const TournamentMatches = ({ tournamentId }: TournamentBracketProps) => {
             </h2>
             <div className="flex flex-col gap-4 h-full justify-center">
               {matchesByRound[round].map((match) => (
-                <MatchCard key={match.id} match={match} />
+                <MatchCard key={match.id} match={match} tournamentId={tournamentId}/>
               ))}
             </div>
           </div>

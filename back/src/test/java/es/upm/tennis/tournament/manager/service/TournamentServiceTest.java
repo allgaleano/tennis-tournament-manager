@@ -39,7 +39,7 @@ class TournamentServiceTest {
     private UserSessionRepository userSessionRepository;
 
     @Mock
-    private PlayerTournamentRepository playerTournamentRepository;
+    private TournamentParticipationRepository tournamentParticipationRepository;
 
     @Mock
     private TournamentEnrollmentRepository tournamentEnrollmentRepository;
