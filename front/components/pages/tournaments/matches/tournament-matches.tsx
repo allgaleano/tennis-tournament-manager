@@ -4,11 +4,12 @@ import { useTournamentMatches } from '@/hooks/useTournamentMatches';
 import { Match } from '@/types';
 import MatchCard from './match-card';
 
-interface TournamentBracketProps {
+interface TournamentMatchesProps {
   tournamentId: number;
+  isAdmin: boolean;
 }
 
-const TournamentMatches = ({ tournamentId }: TournamentBracketProps) => {
+const TournamentMatches = ({ tournamentId, isAdmin }: TournamentMatchesProps) => {
   const { matches, loading, error } = useTournamentMatches(tournamentId);
   
   if (loading) return <div>Cargando partidos..</div>;
@@ -48,7 +49,7 @@ const TournamentMatches = ({ tournamentId }: TournamentBracketProps) => {
             </h2>
             <div className="flex flex-col gap-4 h-full justify-center">
               {matchesByRound[round].map((match) => (
-                <MatchCard key={match.id} match={match} tournamentId={tournamentId}/>
+                <MatchCard key={match.id} match={match} tournamentId={tournamentId} isAdmin={isAdmin}/>
               ))}
             </div>
           </div>
