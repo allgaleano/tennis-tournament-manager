@@ -48,7 +48,7 @@ const TournamentMatches = ({ tournamentId }: TournamentBracketProps) => {
             </h2>
             <div className="flex flex-col gap-4 h-full justify-center">
               {matchesByRound[round].map((match) => (
-                <MatchCard key={match.id} match={match} />
+                <MatchCard key={match.id} match={match} tournamentId={tournamentId}/>
               ))}
             </div>
           </div>
