@@ -1,7 +1,8 @@
 import PlayerInfo from "@/components/pages/tournaments/matches/player-info";
 import { Match } from "@/types";
 import Sets from "@/components/pages/tournaments/matches/sets/sets";
-import MatchResultsDialog from "./sets/match-result-sheet";
+import ModalFormWrapper from "./sets/modal-form-wrapper";
+import MatchResultsForm from "./sets/match-results-form";
 
 interface MatchCardProps {
   match: Match;
@@ -23,7 +24,14 @@ const MatchCard = ({
             <Sets match={match} />
           ) : (
             (match.player1 && match.player2 && isAdmin) ? (
-              <MatchResultsDialog match={match} tournamentId={tournamentId}/>
+              <ModalFormWrapper
+                match={match}
+                tournamentId={tournamentId}
+                variant="sheet"
+                className="h-20 grid place-items-center"
+              >
+                <MatchResultsForm match={match} tournamentId={tournamentId} />
+              </ModalFormWrapper>
             ) : (
               <div className="flex justify-center items-center h-20 text-muted-foreground">vs</div>
             )

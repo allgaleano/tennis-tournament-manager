@@ -10,21 +10,21 @@ import { matchScoreSchema } from '@/schemas';
 import { Match } from '@/types'
 import { zodResolver } from '@hookform/resolvers/zod';
 import { MinusIcon, PlusIcon } from '@radix-ui/react-icons';
-import { useRouter } from 'next/navigation';
 import { useFieldArray, useForm } from 'react-hook-form';
 import { z } from 'zod'
 
 interface MatchResultsFormProps {
   match: Match;
   tournamentId: number;
+  onSuccess?: () => void;
 }
 
 const MatchResultsForm = ({ 
   match,
-  tournamentId 
+  tournamentId ,
+  onSuccess
 }: MatchResultsFormProps) => {
   const { toast } = useToast();
-  const router = useRouter();
 
   const form = useForm<z.infer<typeof matchScoreSchema>>({
     resolver: zodResolver(matchScoreSchema),
@@ -95,7 +95,7 @@ const MatchResultsForm = ({
       });
 
       if (response.ok) {
-        router.refresh();
+        onSuccess?.();
       }
     } catch (error) {
       toast({
