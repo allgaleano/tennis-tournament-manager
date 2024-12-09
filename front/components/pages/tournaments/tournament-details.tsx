@@ -3,7 +3,7 @@ import { Tournament } from "@/types";
 import { cookies } from "next/headers";
 import { getTournamentIcon } from "@/components/pages/tournaments/getTournamentIcon";
 import TournamentInfo from "@/components/pages/tournaments/tournament-info";
-import Enrollments from "./table/enrollments";
+import Enrollments from "./enrollments/enrollments";
 import EnrollAction from "@/components/pages/tournaments/enroll-button/enroll-action";
 import { getServerSideUserData } from "@/lib/users/getServerSideUserData";
 import TournamentMatches from "./matches/tournament-matches";
