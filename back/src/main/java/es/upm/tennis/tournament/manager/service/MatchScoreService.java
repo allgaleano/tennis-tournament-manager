@@ -6,6 +6,7 @@ import es.upm.tennis.tournament.manager.exceptions.CustomException;
 import es.upm.tennis.tournament.manager.exceptions.ErrorCode;
 import es.upm.tennis.tournament.manager.model.Match;
 import es.upm.tennis.tournament.manager.model.Set;
+import es.upm.tennis.tournament.manager.model.TournamentRound;
 import es.upm.tennis.tournament.manager.model.User;
 import es.upm.tennis.tournament.manager.repo.MatchRepository;
 import lombok.extern.slf4j.Slf4j;
@@ -68,6 +69,7 @@ public class MatchScoreService {
         }
 
         validateSetsSequence(matchScoreDTO.getSets());
+        validatePreviousRoundsCompleted(match);
 
         match.getSets().clear();
 
@@ -193,6 +195,23 @@ public class MatchScoreService {
                     "Sets inválidos",
                     "El partido debería terminar si un jugador ya ha ganado 3 sets"
             );
+        }
+    }
+
+    private void validatePreviousRoundsCompleted(Match match) {
+        TournamentRound currentRound = match.getRound();
+        Long tournamentId = match.getTournament().getId();
+
+        for (TournamentRound round: TournamentRound.values()) {
+            if (round.getRoundNumber() > currentRound.getRoundNumber()) {
+                if (matchRepository.existsByRoundAndTournamentIdAndCompletedFalse(round, tournamentId)) {
+                    throw new CustomException(
+                            ErrorCode.INVALID_MATCH_STATUS,
+                            "Rondas anteriores incompletas",
+                            "No se pueden completar partidos de rondas futuras si las rondas anteriores no están completas"
+                    );
+                }
+            }
         }
     }
 
