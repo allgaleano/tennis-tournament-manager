@@ -63,7 +63,7 @@ public class MatchScoreService {
             throw new CustomException(
                     ErrorCode.INVALID_MATCH_STATUS,
                     "Jugadores no asignados",
-                    "Los jugadores del partido con id " + matchId + " no han sido asignados"
+                    "Todos los jugadores del partido con id " + matchId + " no han sido asignados"
             );
         }
 
@@ -87,6 +87,22 @@ public class MatchScoreService {
         validateMatchScore(match);
         updateMatchStatus(match);
 
+        Match nextMatch = match.getNextMatch();
+
+        if (nextMatch != null) {
+            if (nextMatch.getPlayer1() == null) {
+                nextMatch.setPlayer1(match.getWinner());
+            } else if (nextMatch.getPlayer2() == null) {
+                nextMatch.setPlayer2(match.getWinner());
+            } else {
+                throw new CustomException(
+                        ErrorCode.INVALID_MATCH_STATUS,
+                        "Jugadores ya asignados",
+                        "Los jugadores del siguiente partido ya han sido asignados"
+                );
+            }
+            matchRepository.save(nextMatch);
+        }
         matchRepository.save(match);
     }
 
