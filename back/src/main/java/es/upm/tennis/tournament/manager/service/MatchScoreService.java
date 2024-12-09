@@ -59,6 +59,14 @@ public class MatchScoreService {
             );
         }
 
+        if (match.getPlayer1() == null || match.getPlayer2() == null) {
+            throw new CustomException(
+                    ErrorCode.INVALID_MATCH_STATUS,
+                    "Jugadores no asignados",
+                    "Los jugadores del partido con id " + matchId + " no han sido asignados"
+            );
+        }
+
         validateSetsSequence(matchScoreDTO.getSets());
 
         match.getSets().clear();
