@@ -8,13 +8,15 @@ interface MatchCardProps {
   match: Match;
   tournamentId: number;
   isAdmin: boolean;
+  previousRoundsCompleted: boolean;
 }
 const MatchCard = ({ 
   match,
   tournamentId,
-  isAdmin
+  isAdmin,
+  previousRoundsCompleted,
 }: MatchCardProps) => {
-
+  const showModalForm = isAdmin && previousRoundsCompleted && !match.completed && match.player1 && match.player2;
   return (
     <div className={`border rounded-sm shadow-sm ${match.completed ? "border-success" : ""}`}>
       <div>
@@ -23,7 +25,7 @@ const MatchCard = ({
           {match.completed ? (
             <Sets match={match} />
           ) : (
-            (match.player1 && match.player2 && isAdmin) ? (
+            (showModalForm) ? (
               <ModalFormWrapper
                 match={match}
                 tournamentId={tournamentId}
