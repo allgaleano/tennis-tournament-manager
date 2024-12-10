@@ -48,4 +48,8 @@ public class Match {
     @OneToMany(mappedBy = "match", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @OrderBy("setNumber ASC")
     private List<Set> sets = new ArrayList<>();
+
+    @ManyToOne
+    @JoinColumn(name = "next_match_id")
+    private Match nextMatch;
 }

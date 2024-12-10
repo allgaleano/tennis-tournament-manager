@@ -30,60 +30,58 @@ public class MatchmakingService {
         log.info("Creating matches for tournament {} with {} players", tournament.getId(), shuffledPlayers.size());
 
         TournamentRound firstRound = determineFirstRound(shuffledPlayers.size());
-
         boolean hasPlayerWithBye = shuffledPlayers.size() % 2 != 0;
-        int matchCount = hasPlayerWithBye ? (shuffledPlayers.size() - 1) / 2 : shuffledPlayers.size() / 2;
+        int firstRoundMatchCount = hasPlayerWithBye ? (shuffledPlayers.size() - 1) / 2 : shuffledPlayers.size() / 2;
 
-        List<Match> firstRoundMatches = new ArrayList<>();
-        for (int i = 0; i < matchCount; i++) {
-            Match match = new Match();
-            match.setTournament(tournament);
-            match.setRound(firstRound);
+        List<List<Match>> allRoundsMatches = new ArrayList<>();
+        TournamentRound currentRound = firstRound;
+        int currentRoundMatches = firstRoundMatchCount;
+
+        while (currentRound != null) {
+            List<Match> roundMatches = new ArrayList<>();
+            for (int i = 0; i < currentRoundMatches; i++) {
+                Match match = new Match();
+                match.setTournament(tournament);
+                match.setRound(currentRound);
+                roundMatches.add(match);
+            }
+            allRoundsMatches.add(roundMatches);
+
+            currentRoundMatches = (int) Math.ceil(currentRoundMatches / 2.0);
+            currentRound = currentRound == TournamentRound.FINAL ? null : currentRound.getNextRound();
+        }
+
+        for (int roundIndex = 0; roundIndex < allRoundsMatches.size() - 1; roundIndex++) {
+            List<Match> currentMatches = allRoundsMatches.get(roundIndex);
+            List<Match> nextRoundMatches = allRoundsMatches.get(roundIndex + 1);
+
+            for (int matchIndex = 0; matchIndex < currentMatches.size(); matchIndex++) {
+                Match currentMatch = currentMatches.get(matchIndex);
+                int nextMatchIndex = matchIndex / 2;
+                currentMatch.setNextMatch(nextRoundMatches.get(nextMatchIndex));
+            }
+        }
+
+        List<Match> firstRoundMatches = allRoundsMatches.getFirst();
+        for (int i = 0; i < firstRoundMatchCount; i++) {
+            Match match = firstRoundMatches.get(i);
             match.setPlayer1(shuffledPlayers.get(i * 2));
-            match.setPlayer2(shuffledPlayers.get(i * 2 + 1));
-            firstRoundMatches.add(match);
-        }
-        matchRepository.saveAll(firstRoundMatches);
-
-        User playerWithBye = hasPlayerWithBye ? shuffledPlayers.getLast() : null;
-        createNextRoundMatches(tournament, firstRound, firstRoundMatches.size(), playerWithBye);
-    }
-
-    private void createNextRoundMatches(Tournament tournament, TournamentRound currentRound,
-                                        int currentRoundMatches, User playerWithBye) {
-        if (currentRound == TournamentRound.FINAL) {
-            return;
+            if (i * 2 + 1 < shuffledPlayers.size()) {
+                match.setPlayer2(shuffledPlayers.get(i * 2 + 1));
+            }
         }
 
-        TournamentRound nextRound = currentRound.getNextRound();
-        int nextRoundMatches = (currentRoundMatches + (playerWithBye != null ? 1 : 0)) / 2;
+        if (hasPlayerWithBye) {
+            User byePlayer = shuffledPlayers.getLast();
+            List<Match> secondRoundMatches = allRoundsMatches.get(1);
 
-
-        List<Match> nextRoundMatchList = new ArrayList<>();
-
-        // If there's a player with bye, create their match first
-        if (playerWithBye != null) {
-            Match byeMatch = new Match();
-            byeMatch.setTournament(tournament);
-            byeMatch.setRound(nextRound);
-            byeMatch.setPlayer1(playerWithBye);
-            byeMatch.setPlayer2(null); // Will be filled when opponent is determined
-            nextRoundMatchList.add(byeMatch);
+            Match byeMatch = secondRoundMatches.getLast();
+            byeMatch.setPlayer1(byePlayer);
         }
 
-        // Create remaining matches for the next round
-        for (int i = 0; i < nextRoundMatches - (playerWithBye != null ? 1 : 0); i++) {
-            Match match = new Match();
-            match.setTournament(tournament);
-            match.setRound(nextRound);
-            match.setPlayer1(null); // Will be filled when players advance
-            match.setPlayer2(null);
-            nextRoundMatchList.add(match);
+        for (List<Match> roundMatches : allRoundsMatches) {
+            matchRepository.saveAll(roundMatches);
         }
-
-        matchRepository.saveAll(nextRoundMatchList);
-
-        createNextRoundMatches(tournament, nextRound, nextRoundMatchList.size(), null);
     }
 
     private TournamentRound determineFirstRound(int playerCount) {

@@ -23,4 +23,6 @@ public interface MatchRepository extends JpaRepository<Match, Long> {
             "  ELSE 3 " +
             "END")
     List<Match> findByTournamentIdOrderedByRoundAndPlayers(@Param("tournamentId") Long tournamentId);
+
+    boolean existsByRoundAndTournamentIdAndCompletedFalse(TournamentRound round, Long tournamentId);
 }
