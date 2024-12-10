@@ -92,19 +92,7 @@ public class StartTournamentService {
 
 
         List<TournamentParticipation> tournamentParticipants = selectedEnrollments.stream()
-                .map(enrollment -> {
-                    TournamentParticipation tournamentParticipation = new TournamentParticipation();
-                    PlayerStats playerStats = playerStatsRepository.findByPlayer(enrollment.getPlayer())
-                            .orElseGet(() -> {
-                                PlayerStats newPlayerStats = new PlayerStats();
-                                newPlayerStats.setPlayer(enrollment.getPlayer());
-                                return playerStatsRepository.save(newPlayerStats);
-                            });
-
-                    tournamentParticipation.setPlayerStats(playerStats);
-                    tournamentParticipation.setTournament(tournament);
-                    return tournamentParticipation;
-                })
+                .map(enrollment -> getOrCreateTournamentParticipation(enrollment, tournament))
                 .toList();
 
         tournamentParticipationRepository.saveAll(tournamentParticipants);
@@ -113,5 +101,26 @@ public class StartTournamentService {
 
         tournament.setStatus(TournamentStatus.IN_PROGRESS);
         tournamentRepository.save(tournament);
+    }
+
+    private TournamentParticipation getOrCreateTournamentParticipation (TournamentEnrollment enrollment, Tournament tournament) {
+        PlayerStats playerStats = playerStatsRepository.findByPlayer(enrollment.getPlayer())
+                .orElseGet(() -> {
+                    PlayerStats newPlayerStats = new PlayerStats();
+                    newPlayerStats.setPlayer(enrollment.getPlayer());
+                    return playerStatsRepository.save(newPlayerStats);
+                });
+
+        Optional<TournamentParticipation> existingParticipation =
+                tournamentParticipationRepository.findByTournamentAndPlayerStats(tournament, playerStats);
+
+        if (existingParticipation.isPresent()) {
+            return existingParticipation.get();
+        }
+
+        TournamentParticipation tournamentParticipation = new TournamentParticipation();
+        tournamentParticipation.setPlayerStats(playerStats);
+        tournamentParticipation.setTournament(tournament);
+        return tournamentParticipation;
     }
 }
