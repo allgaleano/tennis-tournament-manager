@@ -10,21 +10,21 @@ import { matchScoreSchema } from '@/schemas';
 import { Match } from '@/types'
 import { zodResolver } from '@hookform/resolvers/zod';
 import { MinusIcon, PlusIcon } from '@radix-ui/react-icons';
-import { useRouter } from 'next/navigation';
 import { useFieldArray, useForm } from 'react-hook-form';
 import { z } from 'zod'
 
 interface MatchResultsFormProps {
   match: Match;
   tournamentId: number;
+  onSuccess?: () => void;
 }
 
 const MatchResultsForm = ({ 
   match,
-  tournamentId 
+  tournamentId ,
+  onSuccess
 }: MatchResultsFormProps) => {
   const { toast } = useToast();
-  const router = useRouter();
 
   const form = useForm<z.infer<typeof matchScoreSchema>>({
     resolver: zodResolver(matchScoreSchema),
@@ -95,7 +95,7 @@ const MatchResultsForm = ({
       });
 
       if (response.ok) {
-        router.refresh();
+        onSuccess?.();
       }
     } catch (error) {
       toast({
@@ -137,7 +137,7 @@ const MatchResultsForm = ({
                         <FormItem>
                           <FormLabel>{match.player1?.name} {match.player1?.surname}</FormLabel>
                           <FormControl>
-                            <Input type="number" min={0} max={7} {...field}
+                            <Input type="number" {...field}
                               onChange={e => field.onChange(parseInt(e.target.value) || 0)}
                             />
                           </FormControl>
@@ -152,7 +152,7 @@ const MatchResultsForm = ({
                         <FormItem>
                           <FormLabel>{match.player2?.name} {match.player2?.surname}</FormLabel>
                           <FormControl>
-                            <Input type="number" min={0} max={7} {...field}
+                            <Input type="number" {...field}
                               onChange={e => field.onChange(parseInt(e.target.value) || 0)}
                             />
                           </FormControl>
@@ -188,7 +188,7 @@ const MatchResultsForm = ({
                           <FormItem>
                             <FormLabel>{match.player1?.name} {match.player1?.surname}</FormLabel>
                             <FormControl>
-                              <Input type="number" min={0} {...field}
+                              <Input type="number" {...field}
                                 onChange={e => field.onChange(parseInt(e.target.value) || 0)}
                               />
                             </FormControl>
@@ -204,7 +204,7 @@ const MatchResultsForm = ({
                           <FormItem>
                             <FormLabel>{match.player2?.name} {match.player2?.surname}</FormLabel>
                             <FormControl>
-                              <Input type="number" min={0} {...field}
+                              <Input type="number" {...field}
                                 onChange={e => field.onChange(parseInt(e.target.value) || 0)}
                               />
                             </FormControl>

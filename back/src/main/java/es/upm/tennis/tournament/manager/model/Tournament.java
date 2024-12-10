@@ -1,13 +1,14 @@
 package es.upm.tennis.tournament.manager.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import es.upm.tennis.tournament.manager.exceptions.CustomException;
+import es.upm.tennis.tournament.manager.exceptions.ErrorCode;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 @Entity
 @Getter
@@ -38,45 +39,107 @@ public class Tournament {
     @JsonIgnore
     private List<TournamentParticipation> participants = new ArrayList<>();
 
-    public void distributeTournamentPoints() {
-        List<TournamentParticipation> rankedParticipants = getRankedParticipants();
+    @OneToMany(mappedBy = "tournament")
+    @JsonIgnore
+    private List<Match> matches = new ArrayList<>();
 
-        int [] pointDistribution = {2000, 1500, 1000, 500};
+    public void distributeTournamentPoints() {
+        List<TournamentRound> completedRounds = matches.stream()
+                .filter(Match::isCompleted)
+                .map(Match::getRound)
+                .distinct()
+                .sorted(Comparator.comparingInt(TournamentRound::getRoundNumber))
+                .toList();
+
+        if (completedRounds.isEmpty()) {
+            throw new CustomException(
+                    ErrorCode.INVALID_TOURNAMENT_STATUS,
+                    "No hay rondas completadas en el torneo"
+            );
+        }
+
+        Map<User, Integer> assignedPoints = new HashMap<>();
+        List<TournamentParticipation> rankedParticipants = new ArrayList<>();
+
+        for (TournamentRound round: completedRounds) {
+            List<Match> roundMatches = matches.stream()
+                    .filter(m -> m.getRound() == round && m.isCompleted())
+                    .toList();
+
+            List<User> roundLosers = roundMatches.stream()
+                    .map(m -> m.getWinner().equals(m.getPlayer1()) ? m.getPlayer2() : m.getPlayer1())
+                    .toList();
+
+            List<TournamentParticipation> roundLosersParticipants = roundLosers.stream()
+                    .filter(loser -> !assignedPoints.containsKey(loser))
+                    .map(loser -> participants.stream()
+                            .filter(p -> p.getPlayerStats().getPlayer().equals(loser))
+                            .findFirst()
+                            .orElseThrow(() -> new CustomException(
+                                    ErrorCode.TOURNAMENT_PARTICIPATION_NOT_FOUND,
+                                    "Participación en torneo no encontrada",
+                                    "No se encontró la participación del jugador " + loser.getId() + " en el torneo " + id
+                            )))
+                    .sorted(this::compareParticipants)
+                    .toList();
+
+            if (round == completedRounds.getFirst()) {
+                Match finalMatch = roundMatches.getFirst();
+                TournamentParticipation winnerParticipation = participants.stream()
+                        .filter(p -> p.getPlayerStats().getPlayer().equals(finalMatch.getWinner()))
+                        .findFirst()
+                        .orElseThrow(() -> new CustomException(
+                                ErrorCode.TOURNAMENT_PARTICIPATION_NOT_FOUND,
+                                "Participación en torneo no encontrada",
+                                "No se encontró la participación del jugador " + finalMatch.getWinner().getId() + " en el torneo " + id
+                        ));
+
+                rankedParticipants.add(winnerParticipation);
+                assignedPoints.put(finalMatch.getWinner(), 2000);
+            }
+
+            rankedParticipants.addAll(roundLosersParticipants);
+        }
+
+        distributePointsToRankedParticipants(rankedParticipants);
+    }
+
+    private void distributePointsToRankedParticipants(List<TournamentParticipation> rankedParticipants) {
+        int[] topPoints = {2000, 1500, 1000, 500};
 
         for (int i = 0; i < rankedParticipants.size(); i++) {
             TournamentParticipation participation = rankedParticipants.get(i);
+            int points;
 
-            if (i < pointDistribution.length) {
-                participation.setPoints(pointDistribution[i]);
-                participation.getPlayerStats().addRankingPoints(pointDistribution[i]);
+            if (i < topPoints.length) {
+                points = topPoints[i];
             } else {
-                participation.setPoints(475 - (i - pointDistribution.length) * 25);
-                participation.getPlayerStats().addRankingPoints(475 - (i - pointDistribution.length) * 25);
+                points = Math.max(0, 475 - ((i - topPoints.length) * 25));
             }
+
+            participation.setPoints(points);
+            participation.getPlayerStats().addRankingPoints(points);
         }
     }
 
-    private List<TournamentParticipation> getRankedParticipants() {
-        return participants.stream()
-                .sorted((p1, p2) -> {
-                    int setsComparison = Integer.compare(p1.getSetsWon(), p2.getSetsWon());
-                    if (setsComparison != 0) return setsComparison;
 
-                    int gamesComparison = Integer.compare(p1.getGamesWon(), p2.getGamesWon());
-                    if (gamesComparison != 0) return gamesComparison;
+    private int compareParticipants(TournamentParticipation p1, TournamentParticipation p2) {
+        int setsComparison = Integer.compare(p2.getSetsWon(), p1.getSetsWon());
+        if (setsComparison != 0) return setsComparison;
 
-                    int gamesLostComparison = Integer.compare(p2.getGamesLost(), p1.getGamesLost());
-                    if (gamesLostComparison != 0) return gamesLostComparison;
+        int gamesComparison = Integer.compare(p2.getGamesWon(), p1.getGamesWon());
+        if (gamesComparison != 0) return gamesComparison;
 
-                    int tieBreaksWonComparison = Integer.compare(p1.getTieBreaksWon(), p2.getTieBreaksWon());
-                    if (tieBreaksWonComparison != 0) return tieBreaksWonComparison;
+        int gamesLostComparison = Integer.compare(p1.getGamesLost(), p2.getGamesLost());
+        if (gamesLostComparison != 0) return gamesLostComparison;
 
-                    int tieBreaksLostComparison = Integer.compare(p2.getTieBreaksLost(), p1.getTieBreaksLost());
-                    if (tieBreaksLostComparison != 0) return tieBreaksLostComparison;
+        int tiebreaksWonComparison = Integer.compare(p2.getTiebreakGamesWon(), p1.getTiebreakGamesWon());
+        if (tiebreaksWonComparison != 0) return tiebreaksWonComparison;
 
+        int tiebreaksLostComparison = Integer.compare(p1.getTiebreakGamesLost(), p2.getTiebreakGamesLost());
+        if (tiebreaksLostComparison != 0) return tiebreaksLostComparison;
 
-                    return Math.random() < 0.5 ? -1 : 1;
-                })
-                .toList();
+        return Math.random() < 0.5 ? -1 : 1;
     }
+
 }

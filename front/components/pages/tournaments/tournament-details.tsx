@@ -3,7 +3,7 @@ import { Tournament } from "@/types";
 import { cookies } from "next/headers";
 import { getTournamentIcon } from "@/components/pages/tournaments/getTournamentIcon";
 import TournamentInfo from "@/components/pages/tournaments/tournament-info";
-import Enrollments from "./table/enrollments";
+import Enrollments from "./enrollments/enrollments";
 import EnrollAction from "@/components/pages/tournaments/enroll-button/enroll-action";
 import { getServerSideUserData } from "@/lib/users/getServerSideUserData";
 import TournamentMatches from "./matches/tournament-matches";
@@ -76,7 +76,7 @@ const TournamentDetails = async ({
       <div className="flex flex-col w-full max-w-[1400px] gap-4 px-4">
         <TournamentInfo tournament={tournament} />
         {tournament.status === 'IN_PROGRESS' || tournament.status === 'FINISHED' ? (
-          <TournamentMatches tournamentId={tournament.id} />
+          <TournamentMatches tournamentId={tournament.id} isAdmin={userData.role === "ADMIN"} />
         ) : null}
         <div className="flex flex-wrap items-center justify-end gap-4 sm:gap-0">
           <StartTournamentButton tournament={tournament} isAdmin={userData.role === "ADMIN"}/>

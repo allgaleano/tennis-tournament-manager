@@ -6,6 +6,7 @@ import es.upm.tennis.tournament.manager.exceptions.CustomException;
 import es.upm.tennis.tournament.manager.exceptions.ErrorCode;
 import es.upm.tennis.tournament.manager.model.Match;
 import es.upm.tennis.tournament.manager.model.Set;
+import es.upm.tennis.tournament.manager.model.TournamentRound;
 import es.upm.tennis.tournament.manager.model.User;
 import es.upm.tennis.tournament.manager.repo.MatchRepository;
 import lombok.extern.slf4j.Slf4j;
@@ -24,13 +25,16 @@ public class MatchScoreService {
 
     private final PermissionChecker permissionChecker;
     private final MatchRepository matchRepository;
+    private final StatsService statsService;
 
     public MatchScoreService(
             PermissionChecker permissionChecker,
-            MatchRepository matchRepository
+            MatchRepository matchRepository,
+            StatsService statsService
     ) {
         this.permissionChecker = permissionChecker;
         this.matchRepository = matchRepository;
+        this.statsService = statsService;
     }
 
     public void set(Long tournamentId, Long matchId, String sessionId, MatchScoreDTO matchScoreDTO) {
@@ -59,7 +63,16 @@ public class MatchScoreService {
             );
         }
 
+        if (match.getPlayer1() == null || match.getPlayer2() == null) {
+            throw new CustomException(
+                    ErrorCode.INVALID_MATCH_STATUS,
+                    "Jugadores no asignados",
+                    "Todos los jugadores del partido con id " + matchId + " no han sido asignados"
+            );
+        }
+
         validateSetsSequence(matchScoreDTO.getSets());
+        validatePreviousRoundsCompleted(match);
 
         match.getSets().clear();
 
@@ -79,7 +92,30 @@ public class MatchScoreService {
         validateMatchScore(match);
         updateMatchStatus(match);
 
+        if (match.isCompleted()) {
+            statsService.update(match);
+            updateNextMatch(match);
+        }
         matchRepository.save(match);
+    }
+
+    private void updateNextMatch(Match match) {
+        Match nextMatch = match.getNextMatch();
+
+        if (nextMatch != null) {
+            if (nextMatch.getPlayer1() == null) {
+                nextMatch.setPlayer1(match.getWinner());
+            } else if (nextMatch.getPlayer2() == null) {
+                nextMatch.setPlayer2(match.getWinner());
+            } else {
+                throw new CustomException(
+                        ErrorCode.INVALID_MATCH_STATUS,
+                        "Jugadores ya asignados",
+                        "Los jugadores del siguiente partido ya han sido asignados"
+                );
+            }
+            matchRepository.save(nextMatch);
+        }
     }
 
     private void validateSetsSequence(List<SetDTO> sets) {
@@ -163,12 +199,29 @@ public class MatchScoreService {
             );
         }
 
-        if (maxSetsWon == 3 && match.getSets().size() > 5) {
+        if (maxSetsWon > 3) {
             throw new CustomException(
                     ErrorCode.INVALID_MATCH_STATUS,
                     "Sets inválidos",
                     "El partido debería terminar si un jugador ya ha ganado 3 sets"
             );
+        }
+    }
+
+    private void validatePreviousRoundsCompleted(Match match) {
+        TournamentRound currentRound = match.getRound();
+        Long tournamentId = match.getTournament().getId();
+
+        for (TournamentRound round: TournamentRound.values()) {
+            if (round.getRoundNumber() > currentRound.getRoundNumber()) {
+                if (matchRepository.existsByRoundAndTournamentIdAndCompletedFalse(round, tournamentId)) {
+                    throw new CustomException(
+                            ErrorCode.INVALID_MATCH_STATUS,
+                            "Rondas anteriores incompletas",
+                            "No se pueden completar partidos de rondas futuras si las rondas anteriores no están completas"
+                    );
+                }
+            }
         }
     }
 

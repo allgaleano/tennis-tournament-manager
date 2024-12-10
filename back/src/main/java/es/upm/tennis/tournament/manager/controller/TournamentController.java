@@ -1,14 +1,12 @@
 package es.upm.tennis.tournament.manager.controller;
 
-import es.upm.tennis.tournament.manager.DTO.MatchDTO;
 import es.upm.tennis.tournament.manager.DTO.PlayerIdsRequest;
 import es.upm.tennis.tournament.manager.DTO.TournamentDTO;
 import es.upm.tennis.tournament.manager.DTO.TournamentEnrollmentDTO;
-import es.upm.tennis.tournament.manager.model.Match;
 import es.upm.tennis.tournament.manager.model.Tournament;
+import es.upm.tennis.tournament.manager.service.StartTournamentService;
 import es.upm.tennis.tournament.manager.service.TournamentService;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedResourcesAssembler;
@@ -17,7 +15,6 @@ import org.springframework.hateoas.PagedModel;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -26,9 +23,14 @@ import java.util.Map;
 public class TournamentController {
 
     private final TournamentService tournamentService;
+    private final StartTournamentService startTournamentService;
 
-    public TournamentController(TournamentService tournamentService) {
+    public TournamentController(
+            TournamentService tournamentService,
+            StartTournamentService startTournamentService
+    ) {
         this.tournamentService = tournamentService;
+        this.startTournamentService = startTournamentService;
     }
 
     @GetMapping
@@ -149,7 +151,7 @@ public class TournamentController {
             @PathVariable Long tournamentId,
             @RequestHeader("Session-Id") String sessionId
     ) {
-        tournamentService.startTournament(tournamentId, sessionId);
+        startTournamentService.startTournament(tournamentId, sessionId);
         return ResponseEntity.ok(Map.of(
                 "title", "Torneo iniciado con éxito"
         ));

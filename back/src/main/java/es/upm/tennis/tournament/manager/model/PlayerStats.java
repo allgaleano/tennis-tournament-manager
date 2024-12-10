@@ -19,7 +19,6 @@ public class PlayerStats {
     private User player;
 
     private int rankingPoints = 0;
-    private int rankingPosition;
     private int tournamentsPlayed = 0;
     private int tournamentsWon = 0;
     private int totalMatchesPlayed = 0;
@@ -29,49 +28,54 @@ public class PlayerStats {
     private int totalSetsLost = 0;
     private int totalGamesWon = 0;
     private int totalGamesLost = 0;
-    private int totalTieBreaksWon = 0;
-    private int totalTieBreaksLost = 0;
+    private int totalTiebreakGamesWon = 0;
+    private int totalTiebreakGamesLost = 0;
 
     public void addRankingPoints(int points) {
         this.rankingPoints += points;
     }
 
-    public void updateStats(TournamentParticipation participation) {
+    public void incrementTournamentsPlayed() {
         this.tournamentsPlayed++;
-
-        this.totalMatchesPlayed += participation.getMatchesPlayed();
-        this.totalMatchesWon += participation.getMatchesWon();
-        this.totalMatchesLost += participation.getMatchesLost();
-
-        this.totalSetsWon += participation.getSetsWon();
-        this.totalSetsLost += participation.getSetsLost();
-
-        this.totalGamesWon += participation.getGamesWon();
-        this.totalGamesLost += participation.getGamesLost();
-
-        this.totalTieBreaksWon += participation.getTieBreaksWon();
-        this.totalTieBreaksLost += participation.getTieBreaksLost();
     }
 
-    public int compareGlobalRanking(PlayerStats other) {
-        int pointsComparison = Integer.compare(this.rankingPoints, other.rankingPoints);
-        if (pointsComparison != 0) return pointsComparison;
+    public void incrementTournamentsWon() {
+        this.tournamentsWon++;
+    }
 
-        int setsWonComparison = Integer.compare(this.totalSetsWon, other.totalSetsWon);
-        if (setsWonComparison != 0) return setsWonComparison;
+    public void incrementMatchesPlayed() {
+        this.totalMatchesPlayed++;
+    }
 
-        int gamesWonComparison = Integer.compare(this.totalGamesWon, other.totalGamesWon);
-        if (gamesWonComparison != 0) return gamesWonComparison;
+    public void incrementMatchesWon() {
+        this.totalMatchesWon++;
+    }
 
-        int gamesLostComparison = Integer.compare(other.totalGamesLost, this.totalGamesLost);
-        if (gamesLostComparison != 0) return gamesLostComparison;
+    public void incrementMatchesLost() {
+        this.totalMatchesLost++;
+    }
 
-        int tieBreaksWonComparison = Integer.compare(this.totalTieBreaksWon, other.totalTieBreaksWon);
-        if (tieBreaksWonComparison != 0) return tieBreaksWonComparison;
+    public void incrementSetsWon(int n) {
+        this.totalSetsWon = this.totalSetsWon + n;
+    }
 
-        int tieBreaksLostComparison = Integer.compare(other.totalTieBreaksLost, this.totalTieBreaksLost);
-        if (tieBreaksLostComparison != 0) return tieBreaksLostComparison;
+    public void incrementSetsLost(int n) {
+        this.totalSetsLost = this.totalSetsLost + n;
+    }
 
-        return Math.random() < 0.5 ? -1 : 1;
+    public void incrementGamesWon(int n) {
+        this.totalGamesWon = this.totalGamesWon + n;
+    }
+
+    public void incrementGamesLost(int n) {
+        this.totalGamesLost = this.totalGamesLost + n;
+    }
+
+    public void incrementTiebreakGamesWon(int n) {
+        this.totalTiebreakGamesWon = this.totalTiebreakGamesWon + n;
+    }
+
+    public void incrementTiebreakGamesLost(int n) {
+        this.totalTiebreakGamesLost = this.totalTiebreakGamesLost + n;
     }
 }
