@@ -56,7 +56,7 @@ public class StartTournamentService {
         validateTournamentStatus(tournament);
         validatePlayerCount(tournament, tournamentId);
         declinePendingEnrollments(tournamentId);
-        createParticipants(tournament);
+        createParticipantsAndMatches(tournament);
 
         tournament.setStatus(TournamentStatus.IN_PROGRESS);
     }
@@ -104,7 +104,7 @@ public class StartTournamentService {
                 .forEach(enrollment -> enrollment.setStatus(EnrollmentStatus.DECLINED));
     }
 
-    private void createParticipants(Tournament tournament) {
+    private void createParticipantsAndMatches(Tournament tournament) {
         List<TournamentParticipation> participants = tournamentEnrollmentRepository
                 .findByTournamentIdAndStatus(tournament.getId(), EnrollmentStatus.SELECTED)
                 .stream()
@@ -120,6 +120,9 @@ public class StartTournamentService {
                 .findByPlayer(enrollment.getPlayer())
                 .orElseGet(() -> createAndSavePlayerStats(enrollment.getPlayer()));
 
+        playerStats.incrementTournamentsPlayed();
+        playerStatsRepository.save(playerStats);
+
         return tournamentParticipationRepository
                 .findByTournamentAndPlayerStats(tournament, playerStats)
                 .orElseGet(() -> createTournamentParticipation(tournament, playerStats));
@@ -128,7 +131,7 @@ public class StartTournamentService {
     private PlayerStats createAndSavePlayerStats (User player) {
         PlayerStats playerStats = new PlayerStats();
         playerStats.setPlayer(player);
-        return playerStatsRepository.save(playerStats);
+        return playerStats;
     }
 
     private TournamentParticipation createTournamentParticipation(Tournament tournament, PlayerStats playerStats) {

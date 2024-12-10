@@ -25,13 +25,16 @@ public class MatchScoreService {
 
     private final PermissionChecker permissionChecker;
     private final MatchRepository matchRepository;
+    private final StatsService statsService;
 
     public MatchScoreService(
             PermissionChecker permissionChecker,
-            MatchRepository matchRepository
+            MatchRepository matchRepository,
+            StatsService statsService
     ) {
         this.permissionChecker = permissionChecker;
         this.matchRepository = matchRepository;
+        this.statsService = statsService;
     }
 
     public void set(Long tournamentId, Long matchId, String sessionId, MatchScoreDTO matchScoreDTO) {
@@ -89,6 +92,14 @@ public class MatchScoreService {
         validateMatchScore(match);
         updateMatchStatus(match);
 
+        if (match.isCompleted()) {
+            statsService.update(match);
+            updateNextMatch(match);
+        }
+        matchRepository.save(match);
+    }
+
+    private void updateNextMatch(Match match) {
         Match nextMatch = match.getNextMatch();
 
         if (nextMatch != null) {
@@ -105,7 +116,6 @@ public class MatchScoreService {
             }
             matchRepository.save(nextMatch);
         }
-        matchRepository.save(match);
     }
 
     private void validateSetsSequence(List<SetDTO> sets) {
@@ -189,7 +199,7 @@ public class MatchScoreService {
             );
         }
 
-        if (maxSetsWon == 3 && match.getSets().size() > 5) {
+        if (maxSetsWon > 3) {
             throw new CustomException(
                     ErrorCode.INVALID_MATCH_STATUS,
                     "Sets inválidos",
