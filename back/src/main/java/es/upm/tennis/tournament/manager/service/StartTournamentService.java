@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @Transactional
@@ -52,6 +53,15 @@ public class StartTournamentService {
                         "Torneo no encontrado"
                 ));
 
+        validateTournamentStatus(tournament);
+        validatePlayerCount(tournament, tournamentId);
+        declinePendingEnrollments(tournamentId);
+        createParticipants(tournament);
+
+        tournament.setStatus(TournamentStatus.IN_PROGRESS);
+    }
+
+    private void validateTournamentStatus(Tournament tournament) {
         if (!tournament.getStatus().equals(TournamentStatus.ENROLLMENT_CLOSED)) {
             throw new CustomException(
                     ErrorCode.INVALID_TOURNAMENT_STATUS,
@@ -59,10 +69,12 @@ public class StartTournamentService {
                     "Las inscripciones deben estar cerradas para poder iniciar el torneo"
             );
         }
+    }
 
-        long selectedPlayersCount = tournamentEnrollmentRepository.countByTournamentIdAndStatus(tournamentId, EnrollmentStatus.SELECTED);
+    private void validatePlayerCount(Tournament tournament, Long tournamentId) {
+        long selectedCount = tournamentEnrollmentRepository.countByTournamentIdAndStatus(tournamentId, EnrollmentStatus.SELECTED);
 
-        if (selectedPlayersCount < tournament.getMinPlayers()) {
+        if (selectedCount < tournament.getMinPlayers()) {
             throw new CustomException(
                     ErrorCode.MIN_PLAYERS_NOT_REACHED,
                     "Número insuficiente de jugadores seleccionados",
@@ -71,56 +83,58 @@ public class StartTournamentService {
                             tournament.getMinPlayers()
                     )
             );
-        } else if (selectedPlayersCount > tournament.getMaxPlayers()) {
+        }
+
+        if (selectedCount > tournament.getMaxPlayers()) {
             throw new CustomException(
                     ErrorCode.MAX_PLAYERS_EXCEEDED,
                     "Número excesivo de jugadores seleccionados",
                     String.format(
                             "Se han seleccionado %d jugadores, pero el máximo permitido es %d",
-                            selectedPlayersCount,
+                            selectedCount,
                             tournament.getMaxPlayers()
                     )
             );
         }
+    }
 
-        List<TournamentEnrollment> pendingEnrollments = tournamentEnrollmentRepository
-                .findByTournamentIdAndStatus(tournamentId, EnrollmentStatus.PENDING);
-        pendingEnrollments.forEach(enrollment -> enrollment.setStatus(EnrollmentStatus.DECLINED));
-        tournamentEnrollmentRepository.saveAll(pendingEnrollments);
+    private void declinePendingEnrollments(Long tournamentId) {
+        tournamentEnrollmentRepository.
+                findByTournamentIdAndStatus(tournamentId, EnrollmentStatus.PENDING)
+                .forEach(enrollment -> enrollment.setStatus(EnrollmentStatus.DECLINED));
+    }
 
-        List<TournamentEnrollment> selectedEnrollments = tournamentEnrollmentRepository.findByTournamentIdAndStatus(tournamentId, EnrollmentStatus.SELECTED);
-
-
-        List<TournamentParticipation> tournamentParticipants = selectedEnrollments.stream()
+    private void createParticipants(Tournament tournament) {
+        List<TournamentParticipation> participants = tournamentEnrollmentRepository
+                .findByTournamentIdAndStatus(tournament.getId(), EnrollmentStatus.SELECTED)
+                .stream()
                 .map(enrollment -> getOrCreateTournamentParticipation(enrollment, tournament))
                 .toList();
 
-        tournamentParticipationRepository.saveAll(tournamentParticipants);
-
-        matchmakingService.createRoundMatches(tournament, tournamentParticipants);
-
-        tournament.setStatus(TournamentStatus.IN_PROGRESS);
-        tournamentRepository.save(tournament);
+        tournamentParticipationRepository.saveAll(participants);
+        matchmakingService.createRoundMatches(tournament, participants);
     }
 
     private TournamentParticipation getOrCreateTournamentParticipation (TournamentEnrollment enrollment, Tournament tournament) {
-        PlayerStats playerStats = playerStatsRepository.findByPlayer(enrollment.getPlayer())
-                .orElseGet(() -> {
-                    PlayerStats newPlayerStats = new PlayerStats();
-                    newPlayerStats.setPlayer(enrollment.getPlayer());
-                    return playerStatsRepository.save(newPlayerStats);
-                });
+        PlayerStats playerStats = playerStatsRepository
+                .findByPlayer(enrollment.getPlayer())
+                .orElseGet(() -> createAndSavePlayerStats(enrollment.getPlayer()));
 
-        Optional<TournamentParticipation> existingParticipation =
-                tournamentParticipationRepository.findByTournamentAndPlayerStats(tournament, playerStats);
+        return tournamentParticipationRepository
+                .findByTournamentAndPlayerStats(tournament, playerStats)
+                .orElseGet(() -> createTournamentParticipation(tournament, playerStats));
+    }
 
-        if (existingParticipation.isPresent()) {
-            return existingParticipation.get();
-        }
+    private PlayerStats createAndSavePlayerStats (User player) {
+        PlayerStats playerStats = new PlayerStats();
+        playerStats.setPlayer(player);
+        return playerStatsRepository.save(playerStats);
+    }
 
-        TournamentParticipation tournamentParticipation = new TournamentParticipation();
-        tournamentParticipation.setPlayerStats(playerStats);
-        tournamentParticipation.setTournament(tournament);
-        return tournamentParticipation;
+    private TournamentParticipation createTournamentParticipation(Tournament tournament, PlayerStats playerStats) {
+        TournamentParticipation participation = new TournamentParticipation();
+        participation.setTournament(tournament);
+        participation.setPlayerStats(playerStats);
+        return participation;
     }
 }
