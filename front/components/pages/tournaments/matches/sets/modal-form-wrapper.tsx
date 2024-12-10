@@ -41,7 +41,7 @@ const ModalFormWrapper = ({
 
     setTimeout(() => {
       router.refresh();
-    }, 500);
+    }, 600);
   }
 
   const childWithProps = React.cloneElement(children, {
