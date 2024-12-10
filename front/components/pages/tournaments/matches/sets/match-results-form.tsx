@@ -137,7 +137,7 @@ const MatchResultsForm = ({
                         <FormItem>
                           <FormLabel>{match.player1?.name} {match.player1?.surname}</FormLabel>
                           <FormControl>
-                            <Input type="number" min={0} max={7} {...field}
+                            <Input type="number" {...field}
                               onChange={e => field.onChange(parseInt(e.target.value) || 0)}
                             />
                           </FormControl>
@@ -152,7 +152,7 @@ const MatchResultsForm = ({
                         <FormItem>
                           <FormLabel>{match.player2?.name} {match.player2?.surname}</FormLabel>
                           <FormControl>
-                            <Input type="number" min={0} max={7} {...field}
+                            <Input type="number" {...field}
                               onChange={e => field.onChange(parseInt(e.target.value) || 0)}
                             />
                           </FormControl>
@@ -188,7 +188,7 @@ const MatchResultsForm = ({
                           <FormItem>
                             <FormLabel>{match.player1?.name} {match.player1?.surname}</FormLabel>
                             <FormControl>
-                              <Input type="number" min={0} {...field}
+                              <Input type="number" {...field}
                                 onChange={e => field.onChange(parseInt(e.target.value) || 0)}
                               />
                             </FormControl>
@@ -204,7 +204,7 @@ const MatchResultsForm = ({
                           <FormItem>
                             <FormLabel>{match.player2?.name} {match.player2?.surname}</FormLabel>
                             <FormControl>
-                              <Input type="number" min={0} {...field}
+                              <Input type="number" {...field}
                                 onChange={e => field.onChange(parseInt(e.target.value) || 0)}
                               />
                             </FormControl>
