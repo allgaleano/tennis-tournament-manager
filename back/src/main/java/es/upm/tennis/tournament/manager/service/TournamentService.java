@@ -24,29 +24,20 @@ public class TournamentService {
     private final PermissionChecker permissionChecker;
     private final UserRepository userRepository;
     private final UserSessionRepository userSessionRepository;
-    private final TournamentParticipationRepository tournamentParticipationRepository;
     private final TournamentEnrollmentRepository tournamentEnrollmentRepository;
-    private final MatchmakingService matchmakingService;
-    private final PlayerStatsRepository playerStatsRepository;
 
     public TournamentService(
             TournamentRepository tournamentRepository,
             PermissionChecker permissionChecker,
             UserRepository userRepository,
             UserSessionRepository userSessionRepository,
-            TournamentParticipationRepository tournamentParticipationRepository,
-            TournamentEnrollmentRepository tournamentEnrollmentRepository,
-            MatchmakingService matchmakingService,
-            PlayerStatsRepository playerStatsRepository
+            TournamentEnrollmentRepository tournamentEnrollmentRepository
     ) {
         this.tournamentRepository = tournamentRepository;
         this.permissionChecker = permissionChecker;
         this.userRepository = userRepository;
         this.userSessionRepository = userSessionRepository;
-        this.tournamentParticipationRepository = tournamentParticipationRepository;
         this.tournamentEnrollmentRepository = tournamentEnrollmentRepository;
-        this.matchmakingService = matchmakingService;
-        this.playerStatsRepository = playerStatsRepository;
     }
 
 
@@ -348,80 +339,6 @@ public class TournamentService {
         }
 
         tournament.setStatus(TournamentStatus.ENROLLMENT_OPEN);
-        tournamentRepository.save(tournament);
-    }
-
-    public void startTournament(Long tournamentId, String sessionId) {
-        log.info("Starting tournament {}", tournamentId);
-
-        permissionChecker.validateAdminPermission(sessionId);
-
-        Tournament tournament = tournamentRepository.findById(tournamentId)
-                .orElseThrow(() -> new CustomException(
-                        ErrorCode.TOURNAMENT_NOT_FOUND,
-                        "Torneo no encontrado"
-                ));
-
-        if (!tournament.getStatus().equals(TournamentStatus.ENROLLMENT_CLOSED)) {
-            throw new CustomException(
-                    ErrorCode.INVALID_TOURNAMENT_STATUS,
-                    "Estado incorrecto del torneo",
-                    "Las inscripciones deben estar cerradas para poder iniciar el torneo"
-            );
-        }
-
-        long selectedPlayersCount = tournamentEnrollmentRepository.countByTournamentIdAndStatus(tournamentId, EnrollmentStatus.SELECTED);
-
-        if (selectedPlayersCount < tournament.getMinPlayers()) {
-            throw new CustomException(
-                    ErrorCode.MIN_PLAYERS_NOT_REACHED,
-                    "Número insuficiente de jugadores seleccionados",
-                    String.format(
-                            "Se necesitan al menos %d jugadores seleccionados para iniciar el torneo",
-                            tournament.getMinPlayers()
-                    )
-            );
-        } else if (selectedPlayersCount > tournament.getMaxPlayers()) {
-            throw new CustomException(
-                    ErrorCode.MAX_PLAYERS_EXCEEDED,
-                    "Número excesivo de jugadores seleccionados",
-                    String.format(
-                            "Se han seleccionado %d jugadores, pero el máximo permitido es %d",
-                            selectedPlayersCount,
-                            tournament.getMaxPlayers()
-                    )
-            );
-        }
-
-        List<TournamentEnrollment> pendingEnrollments = tournamentEnrollmentRepository
-                .findByTournamentIdAndStatus(tournamentId, EnrollmentStatus.PENDING);
-        pendingEnrollments.forEach(enrollment -> enrollment.setStatus(EnrollmentStatus.DECLINED));
-        tournamentEnrollmentRepository.saveAll(pendingEnrollments);
-
-        List<TournamentEnrollment> selectedEnrollments = tournamentEnrollmentRepository.findByTournamentIdAndStatus(tournamentId, EnrollmentStatus.SELECTED);
-
-
-        List<TournamentParticipation> tournamentParticipants = selectedEnrollments.stream()
-                .map(enrollment -> {
-                    TournamentParticipation tournamentParticipation = new TournamentParticipation();
-                    PlayerStats playerStats = playerStatsRepository.findByPlayer(enrollment.getPlayer())
-                            .orElseGet(() -> {
-                                PlayerStats newPlayerStats = new PlayerStats();
-                                newPlayerStats.setPlayer(enrollment.getPlayer());
-                                return playerStatsRepository.save(newPlayerStats);
-                            });
-
-                    tournamentParticipation.setPlayerStats(playerStats);
-                    tournamentParticipation.setTournament(tournament);
-                    return tournamentParticipation;
-                })
-                .toList();
-
-        tournamentParticipationRepository.saveAll(tournamentParticipants);
-
-        matchmakingService.createRoundMatches(tournament, tournamentParticipants);
-
-        tournament.setStatus(TournamentStatus.IN_PROGRESS);
         tournamentRepository.save(tournament);
     }
 }
