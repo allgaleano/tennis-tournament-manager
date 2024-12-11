@@ -3,6 +3,7 @@
 import { useTournamentMatches } from '@/hooks/useTournamentMatches';
 import { Match } from '@/types';
 import MatchCard from './match-card';
+import { BarLoader } from 'react-spinners';
 
 interface TournamentMatchesProps {
   tournamentId: number;
@@ -12,7 +13,12 @@ interface TournamentMatchesProps {
 const TournamentMatches = ({ tournamentId, isAdmin }: TournamentMatchesProps) => {
   const { matches, loading, error } = useTournamentMatches(tournamentId);
   
-  if (loading) return <div>Cargando partidos..</div>;
+  if (loading) return (
+    <div className="grid place-items-center w-full h-[600px]">
+      <BarLoader className="text-primary"/>
+    </div>
+  );
+
   if (error) return <div className="text-destructive">{error}</div>;
 
   const getRoundDisplayName = (round: string) => {

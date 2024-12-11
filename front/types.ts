@@ -100,3 +100,17 @@ export interface Player {
   email: string;
   username: string;
 }
+
+export type PlayerTournamentStats = {
+  player: Player;
+  matchesPlayed: number;
+  matchesWon: number;
+  matchesLost: number;
+  setsWon: number;
+  setsLost: number;
+  gamesWon: number;
+  gamesLost: number;
+  tiebreakGamesWon: number;
+  tiebreakGamesLost: number;
+  points: number;
+}

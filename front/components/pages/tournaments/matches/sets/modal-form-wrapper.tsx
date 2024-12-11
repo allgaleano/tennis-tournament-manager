@@ -5,7 +5,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Match } from "@/types";
-import { useRouter } from "next/navigation";
 import React, { useState } from "react";
 
 interface ChildProps {
@@ -34,14 +33,9 @@ const ModalFormWrapper = ({
   className
 }: ModalFormWrapperProps) => {
   const [open, setOpen] = useState(false);
-  const router = useRouter();
 
   const handleSuccess = () => {
     setOpen(false);
-
-    setTimeout(() => {
-      router.refresh();
-    }, 600);
   }
 
   const childWithProps = React.cloneElement(children, {
