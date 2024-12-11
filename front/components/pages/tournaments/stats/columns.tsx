@@ -66,16 +66,6 @@ export const columns: ColumnDef<PlayerTournamentStats>[] = [
     }
   },
   {
-    header: "Partidos ganados",
-    accessorFn: (row) => row.matchesWon,
-    id: "matchesWon",
-  }, 
-  {
-    header: "Partidos perdidos",
-    accessorFn: (row) => row.matchesLost,
-    id: "matchesLost",
-  }, 
-  {
     header: "Sets ganados",
     accessorFn: (row) => row.setsWon,
     id: "setsWon",
