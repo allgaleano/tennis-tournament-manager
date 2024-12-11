@@ -139,8 +139,6 @@ public class TournamentService {
                         )
                 );
 
-        UserSession userSession = userSessionRepository.findBySessionId(sessionId);
-
         permissionChecker.validateUserPermission(user, sessionId);
 
         if (tournament.getStatus().equals(TournamentStatus.IN_PROGRESS) || tournament.getStatus().equals(TournamentStatus.FINISHED)) {

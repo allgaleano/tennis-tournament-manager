@@ -1,5 +1,6 @@
 package es.upm.tennis.tournament.manager.controller;
 
+import es.upm.tennis.tournament.manager.DTO.PlayerStatsDTO;
 import es.upm.tennis.tournament.manager.DTO.TournamentParticipationDTO;
 import es.upm.tennis.tournament.manager.service.StatsService;
 import lombok.extern.slf4j.Slf4j;
@@ -9,7 +10,6 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("tournaments/{tournamentId}/stats")
 @Slf4j
 public class StatsController {
 
@@ -19,11 +19,19 @@ public class StatsController {
         this.statsService = statsService;
     }
 
-    @GetMapping
+    @GetMapping("/tournaments/{tournamentId}/stats")
     public ResponseEntity<List<TournamentParticipationDTO>> getTournamentStats(
             @PathVariable Long tournamentId,
             @RequestHeader("Session-Id") String sessionId
     ) {
         return ResponseEntity.ok(statsService.getTournamentStats(tournamentId, sessionId));
+    }
+
+    @GetMapping("/players/{playerId}/stats")
+    public ResponseEntity<PlayerStatsDTO> getPlayerStats(
+            @PathVariable Long playerId,
+            @RequestHeader("Session-Id") String sessionId
+    ) {
+        return ResponseEntity.ok(statsService.getPlayerStats(playerId, sessionId));
     }
 }
