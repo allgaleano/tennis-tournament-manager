@@ -9,6 +9,7 @@ import { getServerSideUserData } from "@/lib/users/getServerSideUserData";
 import TournamentMatches from "./matches/tournament-matches";
 import StartTournamentButton from "./start-tournament-button";
 import ChangeTournamentStatusButton from "./change-tournament-status-button";
+import TournamentStats from "./stats/tournament-stats";
 
 async function getTournament(id: string): Promise<{ tournament?: Tournament; error?: string }> {
   try {
@@ -78,6 +79,9 @@ const TournamentDetails = async ({
         {tournament.status === 'IN_PROGRESS' || tournament.status === 'FINISHED' ? (
           <TournamentMatches tournamentId={tournament.id} isAdmin={userData.role === "ADMIN"} />
         ) : null}
+        {tournament.status === 'FINISHED' && (
+          <TournamentStats tournamentId={tournament.id} />
+        )}
         <div className="flex flex-wrap items-center justify-end gap-4 sm:gap-0">
           <StartTournamentButton tournament={tournament} isAdmin={userData.role === "ADMIN"}/>
           <ChangeTournamentStatusButton tournament={tournament} isAdmin={userData.role === "ADMIN"} />
