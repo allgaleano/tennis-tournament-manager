@@ -1,5 +1,6 @@
 package es.upm.tennis.tournament.manager.service;
 
+import es.upm.tennis.tournament.manager.DTO.PlayerStatsDTO;
 import es.upm.tennis.tournament.manager.DTO.TournamentParticipationDTO;
 import es.upm.tennis.tournament.manager.exceptions.CustomException;
 import es.upm.tennis.tournament.manager.exceptions.ErrorCode;
@@ -7,6 +8,7 @@ import es.upm.tennis.tournament.manager.model.*;
 import es.upm.tennis.tournament.manager.repo.PlayerStatsRepository;
 import es.upm.tennis.tournament.manager.repo.TournamentParticipationRepository;
 import es.upm.tennis.tournament.manager.repo.TournamentRepository;
+import es.upm.tennis.tournament.manager.repo.UserRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,17 +24,20 @@ public class StatsService {
     private final PlayerStatsRepository playerStatsRepository;
     private final PermissionChecker permissionChecker;
     private final TournamentRepository tournamentRepository;
+    private final UserRepository userRepository;
 
     public  StatsService (
             TournamentParticipationRepository tournamentParticipationRepository,
             PlayerStatsRepository playerStatsRepository,
             PermissionChecker permissionChecker,
-            TournamentRepository tournamentRepository
+            TournamentRepository tournamentRepository,
+            UserRepository userRepository
     ) {
         this.tournamentParticipationRepository = tournamentParticipationRepository;
         this.playerStatsRepository = playerStatsRepository;
         this.permissionChecker = permissionChecker;
         this.tournamentRepository = tournamentRepository;
+        this.userRepository = userRepository;
     }
 
     public void update(Match match) {
@@ -129,5 +134,23 @@ public class StatsService {
         return participants.stream()
                 .map(TournamentParticipationDTO::fromEntity)
                 .toList();
+    }
+
+    public PlayerStatsDTO getPlayerStats(Long playerId, String sessionId) {
+        User player = userRepository.findById(playerId)
+                .orElseThrow(() -> new CustomException(
+                        ErrorCode.USER_NOT_FOUND,
+                        "Usuario no encontrado"
+                ));
+        permissionChecker.validateUserPermission(player, sessionId);
+
+        PlayerStats playerStats = playerStatsRepository.findByPlayer(player)
+                .orElseThrow(() -> new CustomException(
+                        ErrorCode.PLAYER_STATS_NOT_FOUND,
+                        "Estadísticas de jugador no encontradas",
+                        "No se encontraron estadísticas para el jugador " + player.getId()
+                ));
+
+        return PlayerStatsDTO.fromEntity(playerStats);
     }
 }
