@@ -1,13 +1,17 @@
 package es.upm.tennis.tournament.manager.service;
 
+import es.upm.tennis.tournament.manager.DTO.TournamentParticipationDTO;
 import es.upm.tennis.tournament.manager.exceptions.CustomException;
 import es.upm.tennis.tournament.manager.exceptions.ErrorCode;
 import es.upm.tennis.tournament.manager.model.*;
 import es.upm.tennis.tournament.manager.repo.PlayerStatsRepository;
 import es.upm.tennis.tournament.manager.repo.TournamentParticipationRepository;
+import es.upm.tennis.tournament.manager.repo.TournamentRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Service
 @Transactional
@@ -16,13 +20,19 @@ public class StatsService {
 
     private final TournamentParticipationRepository tournamentParticipationRepository;
     private final PlayerStatsRepository playerStatsRepository;
+    private final PermissionChecker permissionChecker;
+    private final TournamentRepository tournamentRepository;
 
     public  StatsService (
             TournamentParticipationRepository tournamentParticipationRepository,
-            PlayerStatsRepository playerStatsRepository
+            PlayerStatsRepository playerStatsRepository,
+            PermissionChecker permissionChecker,
+            TournamentRepository tournamentRepository
     ) {
         this.tournamentParticipationRepository = tournamentParticipationRepository;
         this.playerStatsRepository = playerStatsRepository;
+        this.permissionChecker = permissionChecker;
+        this.tournamentRepository = tournamentRepository;
     }
 
     public void update(Match match) {
@@ -101,5 +111,23 @@ public class StatsService {
             p2Participation.incrementTiebreakGamesWon(set.getPlayer2TiebreakGames());
             p2Participation.incrementTiebreakGamesLost(set.getPlayer1TiebreakGames());
         }
+    }
+
+
+    public List<TournamentParticipationDTO> getTournamentStats(Long tournamentId, String sessionId) {
+
+        permissionChecker.validateSession(sessionId);
+
+        Tournament tournament = tournamentRepository.findById(tournamentId)
+                .orElseThrow(() -> new CustomException(
+                        ErrorCode.TOURNAMENT_NOT_FOUND,
+                        "Torneo no encontrado"
+                ));
+
+        List<TournamentParticipation> participants = tournamentParticipationRepository.findAllByTournamentOrderByPointsDesc(tournament);
+
+        return participants.stream()
+                .map(TournamentParticipationDTO::fromEntity)
+                .toList();
     }
 }
