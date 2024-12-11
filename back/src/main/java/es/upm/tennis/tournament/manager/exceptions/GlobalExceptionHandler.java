@@ -6,6 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -34,6 +35,11 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
                 .body(body);
+    }
+
+    @ExceptionHandler(NoResourceFoundException.class)
+    public ResponseEntity<?> handleNoResourceFoundException(NoResourceFoundException ex) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
     }
 
     @ExceptionHandler(Exception.class)
