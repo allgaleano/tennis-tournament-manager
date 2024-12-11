@@ -114,3 +114,19 @@ export type PlayerTournamentStats = {
   tiebreakGamesLost: number;
   points: number;
 }
+
+export type PlayerGlobalStats = {
+  player: Player;
+  rankingPoints: number;
+  tournamentsPlayed: number;
+  tournamentsWon: number;
+  totalMatchesPlayed: number;
+  totalMatchesWon: number;
+  totalMatchesLost: number;
+  totalSetsWon: number;
+  totalSetsLost: number;
+  totalGamesWon: number;
+  totalGamesLost: number;
+  totalTiebreakGamesWon: number;
+  totalTiebreakGamesLost: number;
+}
