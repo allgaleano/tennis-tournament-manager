@@ -1,14 +1,12 @@
 package es.upm.tennis.tournament.manager.controller;
 
-import es.upm.tennis.tournament.manager.DTO.MatchDTO;
 import es.upm.tennis.tournament.manager.DTO.PlayerIdsRequest;
 import es.upm.tennis.tournament.manager.DTO.TournamentDTO;
 import es.upm.tennis.tournament.manager.DTO.TournamentEnrollmentDTO;
-import es.upm.tennis.tournament.manager.model.Match;
 import es.upm.tennis.tournament.manager.model.Tournament;
+import es.upm.tennis.tournament.manager.service.StartTournamentService;
 import es.upm.tennis.tournament.manager.service.TournamentService;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedResourcesAssembler;
@@ -17,7 +15,6 @@ import org.springframework.hateoas.PagedModel;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -25,16 +22,24 @@ import java.util.Map;
 @Slf4j
 public class TournamentController {
 
-    @Autowired
-    private TournamentService tournamentService;
+    private final TournamentService tournamentService;
+    private final StartTournamentService startTournamentService;
+
+    public TournamentController(
+            TournamentService tournamentService,
+            StartTournamentService startTournamentService
+    ) {
+        this.tournamentService = tournamentService;
+        this.startTournamentService = startTournamentService;
+    }
 
     @GetMapping
     public ResponseEntity<PagedModel<EntityModel<Tournament>>> getAllTournaments(
             Pageable pageable,
             PagedResourcesAssembler<Tournament> pagedResourcesAssembler
     ) {
+        log.info("Getting all tournaments");
         Page<Tournament> tournaments = tournamentService.getAllTournaments(pageable);
-
         PagedModel<EntityModel<Tournament>> pagedModel = pagedResourcesAssembler.toModel(tournaments, EntityModel::of);
         return ResponseEntity.ok(pagedModel);
     }
@@ -146,18 +151,9 @@ public class TournamentController {
             @PathVariable Long tournamentId,
             @RequestHeader("Session-Id") String sessionId
     ) {
-        tournamentService.startTournament(tournamentId, sessionId);
+        startTournamentService.startTournament(tournamentId, sessionId);
         return ResponseEntity.ok(Map.of(
                 "title", "Torneo iniciado con éxito"
         ));
-    }
-
-    @GetMapping("/{tournamentId}/matches")
-    public ResponseEntity<List<MatchDTO>> getTournamentMatches(
-            @PathVariable Long tournamentId,
-            @RequestHeader("Session-Id") String sessionId) {
-        List<Match> matches = tournamentService.getTournamentMatches(tournamentId, sessionId);
-        List<MatchDTO> matchDTOS = matches.stream().map(MatchDTO::fromEntity).toList();
-        return ResponseEntity.ok(matchDTOS);
     }
 }

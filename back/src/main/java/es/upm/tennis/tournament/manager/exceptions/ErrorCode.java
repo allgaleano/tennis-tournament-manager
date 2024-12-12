@@ -29,8 +29,25 @@ public enum ErrorCode {
     INVALID_TOURNAMENT_STATUS("TOUR_005", HttpStatus.BAD_REQUEST),
     INVALID_TOURNAMENT_ROUND("TOUR_006", HttpStatus.BAD_REQUEST),
 
+    // Match related errors
+    MATCH_NOT_FOUND("MATCH_001", HttpStatus.NOT_FOUND),
+    INVALID_MATCH_STATUS("MATCH_002", HttpStatus.BAD_REQUEST),
+
+    // Set related errors
+    INVALID_SET_STATUS("SET_001", HttpStatus.BAD_REQUEST),
+    INVALID_SCORE("SET_002", HttpStatus.BAD_REQUEST),
+
+    // Stats related errors
+    PLAYER_STATS_NOT_FOUND("STATS_001", HttpStatus.NOT_FOUND),
+    TOURNAMENT_STATS_NOT_FOUND("STATS_002", HttpStatus.NOT_FOUND),
+
+    // Tournament participation related errors
+    TOURNAMENT_PARTICIPATION_NOT_FOUND("PART_001", HttpStatus.NOT_FOUND),
+    INVALID_PARTICIPANT_COUNT("PART_002", HttpStatus.BAD_REQUEST),
+
     // Generic errors
-    INTERNAL_ERROR("INT_001", HttpStatus.INTERNAL_SERVER_ERROR);
+    INTERNAL_ERROR("GEN_001", HttpStatus.INTERNAL_SERVER_ERROR),
+    BAD_REQUEST("GEN_002", HttpStatus.BAD_REQUEST);
 
     private final String code;
     private final HttpStatus httpStatus;

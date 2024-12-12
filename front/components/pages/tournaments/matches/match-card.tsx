@@ -1,21 +1,44 @@
-import PlayerInfo from "./player-info";
-import { Match, Player } from "@/types";
+import PlayerInfo from "@/components/pages/tournaments/matches/player-info";
+import { Match } from "@/types";
+import Sets from "@/components/pages/tournaments/matches/sets/sets";
+import ModalFormWrapper from "./sets/modal-form-wrapper";
+import MatchResultsForm from "./sets/match-results-form";
 
-
-const MatchCard = ({ match }: { match: Match }) => {
-  
+interface MatchCardProps {
+  match: Match;
+  tournamentId: number;
+  isAdmin: boolean;
+  previousRoundsCompleted: boolean;
+}
+const MatchCard = ({ 
+  match,
+  tournamentId,
+  isAdmin,
+  previousRoundsCompleted,
+}: MatchCardProps) => {
+  const showModalForm = isAdmin && previousRoundsCompleted && !match.completed && match.player1 && match.player2;
   return (
-    <div className="w-52 border rounded-sm shadow-sm">
+    <div className={`border rounded-sm shadow-sm ${match.completed ? "border-success" : ""}`}>
       <div>
-        <div className="flex justify-between items-center">
-          {match.completed && (
-            <span className="text-sm text-green-600">Completado</span>
+        <div className="flex min-w-60 flex-col items-center justify-between">
+          <PlayerInfo player={match.player1} match={match} className="border-b rounded-t-sm" />
+          {match.completed ? (
+            <Sets match={match} />
+          ) : (
+            (showModalForm) ? (
+              <ModalFormWrapper
+                match={match}
+                tournamentId={tournamentId}
+                variant="sheet"
+                className="h-20 grid place-items-center"
+              >
+                <MatchResultsForm match={match} tournamentId={tournamentId} />
+              </ModalFormWrapper>
+            ) : (
+              <div className="flex justify-center items-center h-20 text-muted-foreground">vs</div>
+            )
           )}
-        </div>
-        <div className="flex flex-col gap-1 items-center justify-between">
-            <PlayerInfo player={match.player1} match={match} className="border-b"/>
-          <div className="text-center text-sm text-muted-foreground">vs</div>
-            <PlayerInfo player={match.player2} match={match} className="border-t"/>
+          <PlayerInfo player={match.player2} match={match} className="border-t rounded-b-sm" />
         </div>
       </div>
     </div>
