@@ -153,11 +153,37 @@ public class StatsService {
                         "No se encontraron estadísticas para el jugador " + player.getId()
                 ));
 
-        return PlayerStatsDTO.fromEntity(playerStats);
+        Integer rankingPosition = playerStatsRepository.findPlayerRankingPosition(playerId).orElse(null);
+        return PlayerStatsDTO.fromEntity(playerStats, rankingPosition);
     }
 
     public Page<PlayerStatsDTO> getAllPlayersStats(String sessionId, Pageable pageable) {
         permissionChecker.validateSession(sessionId);
-        return playerStatsRepository.findAllOrderedByStats(pageable).map(PlayerStatsDTO::fromEntity);
+        Page<Object[]> results = playerStatsRepository.findAllWithRankingPosition(pageable);
+
+        return results.map(row -> {
+            int position = ((Number) row[14]).intValue(); // position is the last column
+            PlayerStats stats = mapRowToPlayerStats(row);
+            return PlayerStatsDTO.fromEntity(stats, position);
+        });
+    }
+
+    private PlayerStats mapRowToPlayerStats(Object[] row) {
+        PlayerStats stats = new PlayerStats();
+        stats.setId(((Number) row[0]).longValue());
+        stats.setPlayer(userRepository.getReferenceById(((Number) row[1]).longValue())); // Uses getReference to avoid extra query
+        stats.setRankingPoints(((Number) row[2]).intValue());
+        stats.setTournamentsPlayed(((Number) row[3]).intValue());
+        stats.setTournamentsWon(((Number) row[4]).intValue());
+        stats.setTotalMatchesPlayed(((Number) row[5]).intValue());
+        stats.setTotalMatchesWon(((Number) row[6]).intValue());
+        stats.setTotalMatchesLost(((Number) row[7]).intValue());
+        stats.setTotalSetsWon(((Number) row[8]).intValue());
+        stats.setTotalSetsLost(((Number) row[9]).intValue());
+        stats.setTotalGamesWon(((Number) row[10]).intValue());
+        stats.setTotalGamesLost(((Number) row[11]).intValue());
+        stats.setTotalTiebreakGamesWon(((Number) row[12]).intValue());
+        stats.setTotalTiebreakGamesLost(((Number) row[13]).intValue());
+        return stats;
     }
 }
