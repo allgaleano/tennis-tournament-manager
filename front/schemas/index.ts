@@ -93,15 +93,11 @@ const setSchema = z.object({
     message: "El número de juegos de desempate del jugador 1 debe de ser un número entero"
   }).min(0, {
     message: "El número de juegos de desempate del jugador 1 no puede ser negativo"
-  }).max(7, {
-    message: "El número de juegos de desempate del jugador 1 no puede ser mayor a 7"
   }).optional(),
   player2TiebreakGames: z.number().int({
     message: "El número de juegos de desempate del jugador 2 debe de ser un número entero"
   }).min(0, {
     message: "El número de juegos de desempate del jugador 2 no puede ser negativo"
-  }).max(7, {
-    message: "El número de juegos de desempate del jugador 2 no puede ser mayor a 7"
   }).optional()
 });
 
