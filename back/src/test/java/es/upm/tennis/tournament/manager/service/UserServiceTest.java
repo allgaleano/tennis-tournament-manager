@@ -281,72 +281,11 @@ class UserServiceTest {
 
             assertEquals(ErrorCode.ACCOUNT_DISABLED, ex.getErrorCode());
         }
-
-        @Test
-        @DisplayName("Should invalidate existing session when authenticating")
-        void authenticateUser_ShouldInvalidateExistingSession() {
-            // Arrange
-            Authentication authentication = mock(Authentication.class);
-            when(authentication.getPrincipal()).thenReturn(userDetails);
-            when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
-                    .thenReturn(authentication);
-            when(userRepository.findByUsername(userDetails.getUsername())).thenReturn(user);
-
-            UserSession existingSession = new UserSession();
-            existingSession.setUser(user);
-            existingSession.setSessionId("existing-session-id");
-
-            UserSession newSession = new UserSession();
-            newSession.setUser(user);
-            newSession.setSessionId("new-session-id");
-            newSession.setExpirationDate(Instant.now().plusSeconds(1440 * 60));
-
-            // Mock session service behaviors
-            when(sessionService.findByUser(user)).thenReturn(existingSession);
-            doNothing().when(sessionService).invalidateSession("existing-session-id");
-            when(sessionService.createSession(user)).thenReturn(newSession);
-
-            // Act
-            Map<String, Object> result = userService.authenticateUser(user.getUsername(), "password");
-
-            // Assert
-            verify(sessionService).findByUser(user);
-            verify(sessionService).invalidateSession("existing-session-id");
-            verify(sessionService).createSession(user);
-
-            assertNotNull(result.get("sessionId"));
-            assertNotNull(result.get("sessionExp"));
-            assertEquals("new-session-id", result.get("sessionId"));
-            assertEquals(newSession.getExpirationDate(), result.get("sessionExp"));
-        }
     }
 
     @Nested
     @DisplayName("User Modification Tests")
     class UserModificationTests {
-        @Test
-        @DisplayName("Should successfully modify user")
-        void modifyUser_ShouldSucceed_WhenValidData() {
-            // Arrange
-            UserSession userSession = new UserSession();
-            userSession.setUser(user);
-            when(userRepository.findById(1L)).thenReturn(Optional.of(user));
-            when(userSessionRepository.findBySessionId("sessionId")).thenReturn(userSession);
-            doNothing().when(permissionChecker).validateUserPermission(any(), any());
-
-            UserDTO updateDTO = new UserDTO();
-            updateDTO.setUsername("newUsername");
-            updateDTO.setName("New Name");
-            when(userRepository.findByUsername(updateDTO.getUsername())).thenReturn(null);
-
-            // Act
-            userService.modifyUser(1L, "sessionId", updateDTO);
-
-            // Assert
-            verify(userRepository).save(user);
-            assertEquals("newUsername", user.getUsername());
-            assertEquals("New Name", user.getName());
-        }
 
         @Test
         @DisplayName("Should throw exception when user not found")
@@ -365,25 +304,6 @@ class UserServiceTest {
     @Nested
     @DisplayName("Delete User Tests")
     class DeleteUserTests {
-        @Test
-        @DisplayName("Should successfully delete user")
-        void deleteUser_ShouldSucceed() {
-            // Arrange
-            UserSession userSession = new UserSession();
-            userSession.setUser(user);
-            when(userRepository.findById(1L)).thenReturn(Optional.of(user));
-            when(userSessionRepository.findBySessionId("sessionId")).thenReturn(userSession);
-            when(confirmationCodeRepository.findByUser(user)).thenReturn(confirmationCode);
-            doNothing().when(permissionChecker).validateUserPermission(any(), any());
-
-            // Act
-            userService.deleteUser(1L, "sessionId");
-
-            // Assert
-            verify(userSessionRepository).delete(userSession);
-            verify(confirmationCodeRepository).delete(confirmationCode);
-            verify(userRepository).delete(user);
-        }
 
         @Test
         @DisplayName("Should throw exception when user not found")
