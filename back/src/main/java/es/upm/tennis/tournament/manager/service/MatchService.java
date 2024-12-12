@@ -32,8 +32,6 @@ public class MatchService {
     }
 
     public List<MatchDTO> getTournamentMatches(Long tournamentId, String sessionId) {
-        log.info("Getting matches for tournament {}", tournamentId);
-
         permissionChecker.validateSession(sessionId);
 
         Tournament tournament = tournamentRepository.findById(tournamentId)

@@ -1,11 +1,11 @@
 "use client";
 
+import revalidateTag from "@/app/actions/revalidateTag";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Match } from "@/types";
-import { useRouter } from "next/navigation";
 import React, { useState } from "react";
 
 interface ChildProps {
@@ -34,14 +34,10 @@ const ModalFormWrapper = ({
   className
 }: ModalFormWrapperProps) => {
   const [open, setOpen] = useState(false);
-  const router = useRouter();
 
   const handleSuccess = () => {
     setOpen(false);
-
-    setTimeout(() => {
-      router.refresh();
-    }, 600);
+    revalidateTag(`matches-${tournamentId}`);
   }
 
   const childWithProps = React.cloneElement(children, {
@@ -59,7 +55,7 @@ const ModalFormWrapper = ({
           <DialogTrigger asChild>
             <Button variant="outline">{triggerText}</Button>
           </DialogTrigger>
-          <DialogContent className="max-w-xl">
+          <DialogContent className="max-w-xl bg-white max-h-[90vh]">
             <DialogHeader>
               <DialogTitle>{modalTitle}</DialogTitle>
             </DialogHeader>
