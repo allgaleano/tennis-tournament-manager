@@ -4,6 +4,9 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Entity
 @Getter
 @Setter
@@ -35,4 +38,18 @@ public class Match {
 
     @Column(name = "completed", nullable = false)
     private boolean completed = false;
+
+    @Column(name = "player1_sets")
+    private Integer player1SetsWon;
+
+    @Column(name = "player2_sets")
+    private Integer player2SetsWon;
+
+    @OneToMany(mappedBy = "match", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @OrderBy("setNumber ASC")
+    private List<Set> sets = new ArrayList<>();
+
+    @ManyToOne
+    @JoinColumn(name = "next_match_id")
+    private Match nextMatch;
 }

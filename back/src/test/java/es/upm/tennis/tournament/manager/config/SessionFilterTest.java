@@ -85,7 +85,7 @@ class SessionFilterTest {
             request.addHeader("Session-Id", "valid-session-id");
 
             when(sessionService.validateSession("valid-session-id")).thenReturn(true);
-            when(sessionService.findBySessionId("valid-session-id")).thenReturn(userSession);
+            when(sessionService.getUserSession("valid-session-id")).thenReturn(userSession);
 
             sessionFilter.doFilterInternal(request, response, filterChain);
 
@@ -131,7 +131,7 @@ class SessionFilterTest {
             request.addHeader("Session-Id", "valid-session-id");
 
             when(sessionService.validateSession("valid-session-id")).thenReturn(true);
-            when(sessionService.findBySessionId("valid-session-id")).thenReturn(userSession);
+            when(sessionService.getUserSession("valid-session-id")).thenReturn(userSession);
 
             sessionFilter.doFilterInternal(request, response, filterChain);
 

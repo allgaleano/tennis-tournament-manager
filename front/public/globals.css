@@ -37,8 +37,10 @@ body {
       --accent: 240 4.8% 95.9%;
       --accent-foreground: 240 5.9% 10%;
       --success: 137 92% 38%;
+      --success-background: 137 55% 94%;
       --success-foreground: 0 0% 98%;
       --destructive: 0 84.2% 60.2%;
+      --destructive-background: 0 81% 96%;
       --destructive-foreground: 0 0% 98%;
       --progress: 217 58% 51%;
       --progress-foreground: 0 0% 98%;
@@ -68,8 +70,10 @@ body {
       --accent: 240 3.7% 15.9%;
       --accent-foreground: 0 0% 98%;
       --success: 137 100% 60%;
+      --success-background: 137 56% 88%;
       --success-foreground: 0 0% 98%;
       --destructive: 0 62.8% 30.6%;
+      --destructive-background: 0 81% 96%;
       --destructive-foreground: 0 0% 98%;
       --progress: 217 58% 51%;
       --progress-foreground: 0 0% 98%;
@@ -86,6 +90,32 @@ body {
   
   
 @layer base {
+  /* Selection color */
+  ::selection {
+    background-color: hsl(var(--primary));
+    color: white;
+  }
+  
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  
+  ::-webkit-scrollbar-track {
+    background: var(--background);
+  }
+  
+  
+  ::-webkit-scrollbar-thumb {
+    background: var(--foreground);
+    border-radius: 12px;
+    border: var(--background) 2px solid;
+  }
+  
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--foreground);
+  }
+  
   * {
     @apply border-border;
   }

@@ -1,8 +1,12 @@
 import Dashboard from "@/components/pages/dashboard/dashboard";
 
-const DashboardPage = () => {
+const DashboardPage = ({
+  searchParams
+}: { 
+  searchParams: { [key: string]: string | string[] | undefined }
+}) => {
   return (
-    <Dashboard />
+    <Dashboard searchParams={searchParams} />
   );
 }
 
