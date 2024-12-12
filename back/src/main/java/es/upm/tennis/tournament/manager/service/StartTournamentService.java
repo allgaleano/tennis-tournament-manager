@@ -111,8 +111,21 @@ public class StartTournamentService {
                 .map(enrollment -> getOrCreateTournamentParticipation(enrollment, tournament))
                 .toList();
 
+        int numParticipants = participants.size();
+        if (!isValidNumberOfParticipants(numParticipants)) {
+            throw new CustomException(
+                    ErrorCode.INVALID_PARTICIPANT_COUNT,
+                    "Número de participantes inválido",
+                    "El número de participantes debe ser una potencia de 2, permitiendo únicamente un jugador BYE"
+            );
+        }
+
         tournamentParticipationRepository.saveAll(participants);
         matchmakingService.createRoundMatches(tournament, participants);
+    }
+
+    private boolean isValidNumberOfParticipants(int numParticipants) {
+        return numParticipants == 7 || numParticipants == 8 || numParticipants == 15 || numParticipants == 16 || numParticipants == 4;
     }
 
     private TournamentParticipation getOrCreateTournamentParticipation (TournamentEnrollment enrollment, Tournament tournament) {
