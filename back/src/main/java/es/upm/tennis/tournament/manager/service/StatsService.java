@@ -10,6 +10,8 @@ import es.upm.tennis.tournament.manager.repo.TournamentParticipationRepository;
 import es.upm.tennis.tournament.manager.repo.TournamentRepository;
 import es.upm.tennis.tournament.manager.repo.UserRepository;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -152,5 +154,10 @@ public class StatsService {
                 ));
 
         return PlayerStatsDTO.fromEntity(playerStats);
+    }
+
+    public Page<PlayerStatsDTO> getAllPlayersStats(String sessionId, Pageable pageable) {
+        permissionChecker.validateSession(sessionId);
+        return playerStatsRepository.findAllOrderedByStats(pageable).map(PlayerStatsDTO::fromEntity);
     }
 }
