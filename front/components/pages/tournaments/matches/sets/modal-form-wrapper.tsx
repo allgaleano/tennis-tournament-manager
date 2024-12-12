@@ -1,5 +1,6 @@
 "use client";
 
+import revalidateTag from "@/app/actions/revalidateTag";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -36,6 +37,7 @@ const ModalFormWrapper = ({
 
   const handleSuccess = () => {
     setOpen(false);
+    revalidateTag(`matches-${tournamentId}`);
   }
 
   const childWithProps = React.cloneElement(children, {
@@ -53,7 +55,7 @@ const ModalFormWrapper = ({
           <DialogTrigger asChild>
             <Button variant="outline">{triggerText}</Button>
           </DialogTrigger>
-          <DialogContent className="max-w-xl">
+          <DialogContent className="max-w-xl bg-white max-h-[90vh]">
             <DialogHeader>
               <DialogTitle>{modalTitle}</DialogTitle>
             </DialogHeader>
