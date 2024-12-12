@@ -100,3 +100,46 @@ export interface Player {
   email: string;
   username: string;
 }
+
+export type PlayerTournamentStats = {
+  player: Player;
+  matchesPlayed: number;
+  matchesWon: number;
+  matchesLost: number;
+  setsWon: number;
+  setsLost: number;
+  gamesWon: number;
+  gamesLost: number;
+  tiebreakGamesWon: number;
+  tiebreakGamesLost: number;
+  points: number;
+}
+
+export type PlayerGlobalStats = {
+  player: Player;
+  rankingPoints: number;
+  rankingPosition: number | null;
+  tournamentsPlayed: number;
+  tournamentsWon: number;
+  totalMatchesPlayed: number;
+  totalMatchesWon: number;
+  totalMatchesLost: number;
+  totalSetsWon: number;
+  totalSetsLost: number;
+  totalGamesWon: number;
+  totalGamesLost: number;
+  totalTiebreakGamesWon: number;
+  totalTiebreakGamesLost: number;
+}
+
+export type PlayerGlobalStatsDisplayList = {
+  _embedded: {
+    playerStatsDTOList: PlayerGlobalStats[];
+  };
+  page: {
+    size: number;
+    totalElements: number;
+    totalPages: number;
+    number: number;
+  };
+}

@@ -1,13 +1,21 @@
 package es.upm.tennis.tournament.manager.service;
 
+import es.upm.tennis.tournament.manager.DTO.PlayerStatsDTO;
+import es.upm.tennis.tournament.manager.DTO.TournamentParticipationDTO;
 import es.upm.tennis.tournament.manager.exceptions.CustomException;
 import es.upm.tennis.tournament.manager.exceptions.ErrorCode;
 import es.upm.tennis.tournament.manager.model.*;
 import es.upm.tennis.tournament.manager.repo.PlayerStatsRepository;
 import es.upm.tennis.tournament.manager.repo.TournamentParticipationRepository;
+import es.upm.tennis.tournament.manager.repo.TournamentRepository;
+import es.upm.tennis.tournament.manager.repo.UserRepository;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Service
 @Transactional
@@ -16,13 +24,22 @@ public class StatsService {
 
     private final TournamentParticipationRepository tournamentParticipationRepository;
     private final PlayerStatsRepository playerStatsRepository;
+    private final PermissionChecker permissionChecker;
+    private final TournamentRepository tournamentRepository;
+    private final UserRepository userRepository;
 
     public  StatsService (
             TournamentParticipationRepository tournamentParticipationRepository,
-            PlayerStatsRepository playerStatsRepository
+            PlayerStatsRepository playerStatsRepository,
+            PermissionChecker permissionChecker,
+            TournamentRepository tournamentRepository,
+            UserRepository userRepository
     ) {
         this.tournamentParticipationRepository = tournamentParticipationRepository;
         this.playerStatsRepository = playerStatsRepository;
+        this.permissionChecker = permissionChecker;
+        this.tournamentRepository = tournamentRepository;
+        this.userRepository = userRepository;
     }
 
     public void update(Match match) {
@@ -101,5 +118,72 @@ public class StatsService {
             p2Participation.incrementTiebreakGamesWon(set.getPlayer2TiebreakGames());
             p2Participation.incrementTiebreakGamesLost(set.getPlayer1TiebreakGames());
         }
+    }
+
+
+    public List<TournamentParticipationDTO> getTournamentStats(Long tournamentId, String sessionId) {
+
+        permissionChecker.validateSession(sessionId);
+
+        Tournament tournament = tournamentRepository.findById(tournamentId)
+                .orElseThrow(() -> new CustomException(
+                        ErrorCode.TOURNAMENT_NOT_FOUND,
+                        "Torneo no encontrado"
+                ));
+
+        List<TournamentParticipation> participants = tournamentParticipationRepository.findAllByTournamentOrderByPointsDesc(tournament);
+
+        return participants.stream()
+                .map(TournamentParticipationDTO::fromEntity)
+                .toList();
+    }
+
+    public PlayerStatsDTO getPlayerStats(Long playerId, String sessionId) {
+        User player = userRepository.findById(playerId)
+                .orElseThrow(() -> new CustomException(
+                        ErrorCode.USER_NOT_FOUND,
+                        "Usuario no encontrado"
+                ));
+        permissionChecker.validateUserPermission(player, sessionId);
+
+        PlayerStats playerStats = playerStatsRepository.findByPlayer(player)
+                .orElseThrow(() -> new CustomException(
+                        ErrorCode.PLAYER_STATS_NOT_FOUND,
+                        "Estadísticas de jugador no encontradas",
+                        "No se encontraron estadísticas para el jugador " + player.getId()
+                ));
+
+        Integer rankingPosition = playerStatsRepository.findPlayerRankingPosition(playerId).orElse(null);
+        return PlayerStatsDTO.fromEntity(playerStats, rankingPosition);
+    }
+
+    public Page<PlayerStatsDTO> getAllPlayersStats(String sessionId, Pageable pageable) {
+        permissionChecker.validateSession(sessionId);
+        Page<Object[]> results = playerStatsRepository.findAllWithRankingPosition(pageable);
+
+        return results.map(row -> {
+            int position = ((Number) row[14]).intValue(); // position is the last column
+            PlayerStats stats = mapRowToPlayerStats(row);
+            return PlayerStatsDTO.fromEntity(stats, position);
+        });
+    }
+
+    private PlayerStats mapRowToPlayerStats(Object[] row) {
+        PlayerStats stats = new PlayerStats();
+        stats.setId(((Number) row[0]).longValue());
+        stats.setPlayer(userRepository.getReferenceById(((Number) row[1]).longValue())); // Uses getReference to avoid extra query
+        stats.setRankingPoints(((Number) row[2]).intValue());
+        stats.setTournamentsPlayed(((Number) row[3]).intValue());
+        stats.setTournamentsWon(((Number) row[4]).intValue());
+        stats.setTotalMatchesPlayed(((Number) row[5]).intValue());
+        stats.setTotalMatchesWon(((Number) row[6]).intValue());
+        stats.setTotalMatchesLost(((Number) row[7]).intValue());
+        stats.setTotalSetsWon(((Number) row[8]).intValue());
+        stats.setTotalSetsLost(((Number) row[9]).intValue());
+        stats.setTotalGamesWon(((Number) row[10]).intValue());
+        stats.setTotalGamesLost(((Number) row[11]).intValue());
+        stats.setTotalTiebreakGamesWon(((Number) row[12]).intValue());
+        stats.setTotalTiebreakGamesLost(((Number) row[13]).intValue());
+        return stats;
     }
 }
