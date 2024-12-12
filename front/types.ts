@@ -118,6 +118,7 @@ export type PlayerTournamentStats = {
 export type PlayerGlobalStats = {
   player: Player;
   rankingPoints: number;
+  rankingPosition: number | null;
   tournamentsPlayed: number;
   tournamentsWon: number;
   totalMatchesPlayed: number;
@@ -129,4 +130,16 @@ export type PlayerGlobalStats = {
   totalGamesLost: number;
   totalTiebreakGamesWon: number;
   totalTiebreakGamesLost: number;
+}
+
+export type PlayerGlobalStatsDisplayList = {
+  _embedded: {
+    playerStatsDTOList: PlayerGlobalStats[];
+  };
+  page: {
+    size: number;
+    totalElements: number;
+    totalPages: number;
+    number: number;
+  };
 }
