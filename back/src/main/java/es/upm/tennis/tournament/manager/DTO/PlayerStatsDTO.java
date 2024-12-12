@@ -7,6 +7,7 @@ import lombok.Data;
 public class PlayerStatsDTO {
     private UserPublicDTO player;
     private int rankingPoints;
+    private Integer rankingPosition;
     private int tournamentsPlayed;
     private int tournamentsWon;
     private int totalMatchesPlayed;
@@ -19,8 +20,9 @@ public class PlayerStatsDTO {
     private int totalTiebreakGamesWon;
     private int totalTiebreakGamesLost;
 
-    public static PlayerStatsDTO fromEntity(PlayerStats pstats) {
+    public static PlayerStatsDTO fromEntity(PlayerStats pstats, Integer position) {
         PlayerStatsDTO dto = new PlayerStatsDTO();
+        dto.setRankingPosition(position);
         dto.setPlayer(UserPublicDTO.fromEntity(pstats.getPlayer()));
         dto.setRankingPoints(pstats.getRankingPoints());
         dto.setTournamentsPlayed(pstats.getTournamentsPlayed());
