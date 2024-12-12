@@ -43,6 +43,7 @@ public enum ErrorCode {
 
     // Tournament participation related errors
     TOURNAMENT_PARTICIPATION_NOT_FOUND("PART_001", HttpStatus.NOT_FOUND),
+    INVALID_PARTICIPANT_COUNT("PART_002", HttpStatus.BAD_REQUEST),
 
     // Generic errors
     INTERNAL_ERROR("GEN_001", HttpStatus.INTERNAL_SERVER_ERROR),
