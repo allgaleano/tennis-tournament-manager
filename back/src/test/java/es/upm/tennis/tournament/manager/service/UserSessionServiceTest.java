@@ -246,7 +246,7 @@ class UserSessionServiceTest {
             when(userSessionRepository.findByUser(testUser)).thenReturn(testSession);
 
             // Act
-            UserSession result = userSessionService.findByUser(testUser);
+            UserSession result = userSessionService.getUserSession(testUser);
 
             // Assert
             assertNotNull(result);

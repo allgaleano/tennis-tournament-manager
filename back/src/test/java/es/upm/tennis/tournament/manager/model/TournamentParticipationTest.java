@@ -16,12 +16,10 @@ class TournamentParticipationTest {
         @DisplayName("Should create PlayerTournament with valid player and tournament")
         void shouldCreatePlayerTournamentWithValidPlayerAndTournament() {
             // Arrange
-            User player = new User();
             Tournament tournament = new Tournament();
 
             // Act
             TournamentParticipation tournamentParticipation = new TournamentParticipation();
-            tournamentParticipation.setPlayer(player);
             tournamentParticipation.setTournament(tournament);
             tournamentParticipation.setPoints(10);
             tournamentParticipation.setSetsWon(2);
@@ -29,7 +27,6 @@ class TournamentParticipationTest {
             tournamentParticipation.setGamesLost(3);
 
             // Assert
-            assertNotNull(tournamentParticipation.getPlayer());
             assertNotNull(tournamentParticipation.getTournament());
             assertEquals(10, tournamentParticipation.getPoints());
             assertEquals(2, tournamentParticipation.getSetsWon());
@@ -61,13 +58,12 @@ class TournamentParticipationTest {
         void shouldGetAndSetPlayer() {
             // Arrange
             TournamentParticipation tournamentParticipation = new TournamentParticipation();
-            User player = new User();
 
             // Act
-            tournamentParticipation.setPlayer(player);
+            tournamentParticipation.setSetsWon(2);
 
             // Assert
-            assertEquals(player, tournamentParticipation.getPlayer());
+            assertEquals(2, tournamentParticipation.getSetsWon());
         }
 
         @Test
