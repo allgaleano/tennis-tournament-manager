@@ -167,18 +167,159 @@ public class MatchScoreService {
             set.setPlayer1TiebreakGames(setDTO.getPlayer1TiebreakGames());
             set.setPlayer2TiebreakGames(setDTO.getPlayer2TiebreakGames());
         }
+
         return set;
     }
 
     private void validateSetScore(Set set) {
         log.info("Validating set score for set {}", set.toString());
-        if (set.isInvalidScore()) {
-            throw new CustomException(
-                    ErrorCode.INVALID_SCORE,
-                    "Puntuación inválida",
-                    "La puntuación del set " + set.getSetNumber() + " es inválida"
+        boolean p1Won = set.getPlayer1Games() > set.getPlayer2Games();
+        if (set.getPlayer1Games() == set.getPlayer2Games()) {
+            throwInvalidScoreException(
+                    "Juegos inválidos para el set " + set.getSetNumber(),
+                    "Los juegos de ambos jugadores no pueden ser iguales"
             );
         }
+        if (set.isTiebreak()) {
+            if (p1Won) {
+                if (set.getPlayer1Games() != 7) {
+                    throwInvalidScoreException(
+                            "Juegos inválidos para el set " + set.getSetNumber(),
+                            "Para ganar el set con tiebreak, el jugador 1 debe haber ganado 7 juegos"
+                    );
+                }
+
+                if (set.getPlayer2Games() != 6) {
+                    throwInvalidScoreException(
+                            "Juegos inválidos para el set " + set.getSetNumber(),
+                            "Si el jugador 1 ganó el set con tiebreak, el jugador 2 debe haber ganado 6 juegos"
+                    );
+                }
+
+                if (set.getPlayer1TiebreakGames() <= set.getPlayer2TiebreakGames()) {
+                    throwInvalidScoreException(
+                            "Juegos de tiebreak inválidos para el set "+ set.getSetNumber(),
+                            "El jugador 1 debe haber ganado más juegos de tiebreak que el jugador 2"
+                    );
+                }
+
+                if (set.getPlayer1TiebreakGames() < 7) {
+                    throwInvalidScoreException(
+                            "Juegos de tiebreak inválidos para el set " + set.getSetNumber(),
+                            "El jugador 1 debe haber ganado al menos 7 juegos de tiebreak"
+                    );
+                }
+
+                if (Math.abs(set.getPlayer1TiebreakGames() - set.getPlayer2TiebreakGames()) < 2) {
+                    throwInvalidScoreException(
+                            "Juegos de tiebreak inválidos para el set " + set.getSetNumber(),
+                            "La diferencia de juegos de tiebreak entre los jugadores debe ser al menos de 2"
+                    );
+                }
+
+                if ((Math.abs(set.getPlayer1TiebreakGames() - set.getPlayer2TiebreakGames()) > 2) && (set.getPlayer1TiebreakGames() > 7)) {
+                    throwInvalidScoreException(
+                            "Juegos de tiebreak inválidos para el set " + set.getSetNumber(),
+                            "El jugador 1 no puede haber ganado más de 7 juegos de tiebreak si la diferencia es mayor a 2"
+                    );
+                }
+            } else {
+                if (set.getPlayer2Games() != 7) {
+                    throwInvalidScoreException(
+                            "Juegos inválidos para el set " + set.getSetNumber(),
+                            "Para ganar el set con tiebreak, el jugador 2 debe haber ganado 7 juegos"
+                    );
+                }
+
+                if (set.getPlayer1Games() != 6) {
+                    throwInvalidScoreException(
+                            "Juegos inválidos para el set " + set.getSetNumber(),
+                            "Si el jugador 2 ganó el set con tiebreak, el jugador 1 debe haber ganado 6 juegos"
+                    );
+                }
+
+                if (set.getPlayer2TiebreakGames() <= set.getPlayer1TiebreakGames()) {
+                    throwInvalidScoreException(
+                            "Juegos de tiebreak inválidos para el set " + set.getSetNumber(),
+                            "El jugador 2 debe haber ganado más juegos de tiebreak que el jugador 1"
+                    );
+                }
+
+                if (set.getPlayer2TiebreakGames() < 7) {
+                    throwInvalidScoreException(
+                            "Juegos de tiebreak inválidos para el set " + set.getSetNumber(),
+                            "El jugador 2 debe haber ganado al menos 7 juegos de tiebreak"
+                    );
+                }
+
+                if (Math.abs(set.getPlayer1TiebreakGames() - set.getPlayer2TiebreakGames()) < 2) {
+                    throwInvalidScoreException(
+                            "Juegos de tiebreak inválidos para el set " + set.getSetNumber(),
+                            "La diferencia de juegos de tiebreak entre los jugadores debe ser al menos de 2"
+                    );
+                }
+
+                if ((Math.abs(set.getPlayer1TiebreakGames() - set.getPlayer2TiebreakGames()) > 2) && (set.getPlayer2TiebreakGames() > 7)) {
+                    throwInvalidScoreException(
+                            "Juegos de tiebreak inválidos para el set " + set.getSetNumber(),
+                            "El jugador 2 no puede haber ganado más de 7 juegos de tiebreak si la diferencia es mayor a 2"
+                    );
+                }
+            }
+        } else {
+            if (Math.max(set.getPlayer1Games(), set.getPlayer2Games()) < 6) {
+                throwInvalidScoreException(
+                        "Juegos inválidos para el set " + set.getSetNumber(),
+                        "Al menos un jugador debe haber ganado 6 juegos"
+                );
+            }
+
+            if (Math.max(set.getPlayer1Games(), set.getPlayer2Games()) > 7) {
+                throwInvalidScoreException(
+                        "Juegos inválidos para el set " + set.getSetNumber(),
+                        "Ningún jugador puede haber ganado más de 7 juegos"
+                );
+            }
+
+            if ((set.getPlayer1Games() == 7 && set.getPlayer2Games() == 6) || (set.getPlayer1Games() == 6 && set.getPlayer2Games() == 7)) {
+                throwInvalidScoreException(
+                        "Juegos inválidos para el set " + set.getSetNumber(),
+                        "Para que estos juegos sean válidos, se debe jugar un tiebreak"
+                );
+            }
+
+            if (p1Won) {
+                if (set.getPlayer1Games() == 7 && set.getPlayer2Games() < 5) {
+                    throwInvalidScoreException(
+                            "Juegos inválidos para el set " + set.getSetNumber(),
+                            "El jugador 1 no puede haber ganado 7 juegos si el jugador 2 ganó menos de 5 juegos"
+                    );
+                }
+            } else {
+                if (set.getPlayer2Games() == 7 && set.getPlayer1Games() < 5) {
+                    throwInvalidScoreException(
+                            "Juegos inválidos para el set " + set.getSetNumber(),
+                            "El jugador 2 no puede haber ganado 7 juegos si el jugador 1 ganó menos de 5 juegos"
+                    );
+                }
+            }
+
+
+            if (Math.abs(set.getPlayer1Games() - set.getPlayer2Games()) < 2) {
+                throwInvalidScoreException(
+                        "Juegos inválidos para el set " + set.getSetNumber(),
+                        "La diferencia de juegos entre los jugadores debe ser al menos de 2 en caso de no haber tiebreak"
+                );
+            }
+        }
+    }
+
+    private void throwInvalidScoreException(String title, String description) {
+        throw new CustomException(
+                ErrorCode.INVALID_SCORE,
+                title,
+                description
+        );
     }
 
     private void validateMatchScore(Match match) {

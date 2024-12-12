@@ -59,10 +59,6 @@ public class Set {
     }
 
     public User getSetWinner() {
-        if (isInvalidScore()) {
-            return null;
-        }
-
         return player1Games > player2Games ? match.getPlayer1() : match.getPlayer2();
     }
 }
