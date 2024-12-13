@@ -3,7 +3,6 @@
 import { fetchPlayerStats } from "@/lib/dashboard/fetchPlayerStats";
 import { PlayerGlobalStats } from "@/types";
 import { useEffect, useState } from "react";
-import { BarLoader } from "react-spinners";
 import WinLossChart from "./win-loss-chart";
 import TournamentsStats from "./tournaments-stats";
 import StatisticsBarChart from "./statistics-bar-chart";
@@ -20,11 +19,7 @@ const Charts = () => {
   }, []);
 
   if (!playerStats) {
-    return (
-      <div className="grid place-items-center w-full h-[85vh]">
-        <BarLoader className="text-primary"/>
-      </div>
-    );
+    return;
   }
 
   return (
