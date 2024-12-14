@@ -77,14 +77,20 @@ const AccountButton = ({ userData, isMobile, isSelected } : AccountButtonInterfa
           className="font-semibold gap-2"
           asChild
         >
-          <Link href="/settings"><IoMdSettings /> Ajustes de perfil </Link>
+          <Button asChild variant="ghost">
+            <Link href="/settings"><IoMdSettings /> Ajustes de perfil </Link>
+          </Button>
         </DropdownMenuItem>
         <DropdownMenuSeparator></DropdownMenuSeparator>
         <DropdownMenuItem 
           className="font-semibold gap-2"
-          onClick={logout}
+          asChild
         >
-          <TbLogout2 /> Cerrar Sesión
+          <Button asChild onClick={logout} variant="ghost">
+            <div>
+              <TbLogout2 /> Cerrar Sesión
+            </div>
+          </Button>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
