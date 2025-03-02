@@ -4,17 +4,11 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
-    reviewers:
-      - "juan-miii"
   - package-ecosystem: "maven"
     directory: "/back"
     schedule:
       interval: "weekly"
-    reviewers:
-      - "juan-miii"
   - package-ecosystem: "npm"
     directory: "/front"
     schedule:
       interval: "weekly"
-    reviewers:
-      - "juan-miii"
